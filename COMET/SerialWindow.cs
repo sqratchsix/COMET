@@ -36,6 +36,8 @@ namespace Comet1
         int historyWidth = 0;
         int WINDOWMARGINS1 = 30;//used to set the buttons size small enough that a horizontal scroll won't appear
 
+        System.Collections.ArrayList lastCommandList = new System.Collections.ArrayList(); //list of last typed commands
+        int lastCommandIndex = 0;
 
 
         //Data for history Buttons
@@ -244,8 +246,11 @@ namespace Comet1
             if (!keepText) { textBox1.Text = ""; }
             if (rememberLastCommand)
             {
-                addLastCommand(dataSent);
+                //add to the history buttons
+                addLastCommandToHistoryButton(dataSent);
             }
+            //add the command to arraylist of the last commands
+            addLastCommand(dataSent);
             focusInput();
         }
         private void sendDataToSerialConnectionBasic(String data)
@@ -266,11 +271,35 @@ namespace Comet1
             textBox1.SelectionStart = textBox1.Text.Length;
             textBox1.SelectionLength = 0;
         }
-        private void addLastCommand(String lastCommandSent)
+        private void addLastCommandToHistoryButton(String lastCommandSent)
         {
             if (!(String.IsNullOrEmpty(lastCommandSent)) && writeSmartButton)
             {
                 createHistoryButton(lastCommandSent, lastCommandSent, showCMD);
+            }
+        }
+        private Boolean addLastCommand(String lastCommandSent)
+        {
+            if (!(String.IsNullOrEmpty(lastCommandSent)))
+            {
+                ////check out the previous command and only add if this command is new 
+                //if(lastCommandList.Count > 0)
+                //{
+                //    String previousCommand = (String)lastCommandList[lastCommandList.Count - 1];
+                //    if (lastCommandSent.Equals(previousCommand))
+                //    {
+                //        return false;
+                //    }
+                //}
+
+                lastCommandList.Add(lastCommandSent);
+                lastCommandIndex = lastCommandList.Count;
+                return true;
+
+            }
+            else
+            {
+                return false;
             }
         }
         private void updateTerminal(String newText, Boolean output)
@@ -405,7 +434,6 @@ namespace Comet1
             {
                 dataToSend = textBox1.Text;
                 sendDataToSerialConnection();
-
             }
             catch (Exception)
             {
@@ -435,11 +463,34 @@ namespace Comet1
         }
         private void textBox1_KeyDown(object sender, KeyEventArgs e)
         {
-            //TODO This is supposed to check the repeat box, but it doesn't work!
-            if (e.Shift && e.KeyCode == Keys.Enter)
+            //if the up key is pressed, then load the last text input - mimics terminal action
+            switch (e.KeyCode)
             {
-                MessageBox.Show("wow");
-            }
+                case Keys.Up:
+                    if((lastCommandIndex) > 0)
+                    {
+                        lastCommandIndex--;
+                        textBox1.Text = (String)lastCommandList[lastCommandIndex];
+                    }
+                    focusInput();
+                    e.Handled =true;
+                    writeSmartButton = false;
+                    break;
+                case Keys.Down:
+                    if ((lastCommandIndex) <= lastCommandList.Count-2)
+                    {
+                        lastCommandIndex++;
+                        textBox1.Text = (String)lastCommandList[lastCommandIndex];
+                    }
+                    focusInput();
+                    e.Handled = true;
+                    writeSmartButton = false;
+                    break;
+                default:
+                    writeSmartButton = true;
+                    break;
+           }
+
         }
         private void sendBreakToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -778,8 +829,8 @@ namespace Comet1
         
         private void textBox1_KeyPress(object sender, KeyPressEventArgs e)
         {
-            if (false)
             {
+                //HEX validation - not implemented!!!!
                 if (!(ASCII))
                 {
                     char c = e.KeyChar;
