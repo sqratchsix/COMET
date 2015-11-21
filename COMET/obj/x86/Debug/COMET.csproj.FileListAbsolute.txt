@@ -1,0 +1,8 @@
+C:\project\COMET\COMET\obj\x86\Debug\Comet1.SerialWindow.resources
+C:\project\COMET\COMET\obj\x86\Debug\Comet1.Properties.Resources.resources
+C:\project\COMET\COMET\obj\x86\Debug\COMET.csproj.GenerateResource.Cache
+C:\project\COMET\COMET\bin\Debug\Comet.exe.config
+C:\project\COMET\COMET\bin\Debug\Comet.exe
+C:\project\COMET\COMET\bin\Debug\Comet.pdb
+C:\project\COMET\COMET\obj\x86\Debug\Comet.exe
+C:\project\COMET\COMET\obj\x86\Debug\Comet.pdb
