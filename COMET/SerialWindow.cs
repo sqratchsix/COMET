@@ -31,6 +31,7 @@ namespace Comet1
         bool showCMD = true;
         bool keepText = false;
         bool writeSmartButton = true;
+        bool writeSmartButtonEnabled = true;
         String dataToSend = "";
         Boolean ASCII = true;
         int historyWidth = 0;
@@ -273,7 +274,7 @@ namespace Comet1
         }
         private void addLastCommandToHistoryButton(String lastCommandSent)
         {
-            if (!(String.IsNullOrEmpty(lastCommandSent)) && writeSmartButton)
+            if (!(String.IsNullOrEmpty(lastCommandSent)) && writeSmartButton && writeSmartButtonEnabled)
             {
                 createHistoryButton(lastCommandSent, lastCommandSent, showCMD);
             }
@@ -349,7 +350,7 @@ namespace Comet1
         }
         private void keepText_CheckedChanged(object sender, EventArgs e)
         {
-             this.writeSmartButton = !writeSmartButton;
+             this.writeSmartButtonEnabled = !writeSmartButtonEnabled;
 
             focusInput();
         }
@@ -481,6 +482,11 @@ namespace Comet1
                     {
                         lastCommandIndex++;
                         textBox1.Text = (String)lastCommandList[lastCommandIndex];
+                    }
+                    else
+                    {
+                        lastCommandIndex = lastCommandList.Count;
+                        textBox1.Text = "";
                     }
                     focusInput();
                     e.Handled = true;
