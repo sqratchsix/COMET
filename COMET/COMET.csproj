@@ -56,6 +56,12 @@
     <Compile Include="Extras.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="PromptSmartEdit.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Form1.Designer.cs">
+      <DependentUpon>PromptSmartEdit.cs</DependentUpon>
+    </Compile>
     <Compile Include="NaturalComparer.cs" />
     <Compile Include="SerialWindow.cs">
       <SubType>Form</SubType>
@@ -65,6 +71,9 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <EmbeddedResource Include="Form1.resx">
+      <DependentUpon>PromptSmartEdit.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="SerialWindow.resx">
       <DependentUpon>SerialWindow.cs</DependentUpon>
       <SubType>Designer</SubType>
@@ -80,10 +89,6 @@
       <DesignTime>True</DesignTime>
     </Compile>
     <None Include="app.config" />
-    <None Include="ClassDiagram1.cd" />
-    <None Include="ClassDiagram2.cd" />
-    <None Include="ClassDiagram3.cd" />
-    <None Include="ClassDiagram4.cd" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>

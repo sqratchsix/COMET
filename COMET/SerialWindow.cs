@@ -618,8 +618,10 @@ namespace Comet1
             ToolStripItem TSItem = (ToolStripItem)sender;
             ContextMenuStrip CMenu = (ContextMenuStrip)TSItem.Owner;
             SmartButton SButton = (SmartButton)CMenu.SourceControl;
+            //pop up a dialog box to change the smart button
 
-            SButton.changeCommand("yo");
+            PromptSmartButtonEdit Edit= new PromptSmartButtonEdit(SButton);
+            
          }
 
         private void clearAllButtonsToolStripMenuItem_Click(object sender, EventArgs e)
@@ -1014,6 +1016,11 @@ namespace Comet1
                     ((SplitContainer)sender).IsSplitterFixed = false;
                 }
             }
+        }
+
+        private void toolStripStatusLabel1_Click(object sender, EventArgs e)
+        {
+
         }
 
     }

@@ -278,6 +278,7 @@ namespace Comet1
             /* send the break signal based on the bits and the data rate
             * makes sure that that the TX line is held low for longer
             * than one frame time, including start and stop bits but less than 2 frames
+             * Sometimes this has to be sent twice to actually break ?
              */
             int extraBitTime = 2;
             int bitsToBreak = this.dataBits + 2 + extraBitTime;
