@@ -15,10 +15,10 @@ C:\project\COMET\COMET\obj\x86\Release\COMET.csproj.GenerateResource.Cache
 C:\project\COMET\COMET\obj\x86\Release\Comet.exe
 C:\project\COMET\COMET\obj\x86\Release\Comet.pdb
 C:\project\COMET\COMET\obj\x86\Release\COMET.csprojResolveAssemblyReference.cache
+C:\COMET\COMET\obj\x86\Release\Comet1.PromptSmartButtonEdit.resources
 C:\COMET\COMET\obj\x86\Release\Comet1.SerialWindow.resources
 C:\COMET\COMET\obj\x86\Release\Comet1.Properties.Resources.resources
 C:\COMET\COMET\obj\x86\Release\COMET.csproj.GenerateResource.Cache
-C:\COMET\COMET\obj\x86\Release\Comet1.PromptSmartButtonEdit.resources
 C:\COMET\COMET\bin\Release\Comet.exe.config
 C:\COMET\COMET\bin\Release\Comet.exe
 C:\COMET\COMET\bin\Release\Comet.pdb

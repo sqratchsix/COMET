@@ -32,6 +32,7 @@ namespace Comet1
         bool keepText = false;
         bool writeSmartButton = true;
         bool writeSmartButtonEnabled = true;
+        bool DiscardDuplicateEntriesInList = true;
         String dataToSend = "";
         Boolean ASCII = true;
         int historyWidth = 0;
@@ -59,9 +60,6 @@ namespace Comet1
             selectDefaults();
             registerEvents();
         }
-
-
-
         public void updateSerialPortList()
         {
             string[] currentSerialPortList = SerialPort.GetPortNames();
@@ -264,44 +262,41 @@ namespace Comet1
         {
             updateTerminal(currentConnection.readData(), true);
         }
+        private void CleanClose(object sender, EventArgs e)
+        {
+            try
+            {
+                this.currentConnection.closeSerialPort();
+            }
+            catch { }
+        }
+        private void updateTimeout()
+        {
+            float timeoutVal = 0;
+            if (float.TryParse(textBoxTimeout.Text, out timeoutVal))
+            {
+                timeoutMS = (int)(timeoutVal * 1000);
+            }
+            this.currentConnection.setPortTimeout(timeoutMS, timeoutMS);
+        }
+        public void setPortType(String PortType)
+        {
+            try
+            {
+                currentConnection.dataType = PortType;
+            }
+            catch (Exception)
+            {
+            }
+        }
         #endregion
-
+        
+        #region Serial Terminal
         public void focusInput()
         {
             textBox1.Select();
             textBox1.SelectionStart = textBox1.Text.Length;
             textBox1.SelectionLength = 0;
-        }
-        private void addLastCommandToHistoryButton(String lastCommandSent)
-        {
-            if (!(String.IsNullOrEmpty(lastCommandSent)) && writeSmartButton && writeSmartButtonEnabled)
-            {
-                createHistoryButton(lastCommandSent, lastCommandSent, showCMD);
-            }
-        }
-        private Boolean addLastCommand(String lastCommandSent)
-        {
-            if (!(String.IsNullOrEmpty(lastCommandSent)))
-            {
-                ////check out the previous command and only add if this command is new 
-                //if(lastCommandList.Count > 0)
-                //{
-                //    String previousCommand = (String)lastCommandList[lastCommandList.Count - 1];
-                //    if (lastCommandSent.Equals(previousCommand))
-                //    {
-                //        return false;
-                //    }
-                //}
-
-                lastCommandList.Add(lastCommandSent);
-                lastCommandIndex = lastCommandList.Count;
-                return true;
-
-            }
-            else
-            {
-                return false;
-            }
         }
         private void updateTerminal(String newText, Boolean output)
         {
@@ -348,22 +343,42 @@ namespace Comet1
             }
 
         }
-        private void keepText_CheckedChanged(object sender, EventArgs e)
+        private Boolean addLastCommand(String lastCommandSent)
         {
-             this.writeSmartButtonEnabled = !writeSmartButtonEnabled;
-
-            focusInput();
-        }
-        private void updateTimeout()
-        {
-            float timeoutVal = 0;
-            if (float.TryParse(textBoxTimeout.Text, out timeoutVal))
+            if (!(String.IsNullOrEmpty(lastCommandSent)))
             {
-                timeoutMS = (int)(timeoutVal * 1000);
+                //check out the previous command and only add if this command is new 
+                if (DiscardDuplicateEntriesInList)
+                {
+                    if (lastCommandList.Count > 0)
+                    {
+                        String previousCommand = (String)lastCommandList[lastCommandList.Count - 1];
+                        if (lastCommandSent.Equals(previousCommand))
+                        {
+                            return false;
+                        }
+                    }
+                }
+
+                lastCommandList.Add(lastCommandSent);
+                lastCommandIndex = lastCommandList.Count;
+                return true;
+
             }
-            this.currentConnection.setPortTimeout(timeoutMS, timeoutMS);
+            else
+            {
+                return false;
+            }
         }
-        private void createHistoryButton(String buttonCommandText, String buttonDescriptionText, Boolean displayCMD)
+        public static string AddSpaceAfter2(Match m)
+        {
+            string newString = m + "";
+            return newString.Insert(2, " ");
+        }
+        #endregion
+
+        #region History Button Methods
+        private void createHistoryButton(String buttonCommandText, String buttonDescriptionText, Boolean displayCMD, int buttonStyle)
         {
             var newbutton = new SmartButton(buttonCommandText, buttonDescriptionText, displayCMD);
 
@@ -375,6 +390,21 @@ namespace Comet1
             {
                 this.toolTip1.SetToolTip(newbutton, newbutton.CommandToSend);
             }
+
+            //change the button style
+            switch (buttonStyle)
+            {
+                case 0:
+                    newbutton.BackColor = System.Drawing.SystemColors.Control;
+                    break;
+                case 1:
+                    newbutton.BackColor = System.Drawing.SystemColors.ControlDark;
+                    break;
+                default:
+                    newbutton.BackColor = System.Drawing.SystemColors.Control;
+                    break;
+            }
+
 
 
             newbutton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
@@ -396,15 +426,158 @@ namespace Comet1
             newbutton.ContextMenuStrip = this.contextMenuSmartButton;
             this.panelHistory.Controls.Add(newbutton);
         }
-        private void CleanClose(object sender, EventArgs e)
+        private void addLastCommandToHistoryButton(String lastCommandSent)
+        {
+            if (!(String.IsNullOrEmpty(lastCommandSent)) && writeSmartButton && writeSmartButtonEnabled)
+            {
+                createHistoryButton(lastCommandSent, lastCommandSent, showCMD, 0);
+            }
+        }
+        private void ClearHistoryButtons()
         {
             try
             {
-                this.currentConnection.closeSerialPort();
-            }
-            catch { }
-        }
+                var historyButtons = panelHistory.Controls.OfType<SmartButton>().ToArray();
+                foreach (var control in historyButtons)
+                {
+                    ((SmartButton)control).removeThisButton();
 
+                }
+            }
+            catch (Exception)
+            {
+                Console.WriteLine("Error Clearing History Buttons");
+            }
+        }
+        private String[] collectAllHistoryButtonData()
+        {
+            String ButtonData;
+            String[] HistoryButtonData;
+
+            try
+            {
+                var historyButtons = panelHistory.Controls.OfType<SmartButton>().ToArray();
+                HistoryButtonData = new String[historyButtons.Length];
+                int i = 0;
+                foreach (var control in historyButtons)
+                {
+                    //format each line in the file
+                    //Command {TAB}{TAB}{TAB}{TAB} Description
+                    SmartButton CurrentB = (SmartButton)control;
+                    ButtonData = CurrentB.CommandToSend + "\t\t\t\t" + CurrentB.CommandDescription;
+                    //add the data to the array
+                    HistoryButtonData[i++] = ButtonData;
+                }
+                return HistoryButtonData;
+            }
+            catch (Exception)
+            {
+                Console.WriteLine("Error Collecting History Data");
+                return new String[] { "Error" };
+            }
+        }
+        private void changeHistoryButtonDisplay(Boolean ShowCommand)
+        {
+            //cycle through all the history buttons and change the Text to display either Command or Description
+            //Also change the tooltip to be the opposite of the text display
+            try
+            {
+                var historyButtons = panelHistory.Controls.OfType<SmartButton>().ToArray();
+                foreach (var control in historyButtons)
+                {
+                    SmartButton CurrentB = (SmartButton)control;
+                    if (ShowCommand)
+                    {
+                        CurrentB.Text = CurrentB.CommandToSend;
+                        this.toolTip1.SetToolTip(CurrentB, CurrentB.CommandDescription);
+                    }
+                    else
+                    {
+                        CurrentB.Text = CurrentB.CommandDescription;
+                        this.toolTip1.SetToolTip(CurrentB, CurrentB.CommandToSend);
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                Console.WriteLine("Error Changing Button displays");
+            }
+        }
+        private void writeToTextFile(String path, String[] data)
+        {
+            // This text is added only once to the file.
+            if (!File.Exists(path))
+            {
+                // Create a file to write to.
+                File.WriteAllLines(path, data, Encoding.UTF8);
+            }
+        }
+        private void loadSmartButtons(string[] dataIn)
+        {
+
+            String[] recalledData = dataIn;
+            string[] stringSeparator = new string[] { "\t" };
+            int buttonStyle = 0;
+            try
+            {
+                if (!(recalledData == null || recalledData.Length == 0))
+                {
+                    for (int i = 0; i < recalledData.Length; i++)
+                    {
+                        String[] parsed = recalledData[i].Split(stringSeparator, StringSplitOptions.RemoveEmptyEntries);
+                        //parse out the data
+                        //when encountering an empty line, change the button style
+                        //this allows for grouping button appeareance by function
+                        if (parsed.Length == 0)
+                        {
+                            buttonStyle++;
+                            buttonStyle = buttonStyle % 2;
+                        }
+                        if (!(parsed == null || parsed.Length == 0))
+                        {
+                            if (parsed[0].Length > 0)
+                            {
+                                String command = parsed[0];
+                                String description = parsed[0];
+                                if ((parsed.Length > 1) && parsed[1].Length > 0)
+                                {
+                                    description = parsed[1];
+                                }
+                                createHistoryButton(command, description, showCMD, buttonStyle);
+
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                Console.WriteLine("Error opening / parsing saved data");
+            }
+        }
+        private String[] openSavedSmartButtons()
+        {
+            // Create an instance of the open file dialog box.
+            OpenFileDialog openFileDialog1 = new OpenFileDialog();
+
+            // Set filter options and filter index.
+            openFileDialog1.Filter = "Text Files (.txt)|*.txt|All Files (*.*)|*.*";
+            openFileDialog1.FilterIndex = 1;
+
+            openFileDialog1.Multiselect = false;
+
+            // Process input if the user clicked OK.
+            if (openFileDialog1.ShowDialog() == DialogResult.OK)
+            {
+                string readThisFile = openFileDialog1.FileName;
+                return File.ReadAllLines(readThisFile);
+            }
+            else
+            {
+                return null;
+            }
+        }
+        #endregion
 
         # region GUI Handlers
         private void comboBoxPortName_SelectedIndexChanged(object sender, EventArgs e)
@@ -576,34 +749,32 @@ namespace Comet1
             //string storedData = ((SmartButton)sender).lastCommand;
             //sendDataToSerialConnectionBasic(storedData);
         }
+        private void keepText_CheckedChanged(object sender, EventArgs e)
+        {
+            this.writeSmartButtonEnabled = !writeSmartButtonEnabled;
 
-        #endregion
-
+            focusInput();
+        }
         private void button2_Click(object sender, EventArgs e)
         {
 
         }
-
         private void toolsToolStripMenuItem_Click(object sender, EventArgs e)
         {
 
         }
-
         private void newToolStripMenuItem_Click(object sender, EventArgs e)
         {
             openNewInstanceOfSerial();
         }
-
         private void exitToolStripMenuItem_Click(object sender, EventArgs e)
         {
             this.Close();
         }
-
         private void copyToolStripMenuItem_Click(object sender, EventArgs e)
         {
 
         }
-
         private void toolStripMenuItem3_Click(object sender, EventArgs e)
         {
             ToolStripItem TSItem = (ToolStripItem)sender;
@@ -612,7 +783,6 @@ namespace Comet1
 
            SButton.removeThisButton();
         }
-
         private void toolStripMenuItem4_Click(object sender, EventArgs e)
         {
             ToolStripItem TSItem = (ToolStripItem)sender;
@@ -623,162 +793,14 @@ namespace Comet1
             PromptSmartButtonEdit Edit= new PromptSmartButtonEdit(SButton);
             
          }
-
         private void clearAllButtonsToolStripMenuItem_Click(object sender, EventArgs e)
         {
             ClearHistoryButtons();
         }
-
-        private void ClearHistoryButtons()
-        {
-            try
-            {
-                var historyButtons = panelHistory.Controls.OfType<SmartButton>().ToArray();
-                foreach (var control in historyButtons)
-                {
-                    ((SmartButton)control).removeThisButton();
-
-                }
-            }
-            catch (Exception)
-            {
-                Console.WriteLine("Error Clearing History Buttons");
-            }
-        }
-        private String[] collectAllHistoryButtonData()
-        {
-            String ButtonData;
-            String[] HistoryButtonData;
-           
-            try
-            {
-                var historyButtons = panelHistory.Controls.OfType<SmartButton>().ToArray();
-                HistoryButtonData = new String[historyButtons.Length];
-                int i = 0;
-                foreach (var control in historyButtons)
-                {
-                    //format each line in the file
-                    //Command {TAB} Description
-                    SmartButton CurrentB = (SmartButton)control;
-                    ButtonData = CurrentB.CommandToSend + "\t" + CurrentB.CommandDescription;
-                    //add the data to the array
-                    HistoryButtonData[i++] = ButtonData;
-                }
-                return HistoryButtonData;
-            }
-            catch (Exception)
-            {
-                Console.WriteLine("Error Collecting History Data");
-                return new String[]{"Error"};
-            }
-        }
-
-        private void changeHistoryButtonDisplay(Boolean ShowCommand)
-        {
-            //cycle through all the history buttons and change the Text to display either Command or Description
-            //Also change the tooltip to be the opposite of the text display
-            try
-            {
-                var historyButtons = panelHistory.Controls.OfType<SmartButton>().ToArray();
-                foreach (var control in historyButtons)
-                {
-                      SmartButton CurrentB = (SmartButton)control;
-                      if (ShowCommand)
-                      {
-                          CurrentB.Text = CurrentB.CommandToSend;
-                          this.toolTip1.SetToolTip(CurrentB, CurrentB.CommandDescription);
-                       }
-                      else
-                      {
-                          CurrentB.Text = CurrentB.CommandDescription;
-                          this.toolTip1.SetToolTip(CurrentB, CurrentB.CommandToSend);
-                      }
-                }
-            }
-            catch (Exception)
-            {
-                Console.WriteLine("Error Changing Button displays");
-            }
-        }
-        private void writeToTextFile(String path, String[] data)
-        {
-            // This text is added only once to the file.
-            if (!File.Exists(path))
-            {
-                // Create a file to write to.
-                File.WriteAllLines(path, data, Encoding.UTF8);
-            }
-        }
-
-        private void saveAsToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-
-        }
-
         private void openToolStripMenuItem_Click(object sender, EventArgs e)
         {
             loadSmartButtons(openSavedSmartButtons());
         }
-
-        private void loadSmartButtons(string[] dataIn)
-        {
-
-            String[] recalledData = dataIn;
-            string[] stringSeparator = new string[] { "\t" };
-
-            try
-            {
-                if (!(recalledData == null || recalledData.Length == 0))
-                {
-                    for (int i = 0; i < recalledData.Length; i++)
-                    {
-                        String[] parsed = recalledData[i].Split(stringSeparator, StringSplitOptions.None);
-                        //parse out the data
-                        if (!(parsed == null || parsed.Length == 0))
-                        {
-                            if (parsed[0].Length > 0)
-                            {
-                                String command = parsed[0];
-                                String description = parsed[0];
-                                if ((parsed.Length > 1) && parsed[1].Length>0)
-                                {
-                                    description = parsed[1];
-                                }
-                                createHistoryButton(command, description, showCMD);
-                            }
-                        }
-                    }
-                }
-            }
-            catch (Exception)
-            {
-                Console.WriteLine("Error opening / parsing saved data");
-            }
-        }
-
-        private String[] openSavedSmartButtons()
-        {
-            // Create an instance of the open file dialog box.
-            OpenFileDialog openFileDialog1 = new OpenFileDialog();
-
-            // Set filter options and filter index.
-            openFileDialog1.Filter = "Text Files (.txt)|*.txt|All Files (*.*)|*.*";
-            openFileDialog1.FilterIndex = 1;
-
-            openFileDialog1.Multiselect = false;
-
-            // Process input if the user clicked OK.
-            if (openFileDialog1.ShowDialog() == DialogResult.OK)
-            {
-                string readThisFile = openFileDialog1.FileName;
-                return File.ReadAllLines(readThisFile);
-            }
-            else
-            {
-                return null;
-            }
-        }
-
         private void saveToolStripMenuItem1_Click(object sender, EventArgs e)
         {
             //collect the history button data
@@ -798,43 +820,40 @@ namespace Comet1
                 writer.Close();
             }
         }
-
         private void panelHistory_DragEnter(object sender, DragEventArgs e)
         {
             if (e.Data.GetDataPresent(DataFormats.FileDrop)) e.Effect = DragDropEffects.Copy;
             
         }
-
         private void panelHistory_DragDrop(object sender, DragEventArgs e)
         {
             Console.WriteLine("Loading Files");
             string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
             string[] dataToLoad = File.ReadAllLines(files[0]);
             loadSmartButtons(dataToLoad);
+           
             panelHistory.VerticalScroll.Value = panelHistory.VerticalScroll.Maximum;
-            panelHistory.PerformLayout(); 
+            panelHistory.PerformLayout();
+            resizeButtons();
             focusInput();
+            
         }
-
         private void panelHistory_Paint(object sender, PaintEventArgs e)
         {
 
         }
-
         private void radioButtonHEX_CheckedChanged(object sender, EventArgs e)
         {
             ASCII = false;
             setPortType("HEX");
             focusInput();
         }
-
         private void radioButtonASCII_CheckedChanged(object sender, EventArgs e)
         {
             ASCII = true;
             setPortType("ASCII");
             focusInput();
         }
-        
         private void textBox1_KeyPress(object sender, KeyPressEventArgs e)
         {
             {
@@ -852,38 +871,24 @@ namespace Comet1
             Console.Out.WriteLine(r.Replace(textBox1.Text, evaluator));
 
         }
-
-        public static string AddSpaceAfter2(Match m)
+        private void removeAllButtonsToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            string newString = m + "";
-            return newString.Insert(2, " ");
+            ClearHistoryButtons();
         }
-
-        public void setPortType(String PortType)
+        private void toggleCMDDescriptionToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            try
-            {
-                currentConnection.dataType = PortType;
-            }
-            catch (Exception)
-            {
-            }
+            showCMD = !showCMD;
+            changeHistoryButtonDisplay(showCMD);
         }
-
-        private void SerialWindow_Load(object sender, EventArgs e)
+        private void toggleCMDDescriptionToolStripMenuItem1_Click(object sender, EventArgs e)
         {
-            //start a scroll timer
-            Timer MyTimer = new Timer();
-            MyTimer.Interval = (200);
-            MyTimer.Tick += new EventHandler((sender2, e2) => MyTimer_Tick(sender, e));
-            MyTimer.Start();
+            showCMD = !showCMD;
+            changeHistoryButtonDisplay(showCMD);
         }
-        private void MyTimer_Tick(object sender, EventArgs e)
-        {
-           
-            //((SmartButton)sender).Text = ((SmartButton)sender).Text.Substring(1, ((SmartButton)sender).Text.Length - 1) + ((SmartButton)sender).Text.Substring(0, 1);
-        }
+    #endregion
 
+        #region GUI customizations
+        //These methods change the behavior of the slider & history buttons
         private void SerialWindow_SizeChanged(object sender, EventArgs e)
         {
             if ((this.WindowState == FormWindowState.Maximized) || (this.WindowState == FormWindowState.Normal))
@@ -893,81 +898,26 @@ namespace Comet1
             //base.OnSizeChanged(e);
 
             panelHistory.VerticalScroll.Value = panelHistory.VerticalScroll.Maximum;
-            panelHistory.PerformLayout(); 
+            panelHistory.PerformLayout();
         }
-
         private void correctHistoryFrame()
         {
             splitContainer1.SplitterDistance = this.ClientSize.Width - button1.Width - WINDOWMARGINS1;
         }
-
-        private void panelHistory_SizeChanged(object sender, EventArgs e)
-        {
-            
-        }
-        private void resizeButtons()
-        {
-            foreach (Control ctrl in panelHistory.Controls)
-            {
-                if (ctrl is SmartButton) ctrl.Width = panelHistory.ClientSize.Width - WINDOWMARGINS1;
-            }
-            button1.Width = panelHistory.ClientSize.Width - WINDOWMARGINS1;
-        }
-
-        private void removeAllButtonsToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            ClearHistoryButtons();
-        }
-
-        private void toggleCMDDescriptionToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            showCMD = !showCMD;
-            changeHistoryButtonDisplay(showCMD);
-        }
-
-        private void toggleCMDDescriptionToolStripMenuItem1_Click(object sender, EventArgs e)
-        {
-            showCMD = !showCMD;
-            changeHistoryButtonDisplay(showCMD);
-        }
-
-        private void splitContainer1_SplitterMoved(object sender, SplitterEventArgs e)
-        {
-            //when the splitter moves, resize the history buttons
-            //Console.WriteLine("Help, I'm moving!");
-            //this.SuspendLayout();
-            //resizeButtons();
-            //this.ResumeLayout();
-        }
-
-        private void SerialWindow_ResizeBegin(object sender, EventArgs e)
-        {
-            
-        }
-
         private void SerialWindow_ResizeEnd(object sender, EventArgs e)
         {
-           correctHistoryFrame();
+            correctHistoryFrame();
         }
-
-        private void SerialWindow_Resize(object sender, EventArgs e)
-        {
-            
-        }
-
-        //These methods change the behavior of the slider
         private void splitContainer1_MouseDown(object sender, MouseEventArgs e)
         {
             // This disables the normal move behavior
             ((SplitContainer)sender).IsSplitterFixed = true;
         }
-
         private void splitContainer1_MouseUp(object sender, MouseEventArgs e)
         {
             // This allows the splitter to be moved normally again
             ((SplitContainer)sender).IsSplitterFixed = false;
         }
-
         private void splitContainer1_MouseMove(object sender, MouseEventArgs e)
         {
             // Check to make sure the splitter won't be updated by the
@@ -1017,11 +967,29 @@ namespace Comet1
                 }
             }
         }
+        private void resizeButtons()
+        {
+            foreach (Control ctrl in panelHistory.Controls)
+            {
+                if (ctrl is SmartButton) ctrl.Width = panelHistory.ClientSize.Width - WINDOWMARGINS1;
+            }
+            button1.Width = panelHistory.ClientSize.Width - WINDOWMARGINS1;
+        }
+        #endregion
 
-        private void toolStripStatusLabel1_Click(object sender, EventArgs e)
+        //unused - timer starts on load nut is not used ... yet :-)
+        private void SerialWindow_Load(object sender, EventArgs e)
+        {
+            //start a scroll timer
+            Timer MyTimer = new Timer();
+            MyTimer.Interval = (200);
+            MyTimer.Tick += new EventHandler((sender2, e2) => MyTimer_Tick(sender, e));
+            MyTimer.Start();
+        }
+        private void MyTimer_Tick(object sender, EventArgs e)
         {
 
+            //((SmartButton)sender).Text = ((SmartButton)sender).Text.Substring(1, ((SmartButton)sender).Text.Length - 1) + ((SmartButton)sender).Text.Substring(0, 1);
         }
-
     }
     }
