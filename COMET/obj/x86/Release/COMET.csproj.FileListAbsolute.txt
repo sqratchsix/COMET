@@ -24,3 +24,4 @@ C:\COMET\COMET\bin\Release\Comet.exe
 C:\COMET\COMET\bin\Release\Comet.pdb
 C:\COMET\COMET\obj\x86\Release\Comet.exe
 C:\COMET\COMET\obj\x86\Release\Comet.pdb
+C:\COMET\COMET\obj\x86\Release\COMET.csprojResolveAssemblyReference.cache

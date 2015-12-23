@@ -42,6 +42,7 @@ namespace Comet1
                 //do nothing
             }
             serialWin.Show();
+            serialWin.updateLayout();
             //Application.Run(serialWin);
             ProgramWithContext context = new ProgramWithContext();
             Application.Run(context);

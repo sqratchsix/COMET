@@ -350,14 +350,8 @@ namespace Comet1
                 //check out the previous command and only add if this command is new 
                 if (DiscardDuplicateEntriesInList)
                 {
-                    if (lastCommandList.Count > 0)
-                    {
-                        String previousCommand = (String)lastCommandList[lastCommandList.Count - 1];
-                        if (lastCommandSent.Equals(previousCommand))
-                        {
-                            return false;
-                        }
-                    }
+                    //not implemented
+
                 }
 
                 lastCommandList.Add(lastCommandSent);
@@ -833,10 +827,15 @@ namespace Comet1
             loadSmartButtons(dataToLoad);
            
             panelHistory.VerticalScroll.Value = panelHistory.VerticalScroll.Maximum;
+            updateLayout();
+            
+        }
+
+        public void updateLayout()
+        {
             panelHistory.PerformLayout();
             resizeButtons();
             focusInput();
-            
         }
         private void panelHistory_Paint(object sender, PaintEventArgs e)
         {
@@ -969,11 +968,13 @@ namespace Comet1
         }
         private void resizeButtons()
         {
+            button1.Width = panelHistory.ClientSize.Width - WINDOWMARGINS1;
             foreach (Control ctrl in panelHistory.Controls)
             {
-                if (ctrl is SmartButton) ctrl.Width = panelHistory.ClientSize.Width - WINDOWMARGINS1;
+                //if (ctrl is SmartButton) ctrl.Width = panelHistory.ClientSize.Width - WINDOWMARGINS1;
+                if (ctrl is SmartButton) ctrl.Width = button1.Width;
             }
-            button1.Width = panelHistory.ClientSize.Width - WINDOWMARGINS1;
+            
         }
         #endregion
 
