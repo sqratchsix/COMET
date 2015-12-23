@@ -834,7 +834,7 @@ namespace Comet1
         public void updateLayout()
         {
             panelHistory.PerformLayout();
-            resizeButtons();
+            resizeButtons(true);
             focusInput();
         }
         private void panelHistory_Paint(object sender, PaintEventArgs e)
@@ -953,10 +953,8 @@ namespace Comet1
                         }
                     }
                     //resize the buttons
-                    resizeButtons();
+                    resizeButtons(false);
                 }
-                    
-
                 // If a button other than left is pressed or no button
                 // at all
                 else
@@ -966,15 +964,22 @@ namespace Comet1
                 }
             }
         }
-        private void resizeButtons()
+        private void resizeButtons(Boolean loading)
         {
             button1.Width = panelHistory.ClientSize.Width - WINDOWMARGINS1;
             foreach (Control ctrl in panelHistory.Controls)
             {
-                //if (ctrl is SmartButton) ctrl.Width = panelHistory.ClientSize.Width - WINDOWMARGINS1;
-                if (ctrl is SmartButton) ctrl.Width = button1.Width;
+                //
+                if (loading)
+                {
+                    if (ctrl is SmartButton) ctrl.Width = button1.Width;
+                }
+                else
+                {
+                    if (ctrl is SmartButton) ctrl.Width = panelHistory.ClientSize.Width - WINDOWMARGINS1;
+                }
             }
-            
+
         }
         #endregion
 
@@ -992,5 +997,6 @@ namespace Comet1
 
             //((SmartButton)sender).Text = ((SmartButton)sender).Text.Substring(1, ((SmartButton)sender).Text.Length - 1) + ((SmartButton)sender).Text.Substring(0, 1);
         }
+
     }
     }
