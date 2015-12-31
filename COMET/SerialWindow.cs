@@ -255,8 +255,11 @@ namespace Comet1
         private void sendDataToSerialConnectionBasic(String data)
         {
             //Basic send command - doesn't affect the GUI
-            String dataSent = currentConnection.sendData(data);
-            updateTerminal(dataSent, false);
+            if (currentConnection != null)
+            {
+                String dataSent = currentConnection.sendData(data);
+                updateTerminal(dataSent, false);
+            }
         }
         private void serialPortDataReadyToRead(object sender, EventArgs e)
         {
@@ -787,6 +790,14 @@ namespace Comet1
             PromptSmartButtonEdit Edit= new PromptSmartButtonEdit(SButton);
             
          }
+        private void copyCommandToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            ToolStripItem TSItem = (ToolStripItem)sender;
+            ContextMenuStrip CMenu = (ContextMenuStrip)TSItem.Owner;
+            SmartButton SButton = (SmartButton)CMenu.SourceControl;
+            //pop up a dialog box to change the smart button
+            Clipboard.SetText(SButton.CommandToSend);
+        }
         private void clearAllButtonsToolStripMenuItem_Click(object sender, EventArgs e)
         {
             ClearHistoryButtons();
@@ -997,6 +1008,8 @@ namespace Comet1
 
             //((SmartButton)sender).Text = ((SmartButton)sender).Text.Substring(1, ((SmartButton)sender).Text.Length - 1) + ((SmartButton)sender).Text.Substring(0, 1);
         }
+
+
 
     }
     }
