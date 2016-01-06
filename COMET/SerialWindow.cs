@@ -1030,7 +1030,7 @@ namespace Comet1
         {
             //((SmartButton)sender).Text = ((SmartButton)sender).Text.Substring(1, ((SmartButton)sender).Text.Length - 1) + ((SmartButton)sender).Text.Substring(0, 1);
         }
-        private void findPortWithLoopBack()
+        private void findPortWithLoopBackUsingCurrentConnection()
         {
             //close the current port
             closePortAction();
@@ -1049,8 +1049,10 @@ namespace Comet1
                     currentConnection.sendData(currentPortName);
 
                     safeSleep(this.timeoutMS);
-
-                    String response = currentConnection.readData();
+                    
+                    //the event is already reading and clearing the data, so this won't work if using currentConnection
+                    //Need to create a different connectiont that doesn't listen if this functionality is desired
+                    /*String response = currentConnection.readData();
                     if (response.Contains(currentPortName))
                     {//port found
                         MessageBox.Show("Loopback on: " + currentPortName, "Port Found", MessageBoxButtons.OKCancel, MessageBoxIcon.Asterisk);
@@ -1058,13 +1060,56 @@ namespace Comet1
                     }
                     else
                     {
-                        closePortAction();
-                    }  
+                        
+                    }  */
+                    closePortAction();
                 }
                 catch (Exception)
                 { 
                     //throw;
                 } 
+            }
+            toolStripProgressBar1.Visible = false;
+        }
+        private void findPortWithLoopBack()
+        {
+            //close the current port
+            closePortAction();
+            //make a generic port for this test
+            ActiveSerialPort testport = new ActiveSerialPort();
+            toolStripProgressBar1.Visible = true;
+            //cycle through the serial ports and find one that returns the same thing that was sent
+            for (int openPort = 0; openPort < comboBoxPortName.Items.Count; openPort++)
+            {
+                toolStripProgressBar1.Value = (int)(((float)(openPort + 1) / (float)comboBoxPortName.Items.Count) * 100);
+                try
+                {
+                    comboBoxPortName.SelectedIndex = openPort;
+                    testport.createBasicSerialPort(currentPortName, currentBaudRate, ASCII);
+
+                    //send the port name as a string and check the response
+                    testport.sendData(currentPortName);
+
+                    safeSleep(this.timeoutMS);
+
+                    String response = testport.readData();
+                    if (response.Contains(currentPortName))
+                    {//port found
+                        MessageBox.Show("Loopback on: " + currentPortName, "Port Found", MessageBoxButtons.OKCancel, MessageBoxIcon.Asterisk);
+                        testport.closeSerialPort();
+                        openPortAction();
+                        break;
+                    }
+                    else
+                    {
+                        testport.closeSerialPort();    
+                    }
+                    
+                }
+                catch (Exception)
+                {
+                    //throw;
+                }
             }
             toolStripProgressBar1.Visible = false;
         }
@@ -1078,7 +1123,7 @@ namespace Comet1
             aTimer.Start();           
             while (!Timedout)
             {
-                Console.WriteLine(toolStripProgressBar1.Value);
+                System.Threading.Thread.Sleep(10);
             }
             aTimer.Stop();
         }
