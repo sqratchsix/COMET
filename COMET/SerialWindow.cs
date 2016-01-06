@@ -9,6 +9,8 @@ using System.Windows.Forms;
 using System.IO.Ports;
 using System.IO;
 using System.Text.RegularExpressions;
+using System.Timers;
+using System.Diagnostics;
 
 
 
@@ -24,7 +26,8 @@ namespace Comet1
         int currentDataBits = 8;
         //most hardware does not support StopBits 'None' or 'OnePointFive"; will cause an exception
         StopBits currentStopBits = (StopBits)1;
-        int timeoutMS = 2000;
+        int timeoutMS = 500;
+        Boolean Timedout = false;
         bool portOpen = false;
         bool textReverse = false;
         bool rememberLastCommand = true;
@@ -33,14 +36,16 @@ namespace Comet1
         bool writeSmartButton = true;
         bool writeSmartButtonEnabled = true;
         bool DiscardDuplicateEntriesInList = true;
+        bool AddNewLineToTerminal = true; //Add a newline in between new input messages 
         String dataToSend = "";
+        Color textReceive = Color.FromName("Lime");
+        Color textSend = Color.FromName("DarkTurquoise");
         Boolean ASCII = true;
         int historyWidth = 0;
         int WINDOWMARGINS1 = 30;//used to set the buttons size small enough that a horizontal scroll won't appear
 
         System.Collections.ArrayList lastCommandList = new System.Collections.ArrayList(); //list of last typed commands
         int lastCommandIndex = 0;
-
 
         //Data for history Buttons
         Button lastButtonForLocation;
@@ -74,7 +79,6 @@ namespace Comet1
             comboBoxParity.Enabled = newstate;
             comboBoxDataBits.Enabled = newstate;
             comboBoxStopBits.Enabled = newstate;
-
         }
         private void selectDefaults()
         {
@@ -105,6 +109,7 @@ namespace Comet1
         private void openNewInstanceOfSerial()
         {
             SerialWindow newInstance = new SerialWindow();
+            newInstance.Size = this.Size;
             newInstance.Show();
             //try to open a new port
             newInstance.openPortActionFirstTime();
@@ -200,13 +205,14 @@ namespace Comet1
             }
             else
             {
-                toolStripStatusLabel1.Text = "No Connection";
-                this.Text = "No Connection";
+                setNoConnection();
                 return false;
             }
 
 
         }
+
+
         public Boolean closePortAction()
         {
             if (closePort())
@@ -279,6 +285,7 @@ namespace Comet1
             if (float.TryParse(textBoxTimeout.Text, out timeoutVal))
             {
                 timeoutMS = (int)(timeoutVal * 1000);
+                //System.Console.WriteLine(timeoutMS);
             }
             this.currentConnection.setPortTimeout(timeoutMS, timeoutMS);
         }
@@ -305,18 +312,25 @@ namespace Comet1
         {
             if (newText.Length >= 1)
             {
+                Color textColor = Color.White;
                 //different color for in/out text
-                Color textColor = Color.FromName("Green");
-
-                if (!output)
+                if (output)
                 {
-                    textColor = Color.FromName("DarkTurquoise");
-
+                    textColor = textReceive;
+                    if ((!(newText[newText.Length - 1].Equals(Environment.NewLine))) && AddNewLineToTerminal)
+                    {
+                        newText = newText + Environment.NewLine;
+                    }
                 }
-                //Add a newline if the last charaacter is not a newline
-                if (!(newText[newText.Length - 1].Equals(Environment.NewLine)))
+                else
                 {
-                    newText = newText + Environment.NewLine;
+                    textColor = textSend;
+
+
+                    if ((!(newText[newText.Length - 1].Equals(Environment.NewLine))))
+                    {
+                        newText = newText + Environment.NewLine;
+                    }
                 }
 
                 //add the new text on top of the previous text
@@ -752,9 +766,9 @@ namespace Comet1
 
             focusInput();
         }
-        private void button2_Click(object sender, EventArgs e)
+        private void buttonFindPort_Click(object sender, EventArgs e)
         {
-
+            findPortWithLoopBack();
         }
         private void toolsToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -838,15 +852,16 @@ namespace Comet1
             loadSmartButtons(dataToLoad);
            
             panelHistory.VerticalScroll.Value = panelHistory.VerticalScroll.Maximum;
-            updateLayout();
+            updateLayoutHistoryPanel();
             
         }
 
-        public void updateLayout()
+        public void updateLayoutHistoryPanel()
         {
             panelHistory.PerformLayout();
             resizeButtons(true);
             focusInput();
+
         }
         private void panelHistory_Paint(object sender, PaintEventArgs e)
         {
@@ -895,7 +910,7 @@ namespace Comet1
             showCMD = !showCMD;
             changeHistoryButtonDisplay(showCMD);
         }
-    #endregion
+        #endregion
 
         #region GUI customizations
         //These methods change the behavior of the slider & history buttons
@@ -992,24 +1007,85 @@ namespace Comet1
             }
 
         }
+        private void setNoConnection()
+        {
+            toolStripStatusLabel1.Text = "No Connection";
+            this.Text = "No Connection";
+        }
         #endregion
 
-        //unused - timer starts on load nut is not used ... yet :-)
+        #region Future Features
+        //unused - timer starts on load out is not used ... yet :-)
         private void SerialWindow_Load(object sender, EventArgs e)
         {
             //start a scroll timer
+            /*
             Timer MyTimer = new Timer();
             MyTimer.Interval = (200);
             MyTimer.Tick += new EventHandler((sender2, e2) => MyTimer_Tick(sender, e));
             MyTimer.Start();
+             * */
         }
         private void MyTimer_Tick(object sender, EventArgs e)
         {
-
             //((SmartButton)sender).Text = ((SmartButton)sender).Text.Substring(1, ((SmartButton)sender).Text.Length - 1) + ((SmartButton)sender).Text.Substring(0, 1);
         }
+        private void findPortWithLoopBack()
+        {
+            //close the current port
+            closePortAction();
+            toolStripProgressBar1.Visible = true; 
+            //cycle through the serial ports and find one that returns the same thing that was sent
+            for (int openPort = 0; openPort < comboBoxPortName.Items.Count; openPort++)
+            {
+                toolStripProgressBar1.Value = (int)(((float)(openPort+1)/(float)comboBoxPortName.Items.Count)*100);
+                try
+                {
+                    comboBoxPortName.SelectedIndex= openPort;
+                    openPortAction();
+                   
+                    //send the port name as a string and check the response
+                    //TODO should wait for the event that data is received
+                    currentConnection.sendData(currentPortName);
 
+                    safeSleep(this.timeoutMS);
 
-
+                    String response = currentConnection.readData();
+                    if (response.Contains(currentPortName))
+                    {//port found
+                        MessageBox.Show("Loopback on: " + currentPortName, "Port Found", MessageBoxButtons.OKCancel, MessageBoxIcon.Asterisk);
+                        break;
+                    }
+                    else
+                    {
+                        closePortAction();
+                    }  
+                }
+                catch (Exception)
+                { 
+                    //throw;
+                } 
+            }
+            toolStripProgressBar1.Visible = false;
+        }
+        private void safeSleep(int timeoutMS)
+        {
+            Timedout = false;
+            System.Timers.Timer aTimer = new System.Timers.Timer();
+            aTimer.Elapsed += new ElapsedEventHandler(OnTimedEvent);
+            aTimer.Interval = timeoutMS;
+            aTimer.Enabled = true;
+            aTimer.Start();           
+            while (!Timedout)
+            {
+                Console.WriteLine(toolStripProgressBar1.Value);
+            }
+            aTimer.Stop();
+        }
+        private void OnTimedEvent(object source, EventArgs e)
+        {
+            Timedout = true;
+        }
+        #endregion
     }
     }

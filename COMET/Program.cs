@@ -42,10 +42,12 @@ namespace Comet1
                 //do nothing
             }
             serialWin.Show();
-            serialWin.updateLayout();
+            serialWin.updateLayoutHistoryPanel();
+            
             //Application.Run(serialWin);
             ProgramWithContext context = new ProgramWithContext();
             Application.Run(context);
+
 
        }
     }

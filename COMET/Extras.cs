@@ -58,7 +58,7 @@ namespace Comet1
 
             box.SelectionColor = color;
             box.AppendText(text);
-            box.SelectionColor = box.ForeColor;
+            //box.SelectionColor = box.ForeColor;
 
         }
         public static void ScrollDown(System.Windows.Forms.RichTextBox box)
