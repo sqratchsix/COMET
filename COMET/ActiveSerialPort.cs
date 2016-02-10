@@ -272,7 +272,6 @@ namespace Comet1
             sendBreak();
         }
 
-
         private void sendBreak()
         {
             /* send the break signal based on the bits and the data rate
@@ -299,7 +298,6 @@ namespace Comet1
             this.activeSerial.BreakState = false;
 
         }
-
 
         public void changeReadTimeout(int newReadTimeout)
         {

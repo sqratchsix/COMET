@@ -43,6 +43,7 @@ namespace Comet1
         Boolean ASCII = true;
         int historyWidth = 0;
         int WINDOWMARGINS1 = 30;//used to set the buttons size small enough that a horizontal scroll won't appear
+        Transfer transferData;
 
         System.Collections.ArrayList lastCommandList = new System.Collections.ArrayList(); //list of last typed commands
         int lastCommandIndex = 0;
@@ -298,6 +299,20 @@ namespace Comet1
             catch (Exception)
             {
             }
+        }
+        private Boolean initTransfer()
+        {
+            try
+            {
+                    transferData = new Transfer(currentConnection);
+                    transferData.ProgressChanged += transferProgressChanged;
+                    return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+
         }
         #endregion
         
@@ -582,6 +597,27 @@ namespace Comet1
             {
                 string readThisFile = openFileDialog1.FileName;
                 return File.ReadAllLines(readThisFile);
+            }
+            else
+            {
+                return null;
+            }
+        }
+        private String openSingleFile()
+        {
+            // Create an instance of the open file dialog box.
+            OpenFileDialog openFileDialog1 = new OpenFileDialog();
+
+            // Set filter options and filter index.
+            //openFileDialog1.Filter = "Text Files (.txt)|*.txt|All Files (*.*)|*.*";
+            //openFileDialog1.FilterIndex = 1;
+
+            openFileDialog1.Multiselect = false;
+
+            // Process input if the user clicked OK.
+            if (openFileDialog1.ShowDialog() == DialogResult.OK)
+            {
+                return openFileDialog1.FileName;
             }
             else
             {
@@ -1012,6 +1048,14 @@ namespace Comet1
             toolStripStatusLabel1.Text = "No Connection";
             this.Text = "No Connection";
         }
+        public void SetProgress(int progress)
+        {
+            toolStripProgressBar1.Value = progress;
+        }
+        public void SetProgress(Boolean visible)
+        {
+            toolStripProgressBar1.Visible = visible;
+        }
         #endregion
 
         #region Future Features
@@ -1132,5 +1176,59 @@ namespace Comet1
             Timedout = true;
         }
         #endregion
+
+        private void sendXModemToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (initTransfer())
+            {
+                String pathToOpen = openSingleFile();
+                if (pathToOpen != null)
+                {
+                    SetProgress(true);
+                    transferData.XmodemUploadFile(pathToOpen);
+                    SetProgress(false);
+                }
+            }
+        }
+
+        private void receiveXModemToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (initTransfer())
+            {
+            }
+            //TODO Not Implemented!!
+            Console.WriteLine("Not Implemented");
+        }
+
+        private void sendYModemToolStripMenuItem1_Click(object sender, EventArgs e)
+        {
+            if (initTransfer())
+            {
+                String pathToOpen = openSingleFile();
+                if (pathToOpen != null)
+                {
+                    SetProgress(true);
+                    transferData.YmodemUploadFile(pathToOpen);
+                    SetProgress(false);
+                }
+            }
+
+        }
+
+        private void receiveYModemToolStripMenuItem1_Click(object sender, EventArgs e)
+        {
+            if (initTransfer())
+            {
+            }
+            //TODO Not Implemented!!
+            Console.WriteLine("Not Implemented");
+        }
+
+        private void transferProgressChanged (int xferProgress)
+        {
+            //Action handler for changing the progress from the transfer
+            SetProgress(xferProgress);
+            Console.WriteLine(xferProgress);
+        }
     }
     }

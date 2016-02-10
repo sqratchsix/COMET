@@ -53,6 +53,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ActiveSerialPort.cs" />
+    <Compile Include="Transfer.cs" />
     <Compile Include="Extras.cs">
       <SubType>Component</SubType>
     </Compile>
