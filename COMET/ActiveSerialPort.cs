@@ -34,8 +34,6 @@ namespace Comet1
         string currentData = "";
         string lineEnd = System.Environment.NewLine;
 
-
-
         public Boolean createBasicSerialPort(String portName_in, int baudRate_in, Boolean DataTypeASCII)
         {
             this.portName = portName_in;
@@ -226,7 +224,7 @@ namespace Comet1
    
         }
 
-        public String sendData(String dataToSend)
+        public String sendData(String dataToSend, bool endline)
         {
             //only send actual data
             if (isOpen & dataToSend.Length > 0)
@@ -236,7 +234,16 @@ namespace Comet1
                     if (dataType.Equals("ASCII"))
                     {
                         //ASCII DATA
-                        string dataToSendToPort = dataToSend + lineEnd;
+                        string dataToSendToPort;
+
+                        if (endline)
+                        {
+                            dataToSendToPort = dataToSend + lineEnd;
+                        }
+                        else
+                        {
+                            dataToSendToPort = dataToSend;
+                        }
                         activeSerial.Write(dataToSendToPort);
                         return dataToSend;
                         //Console.Write("ASCII");

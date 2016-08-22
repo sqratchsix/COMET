@@ -8,10 +8,11 @@ using System.Text;
 using System.Windows.Forms;
 using System.IO.Ports;
 using System.IO;
+using System.Threading;
 using System.Text.RegularExpressions;
 using System.Timers;
 using System.Diagnostics;
-
+using System.Collections;
 
 
 namespace Comet1
@@ -19,7 +20,6 @@ namespace Comet1
     public partial class SerialWindow : Form
     {
         ActiveSerialPort currentConnection;
-
         String currentPortName = "";
         int currentBaudRate = 9600;
         Parity currentParity = (Parity)0;
@@ -37,10 +37,13 @@ namespace Comet1
         bool writeSmartButtonEnabled = true;
         bool DiscardDuplicateEntriesInList = true;
         bool AddNewLineToTerminal = true; //Add a newline in between new input messages 
+        bool endline = true;
         String dataToSend = "";
         Color textReceive = Color.FromName("Lime");
         Color textSend = Color.FromName("DarkTurquoise");
         Boolean ASCII = true;
+        ScriptRunner serialScript;
+        Boolean stopThread = false;
         int historyWidth = 0;
         int WINDOWMARGINS1 = 30;//used to set the buttons size small enough that a horizontal scroll won't appear
         Transfer transferData;
@@ -80,6 +83,14 @@ namespace Comet1
             comboBoxParity.Enabled = newstate;
             comboBoxDataBits.Enabled = newstate;
             comboBoxStopBits.Enabled = newstate;
+            if (newstate)
+            {
+                //panel2.BackColor = SystemColors.ActiveCaption;
+            }
+            else
+            {
+                //panel2.BackColor = SystemColors.Control;
+            }
         }
         private void selectDefaults()
         {
@@ -246,7 +257,7 @@ namespace Comet1
         private void sendDataToSerialConnection()
         {
             //Send Command - Interacts with the GUI
-            String dataSent = currentConnection.sendData(dataToSend);
+            String dataSent = currentConnection.sendData(dataToSend, endline);
             updateTerminal(dataSent, false);
             AcceptButton = button1;
             if (!keepText) { textBox1.Text = ""; }
@@ -264,7 +275,7 @@ namespace Comet1
             //Basic send command - doesn't affect the GUI
             if (currentConnection != null)
             {
-                String dataSent = currentConnection.sendData(data);
+                String dataSent = currentConnection.sendData(data, endline);
                 updateTerminal(dataSent, false);
             }
         }
@@ -355,7 +366,9 @@ namespace Comet1
                     //terminalText = newText + terminalText;
                     try
                     {
-                        textBoxTerminal.Invoke(new MethodInvoker(delegate { RichTextBoxExtensions.AppendText(textBoxTerminal, newText, textColor); }));
+                        //simply setting the text causes cross-threading errors
+                        //textBoxTerminal.AppendText(newText);
+                        textBoxTerminal.Invoke(new MethodInvoker(delegate { RichTextBoxExtra.AppendText(textBoxTerminal, newText, textColor); }));
                     }
                     catch (Exception)
                     {
@@ -366,7 +379,9 @@ namespace Comet1
                     //terminalText = terminalText + newText;
                     try
                     {
-                        textBoxTerminal.Invoke(new MethodInvoker(delegate { RichTextBoxExtensions.AppendText(textBoxTerminal, newText, textColor); }));
+                        //simply setting the text causes cross-threading errors
+                        //textBoxTerminal.AppendText(newText);
+                        textBoxTerminal.Invoke(new MethodInvoker(delegate { RichTextBoxExtra.AppendText(textBoxTerminal, newText, textColor); }));
                     }
                     catch (Exception)
                     {
@@ -459,15 +474,45 @@ namespace Comet1
                 createHistoryButton(lastCommandSent, lastCommandSent, showCMD, 0);
             }
         }
-        private void ClearHistoryButtons()
+        private void ClearHistoryButtons(int reference, bool direction)
         {
+            //direction: 1 = above, 0 = below
             try
             {
                 var historyButtons = panelHistory.Controls.OfType<SmartButton>().ToArray();
                 foreach (var control in historyButtons)
                 {
-                    ((SmartButton)control).removeThisButton();
+                    if (direction)
+                    {
+                        if (((SmartButton)control).Location.Y > reference)
+                        {
+                            ((SmartButton)control).removeThisButton();
+                        }
+                    }
+                    else
+                    {
+                        if (((SmartButton)control).Location.Y < reference)
+                        {
+                            ((SmartButton)control).removeThisButton();
+                        }
+                    }
 
+                }
+            }
+            catch (Exception)
+            {
+                Console.WriteLine("Error Clearing History Buttons");
+            }
+        }
+        private void ClearHistoryButtons()
+        {
+            //direction: 1 = above, 0 = below
+            try
+            {
+                var historyButtons = panelHistory.Controls.OfType<SmartButton>().ToArray();
+                foreach (var control in historyButtons)
+                {
+                     ((SmartButton)control).removeThisButton();
                 }
             }
             catch (Exception)
@@ -626,6 +671,63 @@ namespace Comet1
         }
         #endregion
 
+        #region Scripting
+        public class Worker
+        {
+            // This method will be called when the thread is started.
+            public void DoWork()
+            {
+                while (!_shouldStop)
+                {
+                    Console.WriteLine("worker thread: working...");
+                }
+                Console.WriteLine("worker thread: terminating gracefully.");
+            }
+            public void RequestStop()
+            {
+                _shouldStop = true;
+            }
+            // Volatile is used as hint to the compiler that this data
+            // member will be accessed by multiple threads.
+            private volatile bool _shouldStop;
+        }
+        private void loadScript()
+        {
+            serialScript = new ScriptRunner();
+            serialScript.clearCurrentScript();
+            serialScript.loadScriptFromFile(); 
+        }
+
+        private void runScript()
+        { //single threaded at this point....
+
+            if (serialScript != null)
+            {
+                var commandArray = serialScript.currentScript.ToArray();
+                ArrayList currentItem = new ArrayList();
+                string typeOfCommand = "";
+
+                for (int current = 0; current < commandArray.Length; current++)
+                {
+                    if (!stopThread)
+                    {
+                        //get each instruction 
+                        //if it is a serial instruction, just send over active serial port
+                        currentItem = (ArrayList)commandArray[current];
+                        typeOfCommand = (string)currentItem[0];
+                        if (typeOfCommand.Equals("SERIAL"))
+                        {
+                            sendDataToSerialConnectionBasic((string)currentItem[1]);
+                        }
+                        //wait
+                        safeSleep(serialScript.delayMS);
+                    }
+                }
+
+            }
+        }
+        #endregion
+
         # region GUI Handlers
         private void comboBoxPortName_SelectedIndexChanged(object sender, EventArgs e)
         {
@@ -635,8 +737,16 @@ namespace Comet1
         {
             if (comboBoxBaudRate.SelectedItem != null)
             {
+                //if the port is open, try to close, set the new baud rate then reopen
+                if (portOpen)
+                {
+
+                }
+
                 bool parseOK = Int32.TryParse(comboBoxBaudRate.SelectedItem.ToString(), out this.currentBaudRate);
             }
+
+            
         }
         private void buttonOpen_Click(object sender, EventArgs e)
         {
@@ -838,7 +948,8 @@ namespace Comet1
             //pop up a dialog box to change the smart button
 
             PromptSmartButtonEdit Edit= new PromptSmartButtonEdit(SButton);
-            
+            //center the window
+            Edit.Location = centerNewWindow(Edit.Width, Edit.Height);            
          }
         private void copyCommandToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -891,7 +1002,6 @@ namespace Comet1
             updateLayoutHistoryPanel();
             
         }
-
         public void updateLayoutHistoryPanel()
         {
             panelHistory.PerformLayout();
@@ -934,7 +1044,7 @@ namespace Comet1
         }
         private void removeAllButtonsToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            ClearHistoryButtons();
+            
         }
         private void toggleCMDDescriptionToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -945,6 +1055,101 @@ namespace Comet1
         {
             showCMD = !showCMD;
             changeHistoryButtonDisplay(showCMD);
+        }
+        private void sendXModemToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            MessageBox.Show("Not Tested");
+
+            if (initTransfer())
+            {
+                String pathToOpen = openSingleFile();
+                if (pathToOpen != null)
+                {
+                    SetProgress(true);
+                    transferData.XmodemUploadFile(pathToOpen);
+                    SetProgress(false);
+                }
+            }
+        }
+        private void receiveXModemToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (initTransfer())
+            {
+            }
+            //TODO Not Implemented!!
+            MessageBox.Show("Not Implemented");
+            Console.WriteLine("Not Implemented");
+        }
+        private void sendYModemToolStripMenuItem1_Click(object sender, EventArgs e)
+        {
+            if (initTransfer())
+            {
+                String pathToOpen = openSingleFile();
+                if (pathToOpen != null)
+                {
+                    SetProgress(true);
+                    transferData.YmodemUploadFile(pathToOpen);
+                    SetProgress(false);
+                }
+            }
+
+        }
+        private void receiveYModemToolStripMenuItem1_Click(object sender, EventArgs e)
+        {
+            if (initTransfer())
+            {
+            }
+            //TODO Not Implemented!!
+            MessageBox.Show("Not Implemented");
+            Console.WriteLine("Not Implemented");
+        }
+        private void transferProgressChanged(int xferProgress)
+        {
+            //Action handler for changing the progress from the transfer
+            SetProgress(xferProgress);
+            Console.WriteLine(xferProgress);
+        }
+        private void checkBox1_CheckedChanged(object sender, EventArgs e)
+        {
+            endline = checkBox1.Checked;
+            focusInput();
+        }
+        private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            About showAbout = new About();
+            showAbout.Location = centerNewWindow(showAbout.Width, showAbout.Height);
+        }
+        private void allButtonsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
+        }
+        private void menuStrip1_ItemClicked(object sender, ToolStripItemClickedEventArgs e)
+        {
+
+        }
+        private void removeBelowToolStripMenuItem_MouseDown(object sender, MouseEventArgs e)
+        {
+            //int location = this.PointToClient(new Point(e.X, e.Y)).Y;
+            //MessageBox.Show(location.ToString());
+            //ClearHistoryButtons(location, true);
+        }
+        private void removeAboveToolStripMenuItem_MouseDown(object sender, MouseEventArgs e)
+        {
+            //int location = this.PointToClient(new Point(e.X, e.Y)).Y;
+            //MessageBox.Show(location.ToString());
+            //ClearHistoryButtons(location, false);
+        }
+        private void runScriptToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            //start a new thread
+            //Worker workerObject = new Worker();
+            //Thread workerThread = new Thread(runScript());
+            runScript();
+
+        }
+        private void loadScriptToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            loadScript();
         }
         #endregion
 
@@ -1056,6 +1261,14 @@ namespace Comet1
         {
             toolStripProgressBar1.Visible = visible;
         }
+        public Point centerNewWindow(int newWinWidth, int newWinHeight)
+        {
+            Point cornerApp = this.Location;
+            Point centerApp = new Point(this.Width / 2, this.Height / 2);
+            Point centerWait = new Point(newWinWidth / 2, newWinHeight / 2);
+            return new Point(cornerApp.X + centerApp.X - centerWait.X, cornerApp.Y + centerApp.Y - centerWait.Y);
+        }
+
         #endregion
 
         #region Future Features
@@ -1090,7 +1303,7 @@ namespace Comet1
                    
                     //send the port name as a string and check the response
                     //TODO should wait for the event that data is received
-                    currentConnection.sendData(currentPortName);
+                    currentConnection.sendData(currentPortName, endline);
 
                     safeSleep(this.timeoutMS);
                     
@@ -1132,7 +1345,7 @@ namespace Comet1
                     testport.createBasicSerialPort(currentPortName, currentBaudRate, ASCII);
 
                     //send the port name as a string and check the response
-                    testport.sendData(currentPortName);
+                    testport.sendData(currentPortName, endline);
 
                     safeSleep(this.timeoutMS);
 
@@ -1175,60 +1388,16 @@ namespace Comet1
         {
             Timedout = true;
         }
+
         #endregion
 
-        private void sendXModemToolStripMenuItem_Click(object sender, EventArgs e)
+        private void setDelayToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (initTransfer())
-            {
-                String pathToOpen = openSingleFile();
-                if (pathToOpen != null)
-                {
-                    SetProgress(true);
-                    transferData.XmodemUploadFile(pathToOpen);
-                    SetProgress(false);
-                }
-            }
-        }
-
-        private void receiveXModemToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            if (initTransfer())
-            {
-            }
-            //TODO Not Implemented!!
-            Console.WriteLine("Not Implemented");
-        }
-
-        private void sendYModemToolStripMenuItem1_Click(object sender, EventArgs e)
-        {
-            if (initTransfer())
-            {
-                String pathToOpen = openSingleFile();
-                if (pathToOpen != null)
-                {
-                    SetProgress(true);
-                    transferData.YmodemUploadFile(pathToOpen);
-                    SetProgress(false);
-                }
-            }
 
         }
 
-        private void receiveYModemToolStripMenuItem1_Click(object sender, EventArgs e)
-        {
-            if (initTransfer())
-            {
-            }
-            //TODO Not Implemented!!
-            Console.WriteLine("Not Implemented");
-        }
 
-        private void transferProgressChanged (int xferProgress)
-        {
-            //Action handler for changing the progress from the transfer
-            SetProgress(xferProgress);
-            Console.WriteLine(xferProgress);
-        }
+
+
     }
     }

@@ -1,26 +1,12 @@
-C:\Users\jsimon\Documents\Visual Studio 2010\Projects\WindowsFormsApplication1\WindowsFormsApplication1\bin\Release\WindowsFormsApplication1.exe.config
-C:\Users\jsimon\Documents\Visual Studio 2010\Projects\WindowsFormsApplication1\WindowsFormsApplication1\bin\Release\WindowsFormsApplication1.exe
-C:\Users\jsimon\Documents\Visual Studio 2010\Projects\WindowsFormsApplication1\WindowsFormsApplication1\bin\Release\WindowsFormsApplication1.pdb
-C:\Users\jsimon\Documents\Visual Studio 2010\Projects\WindowsFormsApplication1\WindowsFormsApplication1\obj\x86\Release\Comet1.SerialWindow.resources
-C:\Users\jsimon\Documents\Visual Studio 2010\Projects\WindowsFormsApplication1\WindowsFormsApplication1\obj\x86\Release\Comet1.Properties.Resources.resources
-C:\Users\jsimon\Documents\Visual Studio 2010\Projects\WindowsFormsApplication1\WindowsFormsApplication1\obj\x86\Release\COMET.csproj.GenerateResource.Cache
-C:\Users\jsimon\Documents\Visual Studio 2010\Projects\WindowsFormsApplication1\WindowsFormsApplication1\obj\x86\Release\WindowsFormsApplication1.exe
-C:\Users\jsimon\Documents\Visual Studio 2010\Projects\WindowsFormsApplication1\WindowsFormsApplication1\obj\x86\Release\WindowsFormsApplication1.pdb
-C:\project\COMET\COMET\bin\Release\Comet.exe.config
-C:\project\COMET\COMET\bin\Release\Comet.exe
-C:\project\COMET\COMET\bin\Release\Comet.pdb
-C:\project\COMET\COMET\obj\x86\Release\Comet1.SerialWindow.resources
-C:\project\COMET\COMET\obj\x86\Release\Comet1.Properties.Resources.resources
-C:\project\COMET\COMET\obj\x86\Release\COMET.csproj.GenerateResource.Cache
-C:\project\COMET\COMET\obj\x86\Release\Comet.exe
-C:\project\COMET\COMET\obj\x86\Release\Comet.pdb
-C:\project\COMET\COMET\obj\x86\Release\COMET.csprojResolveAssemblyReference.cache
-C:\COMET\COMET\obj\x86\Release\Comet1.PromptSmartButtonEdit.resources
-C:\COMET\COMET\obj\x86\Release\Comet1.SerialWindow.resources
-C:\COMET\COMET\obj\x86\Release\Comet1.Properties.Resources.resources
-C:\COMET\COMET\obj\x86\Release\COMET.csproj.GenerateResource.Cache
-C:\COMET\COMET\bin\Release\Comet.exe.config
-C:\COMET\COMET\bin\Release\Comet.exe
-C:\COMET\COMET\bin\Release\Comet.pdb
-C:\COMET\COMET\obj\x86\Release\Comet.exe
-C:\COMET\COMET\obj\x86\Release\Comet.pdb
+C:\ttp\Xtra\COMET\COMET\bin\Release\Comet.exe.config
+C:\ttp\Xtra\COMET\COMET\bin\Release\Comet.exe
+C:\ttp\Xtra\COMET\COMET\bin\Release\Comet.pdb
+C:\ttp\Xtra\COMET\COMET\obj\x86\Release\COMET.csprojResolveAssemblyReference.cache
+C:\ttp\Xtra\COMET\COMET\obj\x86\Release\Comet1.About.resources
+C:\ttp\Xtra\COMET\COMET\obj\x86\Release\Comet1.Convertor.resources
+C:\ttp\Xtra\COMET\COMET\obj\x86\Release\Comet1.PromptSmartButtonEdit.resources
+C:\ttp\Xtra\COMET\COMET\obj\x86\Release\Comet1.SerialWindow.resources
+C:\ttp\Xtra\COMET\COMET\obj\x86\Release\Comet1.Properties.Resources.resources
+C:\ttp\Xtra\COMET\COMET\obj\x86\Release\COMET.csproj.GenerateResource.Cache
+C:\ttp\Xtra\COMET\COMET\obj\x86\Release\Comet.exe
+C:\ttp\Xtra\COMET\COMET\obj\x86\Release\Comet.pdb
