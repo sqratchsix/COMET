@@ -1380,6 +1380,8 @@ namespace Comet1
             aTimer.Start();           
             while (!Timedout)
             {
+                //handle all pending events
+                Application.DoEvents();
                 System.Threading.Thread.Sleep(10);
             }
             aTimer.Stop();
