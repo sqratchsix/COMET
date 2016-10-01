@@ -9,13 +9,15 @@ using System.Windows.Forms;
 
 namespace Comet1
 {
-    public partial class PromptSmartButtonEdit : Form
+    public partial class PromptScriptEdit : Form
     {
         SmartButton SmartButtonToEdit;
-        public PromptSmartButtonEdit(SmartButton SmartIn)
+        ScriptRunner ScriptToEdit;
+        public PromptScriptEdit(SmartButton SmartIn)
         {
             InitializeComponent();
             this.SmartButtonToEdit = SmartIn;
+            this.ScriptToEdit = SmartIn.storedScript;
             populateCurrentAttributes();
             this.Show();
         }
@@ -24,24 +26,29 @@ namespace Comet1
         {
             this.textBoxCommand.Text = SmartButtonToEdit.CommandToSend;
             this.textBoxDescription.Text = SmartButtonToEdit.CommandDescription;
+            this.textBoxDelayTime.Text = ScriptToEdit.getDelay().ToString();
+            this.dataGridView1.DataSource = ScriptToEdit.convertScriptToDataTable();
+        }
+
+        public PromptScriptEdit()
+        {
+            InitializeComponent();
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            this.DialogResult = DialogResult.OK;
+            this.Close();
+        }
+
+        private void TextBox1_TextChanged(object sender, EventArgs e)
+        {
 
         }
 
-        private void updateSmartButton()
+        private void label1_Click(object sender, EventArgs e)
         {
-            SmartButtonToEdit.changeCommand(this.textBoxCommand.Text);
-            SmartButtonToEdit.changeDescription(this.textBoxDescription.Text);
-        }
 
-        private void buttonSave_Click(object sender, EventArgs e)
-        {
-            updateSmartButton();
-            this.Dispose();
-        }
-
-        private void buttonCancel_Click(object sender, EventArgs e)
-        {
-            this.Dispose();
         }
     }
 }

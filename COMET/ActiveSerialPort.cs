@@ -291,6 +291,7 @@ namespace Comet1
             int timeToBreakMS = 1;
             try
             {
+                
                 int calcBreakTime = bitsToBreak / this.baudRate;
                 if (calcBreakTime > 0)
                     timeToBreakMS = calcBreakTime;
@@ -300,10 +301,27 @@ namespace Comet1
                 Console.Write("error calculating break time");
             }
 
+            SerialBreakToggle(timeToBreakMS);
+            Console.Write("Serial Break: " + timeToBreakMS);
+
+        }
+
+        public void SerialBreakToggle(int timeToBreakMS)
+        {
             this.activeSerial.BreakState = true;
             System.Threading.Thread.Sleep(timeToBreakMS);
             this.activeSerial.BreakState = false;
+        }
 
+        public void setSBREAK(bool setVal)
+        {
+            try
+            {
+                activeSerial.BreakState = setVal;
+            }
+            catch
+            {
+            }
         }
 
         public void changeReadTimeout(int newReadTimeout)
@@ -407,5 +425,52 @@ namespace Comet1
 
             return addingSpacing.ToString().ToUpper();
         }
+
+        public bool getDTR()
+        {
+            bool val = false;
+            try
+            {
+                val = activeSerial.DtrEnable;
+            }
+            catch
+            {
+            }
+            return val;
+        }
+        public void setDTR(bool setVal)
+        {
+            try
+            {
+                activeSerial.DtrEnable = setVal;
+            }
+            catch
+            {
+            }
+        }
+        public bool getRTS()
+        {
+            bool val = false;
+            try
+            {
+                val = activeSerial.RtsEnable;
+            }
+            catch
+            {
+            }
+            return val;
+        }
+        public void setRTS(bool setVal)
+        {
+            try
+            {
+                activeSerial.RtsEnable = setVal;
+            }
+            catch
+            {
+            }
+        }
     }
+
+
 }

@@ -27,6 +27,7 @@ namespace Comet1
         //most hardware does not support StopBits 'None' or 'OnePointFive"; will cause an exception
         StopBits currentStopBits = (StopBits)1;
         int timeoutMS = 500;
+        int toggleTime = 500;
         Boolean Timedout = false;
         bool portOpen = false;
         bool textReverse = false;
@@ -47,6 +48,9 @@ namespace Comet1
         int historyWidth = 0;
         int WINDOWMARGINS1 = 30;//used to set the buttons size small enough that a horizontal scroll won't appear
         Transfer transferData;
+
+        bool localBuffer = false;
+        string localBufferData = "";
 
         System.Collections.ArrayList lastCommandList = new System.Collections.ArrayList(); //list of last typed commands
         int lastCommandIndex = 0;
@@ -110,7 +114,7 @@ namespace Comet1
             {
                 radioButtonASCII.Select();
             }
-
+            updateToggleTime();
             focusInput();
         }
         private void initializeHistoryButtons()
@@ -209,6 +213,7 @@ namespace Comet1
             {
                 buttonOpenSerial.Text = "Close Port";
                 setComboBoxStates(false);
+                setRTSDTR();
                 //set the connection on the status bar
                 toolStripStatusLabel1.Text = currentConnection.getConnectionInfo(1);
                 this.Text = "COMET - " + currentConnection.getConnectionInfo(0);
@@ -223,8 +228,6 @@ namespace Comet1
 
 
         }
-
-
         public Boolean closePortAction()
         {
             if (closePort())
@@ -301,6 +304,16 @@ namespace Comet1
             }
             this.currentConnection.setPortTimeout(timeoutMS, timeoutMS);
         }
+
+        private void updateToggleTime()
+        {
+            float timeoutVal = 0;
+            if (float.TryParse(textBoxToggle.Text, out timeoutVal))
+            {
+                //timeoutMS = (int)(timeoutVal * 1000);
+                toggleTime = (int)(timeoutVal);
+            }
+        }
         public void setPortType(String PortType)
         {
             try
@@ -338,6 +351,10 @@ namespace Comet1
         {
             if (newText.Length >= 1)
             {
+                if (localBuffer)
+                {
+                    localBufferData += newText + Environment.NewLine;
+                }
                 Color textColor = Color.White;
                 //different color for in/out text
                 if (output)
@@ -419,9 +436,9 @@ namespace Comet1
         #endregion
 
         #region History Button Methods
-        private void createHistoryButton(String buttonCommandText, String buttonDescriptionText, Boolean displayCMD, int buttonStyle)
+        private SmartButton createHistoryButton(String buttonCommandText, String buttonDescriptionText, Boolean displayCMD, int buttonStyle)
         {
-            var newbutton = new SmartButton(buttonCommandText, buttonDescriptionText, displayCMD);
+            var newbutton = new SmartButton(SmartButton.buttonTypes.SerialCommand, buttonCommandText, buttonDescriptionText, displayCMD);
 
             if (displayCMD)
             {
@@ -432,20 +449,33 @@ namespace Comet1
                 this.toolTip1.SetToolTip(newbutton, newbutton.CommandToSend);
             }
 
-            //change the button style
-            switch (buttonStyle)
+            setButtonStyle(newbutton, buttonStyle);
+            setButtonLocation(newbutton);
+            setButtonEventHandlers(newbutton);
+
+            return newbutton;
+        }
+        private SmartButton createScriptButton(String buttonCommandText, String buttonDescriptionText, Boolean displayCMD, int buttonStyle)
+        {
+            var newbutton = new SmartButton(SmartButton.buttonTypes.ScriptRunner, buttonCommandText, buttonDescriptionText, displayCMD);
+
+            if (displayCMD)
             {
-                case 0:
-                    newbutton.BackColor = System.Drawing.SystemColors.Control;
-                    break;
-                case 1:
-                    newbutton.BackColor = System.Drawing.SystemColors.ControlDark;
-                    break;
-                default:
-                    newbutton.BackColor = System.Drawing.SystemColors.Control;
-                    break;
+                this.toolTip1.SetToolTip(newbutton, newbutton.CommandDescription);
+            }
+            else
+            {
+                this.toolTip1.SetToolTip(newbutton, newbutton.CommandToSend);
             }
 
+            setButtonStyle(newbutton, buttonStyle);
+            setButtonLocation(newbutton);
+            setButtonEventHandlers(newbutton);
+
+            return newbutton;
+        }
+        private void setButtonLocation(SmartButton newbutton)
+        {
 
 
             newbutton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
@@ -459,13 +489,48 @@ namespace Comet1
             lastButtonForLocation = newbutton;
             //set the size
 
+            
+        }
+
+        private void setButtonEventHandlers(SmartButton newbutton)
+        {
             //add the event handlers
+            
             //clicking the button sends its history data to the terminal
-            newbutton.Click += new System.EventHandler(this.newbutton_Click);
+            if (newbutton.buttonType == SmartButton.buttonTypes.SerialCommand)
+            {
+                newbutton.Click += new System.EventHandler(this.SmartButton_SendSerial);
+            }
+            if (newbutton.buttonType == SmartButton.buttonTypes.ScriptRunner)
+            {
+                newbutton.Click += new System.EventHandler(this.SmartButton_RunScript);
+            }
+
             newbutton.MouseHover += new System.EventHandler(this.newbutton_MouseHover);
             newbutton.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.textBoxTerminal_KeyPress);
             newbutton.ContextMenuStrip = this.contextMenuSmartButton;
             this.panelHistory.Controls.Add(newbutton);
+        }
+        private void setButtonStyle(Button newbutton, int buttonStyle)
+        {
+            //change the button style
+            switch (buttonStyle)
+            {
+                case 0:
+                    newbutton.BackColor = System.Drawing.SystemColors.Control;
+                    break;
+                case 1:
+                    newbutton.BackColor = System.Drawing.SystemColors.ControlDark;
+                    break;
+                case 2:
+                    //for script buttons
+                    newbutton.BackColor = System.Drawing.SystemColors.ControlLight;
+                    newbutton.Font = new Font(newbutton.Font.Name, newbutton.Font.Size, FontStyle.Bold);
+                    break;
+                default:
+                    newbutton.BackColor = System.Drawing.SystemColors.Control;
+                    break;
+            }
         }
         private void addLastCommandToHistoryButton(String lastCommandSent)
         {
@@ -474,7 +539,7 @@ namespace Comet1
                 createHistoryButton(lastCommandSent, lastCommandSent, showCMD, 0);
             }
         }
-        private void ClearHistoryButtons(int reference, bool direction)
+        private void ClearSmartButtons(int reference, bool direction)
         {
             //direction: 1 = above, 0 = below
             try
@@ -504,7 +569,7 @@ namespace Comet1
                 Console.WriteLine("Error Clearing History Buttons");
             }
         }
-        private void ClearHistoryButtons()
+        private void ClearSmartButtons()
         {
             //direction: 1 = above, 0 = below
             try
@@ -520,26 +585,62 @@ namespace Comet1
                 Console.WriteLine("Error Clearing History Buttons");
             }
         }
-        private String[] collectAllHistoryButtonData()
+        private String[] collectAllSmartButtonData()
         {
             String ButtonData;
-            String[] HistoryButtonData;
+            var HistoryButtonData = new List<string>();
 
             try
             {
                 var historyButtons = panelHistory.Controls.OfType<SmartButton>().ToArray();
-                HistoryButtonData = new String[historyButtons.Length];
                 int i = 0;
                 foreach (var control in historyButtons)
                 {
                     //format each line in the file
                     //Command {TAB}{TAB}{TAB}{TAB} Description
                     SmartButton CurrentB = (SmartButton)control;
-                    ButtonData = CurrentB.CommandToSend + "\t\t\t\t" + CurrentB.CommandDescription;
-                    //add the data to the array
-                    HistoryButtonData[i++] = ButtonData;
+
+                    //if a history button, just write the command and description
+                    if (CurrentB.buttonType == SmartButton.buttonTypes.SerialCommand)
+                    {
+                        ButtonData = CurrentB.CommandToSend + "\t\t\t\t" + CurrentB.CommandDescription;
+                        //add the data to the array
+                        HistoryButtonData.Add(ButtonData);
+                    }
+
+                    //if a script button, surround the commands with **script; write each command in the script
+                    if (CurrentB.buttonType == SmartButton.buttonTypes.ScriptRunner)
+                    {
+                        object[] scriptItems = CurrentB.storedScript.currentScript.ToArray();
+                        HistoryButtonData.Add("**script" + "\t\t\t\t" + CurrentB.CommandToSend);
+                        for (int j = 0; j < scriptItems.Length; j++)
+                        {
+                            object[] currentItem = (object[])((ArrayList)scriptItems[j]).ToArray();
+                            //add the data to the array if it's a plain serial command
+                            if ((string)currentItem[0] == "SERIAL")
+                            {
+                                HistoryButtonData.Add((string)currentItem[1]);
+                            }
+                            if ((string)currentItem[0] == "FUNCTION")
+                            {
+                                string commandAndArgs = "**" + (string)currentItem[1];
+                                //find out how many arguments the function has
+                                int lengthItems = currentItem.Length;
+                                //add the arguments, tab delmited
+                                for (i = 2; i < lengthItems; i++)
+                                {
+                                    commandAndArgs = commandAndArgs + "\t" + currentItem[i];
+                                }
+                                //add the function
+                                HistoryButtonData.Add(commandAndArgs);
+                            }
+
+                        }
+                        HistoryButtonData.Add("**script" + "\t\t\t\t" + CurrentB.CommandDescription);
+                    }
+
                 }
-                return HistoryButtonData;
+                return HistoryButtonData.ToArray();
             }
             catch (Exception)
             {
@@ -589,6 +690,9 @@ namespace Comet1
             String[] recalledData = dataIn;
             string[] stringSeparator = new string[] { "\t" };
             int buttonStyle = 0;
+            //variable to set wheter a script button is being created
+            Boolean scriptbutton = false;
+            SmartButton tempButton = new SmartButton();
             try
             {
                 if (!(recalledData == null || recalledData.Length == 0))
@@ -604,17 +708,57 @@ namespace Comet1
                             buttonStyle++;
                             buttonStyle = buttonStyle % 2;
                         }
+                        //make sure there is data on the line
                         if (!(parsed == null || parsed.Length == 0))
                         {
                             if (parsed[0].Length > 0)
                             {
                                 String command = parsed[0];
                                 String description = parsed[0];
-                                if ((parsed.Length > 1) && parsed[1].Length > 0)
+                                
+                                //find out if there is a special command
+                                if(command.Trim().StartsWith("**"))
                                 {
-                                    description = parsed[1];
+                                    //command = command.Substring(2).ToLower();
+                                    if (command.Contains("**script"))
+                                    {
+                                        //toggle script creation on and off
+                                        scriptbutton = !scriptbutton;
+                                        //for the first time, create a script button
+                                        if (scriptbutton)
+                                        {
+                                            if ((parsed.Length > 1) && parsed[1].Length > 0)
+                                            {
+                                                description = parsed[1];
+                                            }
+                                            tempButton = createScriptButton(description, description, showCMD, 2);
+                                            //create a new script
+                                            loadScript(false);
+                                        }
+                                        else
+                                        {
+                                            //when the script is done populating, add the script to the button
+                                            tempButton.addScript(serialScript);
+                                        }
+                                    }
                                 }
-                                createHistoryButton(command, description, showCMD, buttonStyle);
+                                if(!(command.Contains("**script")))
+                                {
+                                    if (scriptbutton)
+                                    {
+                                        //add to the script - but only if it is not a command
+                                        serialScript.addCommandIntoCurrentScript(recalledData[i]);
+                                    }
+                                    else
+                                    {
+                                        //the usual case - not a scripted command or function
+                                        if ((parsed.Length > 1) && parsed[1].Length > 0)
+                                        {
+                                            description = parsed[1];
+                                        }
+                                        createHistoryButton(command, description, showCMD, buttonStyle);
+                                    }
+                                }
 
                             }
                         }
@@ -636,6 +780,9 @@ namespace Comet1
             openFileDialog1.FilterIndex = 1;
 
             openFileDialog1.Multiselect = false;
+
+            //openfile dialog was hanging after .net4 upgrade - this fixes it?
+            openFileDialog1.ShowHelp = true;
 
             // Process input if the user clicked OK.
             if (openFileDialog1.ShowDialog() == DialogResult.OK)
@@ -659,6 +806,9 @@ namespace Comet1
 
             openFileDialog1.Multiselect = false;
 
+            //openfile dialog was hanging after .net4 upgrade - this fixes it?
+            openFileDialog1.ShowHelp = true;
+
             // Process input if the user clicked OK.
             if (openFileDialog1.ShowDialog() == DialogResult.OK)
             {
@@ -674,6 +824,8 @@ namespace Comet1
         #region Scripting
         public class Worker
         {
+            //this is the script
+            ScriptRunner _scriptToRun;
             // This method will be called when the thread is started.
             public void DoWork()
             {
@@ -691,39 +843,284 @@ namespace Comet1
             // member will be accessed by multiple threads.
             private volatile bool _shouldStop;
         }
-        private void loadScript()
+        private bool loadScript(Boolean fromFile)
         {
-            serialScript = new ScriptRunner();
-            serialScript.clearCurrentScript();
-            serialScript.loadScriptFromFile(); 
-        }
-
-        private void runScript()
-        { //single threaded at this point....
-
-            if (serialScript != null)
+            try
             {
-                var commandArray = serialScript.currentScript.ToArray();
-                ArrayList currentItem = new ArrayList();
-                string typeOfCommand = "";
-
-                for (int current = 0; current < commandArray.Length; current++)
+                serialScript = new ScriptRunner(toggleTime);
+                serialScript.clearCurrentScript();
+                if (fromFile)
                 {
-                    if (!stopThread)
+                    if(serialScript.loadScriptFromFile())
                     {
-                        //get each instruction 
-                        //if it is a serial instruction, just send over active serial port
-                        currentItem = (ArrayList)commandArray[current];
-                        typeOfCommand = (string)currentItem[0];
-                        if (typeOfCommand.Equals("SERIAL"))
-                        {
-                            sendDataToSerialConnectionBasic((string)currentItem[1]);
-                        }
-                        //wait
-                        safeSleep(serialScript.delayMS);
+                         return true;
                     }
                 }
+               
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+            return false;
 
+        }
+        private void runScript(ScriptRunner scriptToRun)
+        { //single threaded at this point....
+            try
+            {
+
+                if (scriptToRun != null)
+                {
+                    SetProgress(true, false);
+                    var commandArray = scriptToRun.currentScript.ToArray();
+                    ArrayList currentItem = new ArrayList();
+                    string typeOfCommand = "";
+
+                    for (int current = 0; current < commandArray.Length; current++)
+                    {
+
+                        transferProgressChanged((int)(100 * ((float)current / (float)commandArray.Length)));
+                        if (!stopThread)
+                        {
+                            //get each instruction 
+                            //if it is a serial instruction, just send over active serial port
+                            currentItem = (ArrayList)commandArray[current];
+                            typeOfCommand = (string)currentItem[0];
+
+                            switch (typeOfCommand)
+                            {
+                                case "SERIAL":
+                                    sendDataToSerialConnectionBasic((string)currentItem[1]);
+                                    //wait
+                                    safeSleep(scriptToRun.getDelay());
+                                    break;
+
+                                case "FUNCTION":
+                                    scriptHandleFunction(currentItem, scriptToRun);
+                                    //wait
+                                    safeSleep(scriptToRun.getDelay());
+                                    break;
+
+                                default:
+                                    break;
+                            }
+
+
+                        }
+                    }
+
+                }
+                
+            }
+            catch (Exception)
+            {
+                Console.WriteLine("Error Running Script");
+            }
+                SetProgress(false, false);          
+        }
+        private void scriptHandleFunction(ArrayList currentItem, ScriptRunner RunningScript)
+        {
+            //ArrayList format:
+            //"FUNCTION"
+            //"**functionName"
+            //{"arguments1"}
+            //{"arguments2"}
+            object[] currentItemToRun = currentItem.ToArray();
+            int length = currentItemToRun.Length;
+            string functionName = "";
+            object[] arguments = null;
+            //populate the funciton name and arguments, if any
+            if(length >= 2)  //FUNCTION , **functionname
+            {
+                functionName = (string)currentItemToRun[1];
+            }
+            if (length >= 3) //FUNCTION , **functionname, arguments
+            {
+                arguments = new Object[length - 2];
+                Array.Copy(currentItemToRun, 2, arguments, 0, length-2);
+            }
+            //case statement to handle functions
+            switch (functionName.ToLower())
+            {
+                case "ymodem":
+                    if (arguments != null)
+                    {
+                        initTransfer();
+                        YModemSendFile((string)arguments[0]);
+                    }
+                    break;
+                
+                case "delay":
+                    if (arguments != null)
+                    {
+                        int newDelay = 1000;
+                        if(int.TryParse((string)arguments[0], out newDelay))
+                        {
+                            RunningScript.changeDelay(newDelay);
+                        }
+                    }
+                    break;
+
+                case "sleep":
+                    if (arguments != null)
+                    {
+                        int newSleep = 1000;
+                        if (int.TryParse((string)arguments[0], out newSleep))
+                        {
+                            safeSleep(newSleep);
+                        }
+                    }
+                    break;
+
+                case "serialbreak":
+                        currentConnection.serialBreak();
+                    break;
+
+                case "sbreak":
+                    if (arguments != null)
+                    {
+                        bool serialtermval = false;
+
+                        try
+                        {
+                            serialtermval = Convert.ToBoolean((string)arguments[0]);
+                        }
+                        catch
+                        {
+                        }
+                        setSBREAK(serialtermval);
+                        
+                    }
+                    break;
+
+                case "rts":
+                    if (arguments != null)
+                    {
+                        bool serialtermval = false;
+
+                        try
+                        {
+                            serialtermval = Convert.ToBoolean((string)arguments[0]);
+                        }
+                        catch
+                        {
+                        }
+                        setRTS(serialtermval);
+                        
+                    }
+                    break;
+
+                case "dtr":
+                    if (arguments != null)
+                    {
+                        bool serialtermval = false;
+
+                        try
+                        {
+                            serialtermval = Convert.ToBoolean((string)arguments[0]);
+                        }
+                        catch
+                        {
+                        }
+                        setDTR(serialtermval);
+
+                    }
+                    break;
+
+                case "response_str":
+                    //usage:
+                    //function name {tab} timeout ms {tab} command {tab} expected response 
+                    //**response_str   2000 qdver   rqdver  
+                    ScriptCheckForResponse(arguments, "string");
+                    break;
+                case "response_int_between":
+                    //usage:
+                    //function name {tab} timeout ms {tab} command {tab} parsetext {tab} low int {tab} high int
+                    //**response_int_between {tab} 2000 {tab} QDAIN,1 {tab} RQDAIN,1, Ain[1] (VBAT) = {tab}7000 {tab} 8000
+                    ScriptCheckForResponse(arguments, "between");
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        private void ScriptCheckForResponse(object[] arguments, string comparisontype)
+        {
+            //valid comparison types
+            // string
+            // greaterthan
+            // lessthan
+            // between
+
+            if (arguments != null)
+            {
+                int timeout = 3000;
+                int.TryParse((string)arguments[0], out timeout);
+                string commandToSend = (string)arguments[1];
+                //this is the response to look for
+                string checkString = (string)arguments[2];
+
+                ResponseAnalyzer res = new ResponseAnalyzer(checkString);
+                bool found = false;
+
+                //turn on the local buffer so the data is kept 
+                localBuffer = true;
+
+                //send the command to ther terminal
+                sendDataToSerialConnectionBasic(commandToSend);
+
+                //start a timer and continue to check the response for a while
+                Stopwatch stopWatch = new Stopwatch();
+                stopWatch.Start();
+                long duration = stopWatch.ElapsedMilliseconds;
+                bool stopnow = false;
+                while (!stopnow)
+                {
+                    //the the GUI redraw
+                    Application.DoEvents();
+                    //see if the response is in the buffer
+                    switch (comparisontype)
+                    {
+                        case "string":
+                            found = res.checkForResponse(localBufferData);
+                            break;
+                        case "between":
+                            int lowVal = 0;
+                            int.TryParse((string)arguments[3], out lowVal);
+                            int highVal = 100;
+                            int.TryParse((string)arguments[4], out highVal);
+                            found = res.checkValBetween(localBufferData,lowVal, highVal );
+                            break;
+
+                        default:
+                            break;
+                    }
+
+
+                    if (found)
+                    {
+                        stopnow = true;
+                    }
+                    else
+                    {
+                        //update the timer
+                        duration = stopWatch.ElapsedMilliseconds;
+                        stopnow = duration > timeout;
+                    }
+                }
+                //timed out or found
+                stopWatch.Stop();
+                if (found)
+                {
+                    res.showPass();
+                }
+                else
+                {
+                    res.showFailure();
+                }
+                //clear the buffer and stop recording
+                resetbuffer();
             }
         }
         #endregion
@@ -894,12 +1291,19 @@ namespace Comet1
         }
         private void textBoxTimeout_TextChanged(object sender, EventArgs e)
         {
-            updateTimeout();
+            updateToggleTime();
         }
-        private void newbutton_Click(object sender, EventArgs e)
+        private void SmartButton_SendSerial(object sender, EventArgs e)
         {
             string storedData = ((SmartButton)sender).CommandToSend;
             sendDataToSerialConnectionBasic(storedData);     
+        }
+        private void SmartButton_RunScript(object sender, EventArgs e)
+        {
+            //run the script
+            SetProgress(true, true);
+            runScript(((SmartButton)sender).storedScript);
+            SetProgress(false, true);
         }
         private void newbutton_MouseHover(object sender, EventArgs e)
         {
@@ -947,9 +1351,21 @@ namespace Comet1
             SmartButton SButton = (SmartButton)CMenu.SourceControl;
             //pop up a dialog box to change the smart button
 
-            PromptSmartButtonEdit Edit= new PromptSmartButtonEdit(SButton);
-            //center the window
-            Edit.Location = centerNewWindow(Edit.Width, Edit.Height);            
+            //decide what kind of edit window to open based on the type of button
+            if (SButton.buttonType == SmartButton.buttonTypes.ScriptRunner)
+            {
+                PromptScriptEdit Edit = new PromptScriptEdit(SButton);
+                //center the window
+                Edit.Location = centerNewWindow(Edit.Width, Edit.Height);
+            }
+            else if (SButton.buttonType == SmartButton.buttonTypes.SerialCommand)
+            {
+                PromptSmartButtonEdit Edit = new PromptSmartButtonEdit(SButton);
+                //center the window
+                Edit.Location = centerNewWindow(Edit.Width, Edit.Height);
+            }
+            
+            
          }
         private void copyCommandToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -961,7 +1377,7 @@ namespace Comet1
         }
         private void clearAllButtonsToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            ClearHistoryButtons();
+            ClearSmartButtons();
         }
         private void openToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -970,7 +1386,7 @@ namespace Comet1
         private void saveToolStripMenuItem1_Click(object sender, EventArgs e)
         {
             //collect the history button data
-            String[] AllHistoryData = collectAllHistoryButtonData();
+            String[] AllHistoryData = collectAllSmartButtonData();
 
             SaveFileDialog save = new SaveFileDialog();
             save.FileName = "COMET_History_01.txt";
@@ -1065,9 +1481,9 @@ namespace Comet1
                 String pathToOpen = openSingleFile();
                 if (pathToOpen != null)
                 {
-                    SetProgress(true);
+                    SetProgress(true, false);
                     transferData.XmodemUploadFile(pathToOpen);
-                    SetProgress(false);
+                    SetProgress(false, false);
                 }
             }
         }
@@ -1085,14 +1501,44 @@ namespace Comet1
             if (initTransfer())
             {
                 String pathToOpen = openSingleFile();
-                if (pathToOpen != null)
-                {
-                    SetProgress(true);
-                    transferData.YmodemUploadFile(pathToOpen);
-                    SetProgress(false);
-                }
+                YModemSendFile(pathToOpen);
             }
 
+        }
+
+        private void YModemSendFile(String pathToOpen)
+        {
+            if (pathToOpen != null)
+            {
+                SetProgress(true, false);
+                transferData.YmodemUploadFile(pathToOpen);
+                SetProgress(false, false);
+            }
+        }
+        private void setDelayToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            //update the script runner timeout
+
+            PromptScriptEdit testDialog = new PromptScriptEdit();
+            int new_timeout = 1000;
+
+            // Show testDialog as a modal dialog and determine if DialogResult = OK.
+            if (testDialog.ShowDialog(this) == DialogResult.OK)
+            {
+                Console.WriteLine("OK");
+                // Read the contents of testDialog's TextBox.
+                Int32.TryParse(testDialog.textBoxDelayTime.Text, out new_timeout);
+            }
+            else
+            {
+
+            }
+            testDialog.Dispose();
+
+            if (serialScript != null)
+            {
+                serialScript.changeDelay(new_timeout);
+            }
         }
         private void receiveYModemToolStripMenuItem1_Click(object sender, EventArgs e)
         {
@@ -1144,12 +1590,91 @@ namespace Comet1
             //start a new thread
             //Worker workerObject = new Worker();
             //Thread workerThread = new Thread(runScript());
-            runScript();
 
+            SetProgress(true, true);
+            runScript(serialScript);
+            SetProgress(false, true);
         }
         private void loadScriptToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            loadScript();
+            if (loadScript(true))
+            {
+                //create a new script button of the script loads correctly
+                SmartButton loaded = createScriptButton(serialScript.scriptName, serialScript.scriptPath, true, 2);
+                //assign the current script to this new button
+                loaded.addScript(serialScript);
+            }
+        }
+
+
+        private void removeToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            ClearSmartButtons();
+        }
+
+        private void DTR_0_CheckedChanged(object sender, EventArgs e)
+        {
+            //set DTR low
+            currentConnection.setDTR(!((RadioButton)sender).Checked);
+        }
+
+        private void DTR_1_CheckedChanged(object sender, EventArgs e)
+        {
+            //set DTR high
+            currentConnection.setDTR(((RadioButton)sender).Checked);
+        }
+
+        private void RTS_0_CheckedChanged(object sender, EventArgs e)
+        {
+            //set RTS low
+            currentConnection.setRTS(!((RadioButton)sender).Checked);
+        }
+
+        private void RTS_1_CheckedChanged(object sender, EventArgs e)
+        {
+            //set RTS high
+            currentConnection.setRTS(((RadioButton)sender).Checked);
+        }
+
+        private void SBREAK_0_CheckedChanged(object sender, EventArgs e)
+        {
+            //set serial break low
+            currentConnection.setSBREAK(!((RadioButton)sender).Checked);
+        }
+
+        private void SBREAK_1_CheckedChanged(object sender, EventArgs e)
+        {
+            //set serial break high
+            currentConnection.setSBREAK(((RadioButton)sender).Checked);
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            toggleDTR();
+            safeSleep(toggleTime);
+            toggleDTR();
+        }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            toggleRTS();
+            safeSleep(toggleTime);
+            toggleRTS();
+        }
+        private void button4_Click(object sender, EventArgs e)
+        {
+            toggleSBREAK();
+            safeSleep(toggleTime);
+            toggleSBREAK();
+        }
+        private void comboBoxPortName_MouseDown(object sender, MouseEventArgs e)
+        {
+            //update the available ports
+            updateSerialPortList();
+        }
+        private void textBoxToggleTime_TextChanged(object sender, EventArgs e)
+        {
+            updateToggleTime();
         }
         #endregion
 
@@ -1168,7 +1693,14 @@ namespace Comet1
         }
         private void correctHistoryFrame()
         {
-            splitContainer1.SplitterDistance = this.ClientSize.Width - button1.Width - WINDOWMARGINS1;
+            try
+            {
+                splitContainer1.SplitterDistance = this.ClientSize.Width - button1.Width - WINDOWMARGINS1;
+            }
+            catch (Exception)
+            {
+                
+            }
         }
         private void SerialWindow_ResizeEnd(object sender, EventArgs e)
         {
@@ -1255,11 +1787,66 @@ namespace Comet1
         }
         public void SetProgress(int progress)
         {
-            toolStripProgressBar1.Value = progress;
+            try
+            {
+                toolStripProgressBar1.Visible = true;
+                toolStripProgressBar1.Value = progress;
+            }
+            catch (Exception)
+            {
+            }
         }
-        public void SetProgress(Boolean visible)
+        public void SetProgress(Boolean visible, Boolean busy)
         {
-            toolStripProgressBar1.Visible = visible;
+            try
+            {
+                toolStripProgressBar1.Visible = visible;
+                if (busy)
+                {
+                    toolStripProgressBar1.Style = ProgressBarStyle.Marquee;
+                }
+                else
+                {
+                    toolStripProgressBar1.Style = ProgressBarStyle.Continuous;
+                }
+            }
+            catch (Exception)
+            {
+                Console.WriteLine("");
+            }
+        }
+        private void toggleRTS()
+        {
+            if (RTS_0.Checked)
+            {
+                RTS_1.Checked = true;
+            }
+            else
+            {
+                RTS_0.Checked = true;
+            }
+        }
+        private void toggleDTR()
+        {
+            if (DTR_0.Checked)
+            {
+                DTR_1.Checked = true;
+            }
+            else
+            {
+                DTR_0.Checked = true;
+            }
+        }
+        private void toggleSBREAK()
+        {
+            if (SBREAK_0.Checked)
+            {
+                SBREAK_1.Checked = true;
+            }
+            else
+            {
+                SBREAK_0.Checked = true;
+            }
         }
         public Point centerNewWindow(int newWinWidth, int newWinHeight)
         {
@@ -1268,7 +1855,49 @@ namespace Comet1
             Point centerWait = new Point(newWinWidth / 2, newWinHeight / 2);
             return new Point(cornerApp.X + centerApp.X - centerWait.X, cornerApp.Y + centerApp.Y - centerWait.Y);
         }
+        private void setRTSDTR()
+        {
+            //autopopulate the RTS and DTR values from the serial port
+            try
+            {
+                if (currentConnection.getDTR())
+                {
+                    DTR_1.Select();
+                }
+                else
+                {
+                    DTR_0.Select();
+                }
 
+                if (currentConnection.getRTS())
+                {
+                    RTS_1.Select();
+                }
+                else
+                {
+                    RTS_0.Select();
+                }
+            }
+            catch
+            {
+            }
+        }
+        private void setDTR(bool value)
+        {
+            if (value) DTR_1.Checked = true;
+            else DTR_0.Checked = true;
+        }
+        private void setRTS(bool value)
+        {
+            if (value) RTS_1.Checked = true;
+            else RTS_0.Checked = true;
+        }
+        private void setSBREAK(bool value)
+        {
+            if (value) SBREAK_1.Checked = true;
+            else SBREAK_0.Checked = true;
+
+        }
         #endregion
 
         #region Future Features
@@ -1393,13 +2022,20 @@ namespace Comet1
 
         #endregion
 
-        private void setDelayToolStripMenuItem_Click(object sender, EventArgs e)
+        private void resetbuffer()
         {
-
+            localBuffer = false;
+            localBufferData = "";
         }
 
 
 
 
-    }
+
+    
+
+        
+
+
+        }
     }

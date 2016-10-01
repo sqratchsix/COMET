@@ -39,7 +39,6 @@
             this.recordHistory = new System.Windows.Forms.CheckBox();
             this.panel3 = new System.Windows.Forms.Panel();
             this.panel4 = new System.Windows.Forms.Panel();
-            this.textBoxTerminal = new Comet1.RichTextBoxExtra();
             this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.sendBreakToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem8 = new System.Windows.Forms.ToolStripSeparator();
@@ -49,6 +48,18 @@
             this.toggleScrollToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.clearTerminalToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.panel2 = new System.Windows.Forms.Panel();
+            this.panel7 = new System.Windows.Forms.Panel();
+            this.DTR_0 = new System.Windows.Forms.RadioButton();
+            this.button2 = new System.Windows.Forms.Button();
+            this.DTR_1 = new System.Windows.Forms.RadioButton();
+            this.panel8 = new System.Windows.Forms.Panel();
+            this.SBREAK_0 = new System.Windows.Forms.RadioButton();
+            this.button4 = new System.Windows.Forms.Button();
+            this.SBREAK_1 = new System.Windows.Forms.RadioButton();
+            this.panel6 = new System.Windows.Forms.Panel();
+            this.RTS_0 = new System.Windows.Forms.RadioButton();
+            this.button3 = new System.Windows.Forms.Button();
+            this.RTS_1 = new System.Windows.Forms.RadioButton();
             this.checkBox1 = new System.Windows.Forms.CheckBox();
             this.buttonFindPort = new System.Windows.Forms.Button();
             this.labelPort = new System.Windows.Forms.Label();
@@ -60,8 +71,10 @@
             this.comboBoxParity = new System.Windows.Forms.ComboBox();
             this.comboBoxDataBits = new System.Windows.Forms.ComboBox();
             this.comboBoxStopBits = new System.Windows.Forms.ComboBox();
+            this.label6 = new System.Windows.Forms.Label();
             this.label5 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
+            this.textBoxToggle = new System.Windows.Forms.TextBox();
             this.textBoxTimeout = new System.Windows.Forms.TextBox();
             this.label3 = new System.Windows.Forms.Label();
             this.label4 = new System.Windows.Forms.Label();
@@ -97,6 +110,7 @@
             this.scriptSendToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.loadScriptToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.runScriptToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.setDelayToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.contextMenuSmartButton = new System.Windows.Forms.ContextMenuStrip(this.components);
@@ -107,7 +121,8 @@
             this.toolStripMenuItem6 = new System.Windows.Forms.ToolStripSeparator();
             this.toolStripMenuItem3 = new System.Windows.Forms.ToolStripMenuItem();
             this.clearAllButtonsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.setDelayToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.textBoxTerminal = new Comet1.RichTextBoxExtra();
+            ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
             this.splitContainer1.SuspendLayout();
@@ -117,6 +132,9 @@
             this.panel4.SuspendLayout();
             this.contextMenuStrip1.SuspendLayout();
             this.panel2.SuspendLayout();
+            this.panel7.SuspendLayout();
+            this.panel8.SuspendLayout();
+            this.panel6.SuspendLayout();
             this.panelHistory.SuspendLayout();
             this.contextMenuHistoryPane.SuspendLayout();
             this.statusStrip1.SuspendLayout();
@@ -176,7 +194,7 @@
             this.buttonOpenSerial.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.buttonOpenSerial.Location = new System.Drawing.Point(2, -1);
             this.buttonOpenSerial.Name = "buttonOpenSerial";
-            this.buttonOpenSerial.Size = new System.Drawing.Size(80, 23);
+            this.buttonOpenSerial.Size = new System.Drawing.Size(87, 23);
             this.buttonOpenSerial.TabIndex = 0;
             this.buttonOpenSerial.Text = "Open Port";
             this.buttonOpenSerial.UseVisualStyleBackColor = true;
@@ -229,25 +247,6 @@
             this.panel4.Name = "panel4";
             this.panel4.Size = new System.Drawing.Size(807, 420);
             this.panel4.TabIndex = 16;
-            // 
-            // textBoxTerminal
-            // 
-            this.textBoxTerminal.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
-            this.textBoxTerminal.BackColor = System.Drawing.Color.Black;
-            this.textBoxTerminal.ContextMenuStrip = this.contextMenuStrip1;
-            this.textBoxTerminal.Font = new System.Drawing.Font("Lucida Console", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.textBoxTerminal.ForeColor = System.Drawing.SystemColors.ActiveBorder;
-            this.textBoxTerminal.HideSelection = false;
-            this.textBoxTerminal.Location = new System.Drawing.Point(6, 3);
-            this.textBoxTerminal.Name = "textBoxTerminal";
-            this.textBoxTerminal.ReadOnly = true;
-            this.textBoxTerminal.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.Vertical;
-            this.textBoxTerminal.Size = new System.Drawing.Size(798, 393);
-            this.textBoxTerminal.TabIndex = 5;
-            this.textBoxTerminal.Text = "";
-            this.textBoxTerminal.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.textBoxTerminal_KeyPress);
             // 
             // contextMenuStrip1
             // 
@@ -309,6 +308,9 @@
             // 
             // panel2
             // 
+            this.panel2.Controls.Add(this.panel7);
+            this.panel2.Controls.Add(this.panel8);
+            this.panel2.Controls.Add(this.panel6);
             this.panel2.Controls.Add(this.checkBox1);
             this.panel2.Controls.Add(this.buttonFindPort);
             this.panel2.Controls.Add(this.labelPort);
@@ -320,8 +322,10 @@
             this.panel2.Controls.Add(this.comboBoxParity);
             this.panel2.Controls.Add(this.comboBoxDataBits);
             this.panel2.Controls.Add(this.comboBoxStopBits);
+            this.panel2.Controls.Add(this.label6);
             this.panel2.Controls.Add(this.label5);
             this.panel2.Controls.Add(this.label2);
+            this.panel2.Controls.Add(this.textBoxToggle);
             this.panel2.Controls.Add(this.textBoxTimeout);
             this.panel2.Controls.Add(this.label3);
             this.panel2.Controls.Add(this.label4);
@@ -331,12 +335,142 @@
             this.panel2.Size = new System.Drawing.Size(92, 420);
             this.panel2.TabIndex = 15;
             // 
+            // panel7
+            // 
+            this.panel7.Controls.Add(this.DTR_0);
+            this.panel7.Controls.Add(this.button2);
+            this.panel7.Controls.Add(this.DTR_1);
+            this.panel7.Location = new System.Drawing.Point(3, 174);
+            this.panel7.Name = "panel7";
+            this.panel7.Size = new System.Drawing.Size(91, 30);
+            this.panel7.TabIndex = 6;
+            // 
+            // DTR_0
+            // 
+            this.DTR_0.AutoSize = true;
+            this.DTR_0.Location = new System.Drawing.Point(22, 8);
+            this.DTR_0.Name = "DTR_0";
+            this.DTR_0.Size = new System.Drawing.Size(14, 13);
+            this.DTR_0.TabIndex = 18;
+            this.DTR_0.TabStop = true;
+            this.toolTip1.SetToolTip(this.DTR_0, "0");
+            this.DTR_0.UseVisualStyleBackColor = true;
+            this.DTR_0.CheckedChanged += new System.EventHandler(this.DTR_0_CheckedChanged);
+            // 
+            // button2
+            // 
+            this.button2.Location = new System.Drawing.Point(41, 2);
+            this.button2.Name = "button2";
+            this.button2.Size = new System.Drawing.Size(44, 23);
+            this.button2.TabIndex = 17;
+            this.button2.Text = "DTR";
+            this.button2.UseVisualStyleBackColor = true;
+            this.button2.Click += new System.EventHandler(this.button2_Click);
+            // 
+            // DTR_1
+            // 
+            this.DTR_1.AutoSize = true;
+            this.DTR_1.Location = new System.Drawing.Point(4, 8);
+            this.DTR_1.Name = "DTR_1";
+            this.DTR_1.Size = new System.Drawing.Size(14, 13);
+            this.DTR_1.TabIndex = 18;
+            this.DTR_1.TabStop = true;
+            this.toolTip1.SetToolTip(this.DTR_1, "1");
+            this.DTR_1.UseVisualStyleBackColor = true;
+            this.DTR_1.CheckedChanged += new System.EventHandler(this.DTR_1_CheckedChanged);
+            // 
+            // panel8
+            // 
+            this.panel8.Controls.Add(this.SBREAK_0);
+            this.panel8.Controls.Add(this.button4);
+            this.panel8.Controls.Add(this.SBREAK_1);
+            this.panel8.Location = new System.Drawing.Point(3, 230);
+            this.panel8.Name = "panel8";
+            this.panel8.Size = new System.Drawing.Size(91, 30);
+            this.panel8.TabIndex = 6;
+            // 
+            // SBREAK_0
+            // 
+            this.SBREAK_0.AutoSize = true;
+            this.SBREAK_0.Checked = true;
+            this.SBREAK_0.Location = new System.Drawing.Point(22, 9);
+            this.SBREAK_0.Name = "SBREAK_0";
+            this.SBREAK_0.Size = new System.Drawing.Size(14, 13);
+            this.SBREAK_0.TabIndex = 18;
+            this.SBREAK_0.TabStop = true;
+            this.SBREAK_0.UseVisualStyleBackColor = true;
+            this.SBREAK_0.CheckedChanged += new System.EventHandler(this.SBREAK_0_CheckedChanged);
+            // 
+            // button4
+            // 
+            this.button4.Location = new System.Drawing.Point(41, 4);
+            this.button4.Name = "button4";
+            this.button4.Size = new System.Drawing.Size(44, 23);
+            this.button4.TabIndex = 17;
+            this.button4.Text = "Break";
+            this.button4.UseVisualStyleBackColor = true;
+            this.button4.Click += new System.EventHandler(this.button4_Click);
+            // 
+            // SBREAK_1
+            // 
+            this.SBREAK_1.AutoSize = true;
+            this.SBREAK_1.Location = new System.Drawing.Point(4, 9);
+            this.SBREAK_1.Name = "SBREAK_1";
+            this.SBREAK_1.Size = new System.Drawing.Size(14, 13);
+            this.SBREAK_1.TabIndex = 18;
+            this.SBREAK_1.UseVisualStyleBackColor = true;
+            this.SBREAK_1.CheckedChanged += new System.EventHandler(this.SBREAK_1_CheckedChanged);
+            // 
+            // panel6
+            // 
+            this.panel6.Controls.Add(this.RTS_0);
+            this.panel6.Controls.Add(this.button3);
+            this.panel6.Controls.Add(this.RTS_1);
+            this.panel6.Location = new System.Drawing.Point(3, 201);
+            this.panel6.Name = "panel6";
+            this.panel6.Size = new System.Drawing.Size(91, 30);
+            this.panel6.TabIndex = 6;
+            // 
+            // RTS_0
+            // 
+            this.RTS_0.AutoSize = true;
+            this.RTS_0.Location = new System.Drawing.Point(22, 9);
+            this.RTS_0.Name = "RTS_0";
+            this.RTS_0.Size = new System.Drawing.Size(14, 13);
+            this.RTS_0.TabIndex = 18;
+            this.RTS_0.TabStop = true;
+            this.toolTip1.SetToolTip(this.RTS_0, "0");
+            this.RTS_0.UseVisualStyleBackColor = true;
+            this.RTS_0.CheckedChanged += new System.EventHandler(this.RTS_0_CheckedChanged);
+            // 
+            // button3
+            // 
+            this.button3.Location = new System.Drawing.Point(41, 4);
+            this.button3.Name = "button3";
+            this.button3.Size = new System.Drawing.Size(44, 23);
+            this.button3.TabIndex = 17;
+            this.button3.Text = "RTS";
+            this.button3.UseVisualStyleBackColor = true;
+            this.button3.Click += new System.EventHandler(this.button3_Click);
+            // 
+            // RTS_1
+            // 
+            this.RTS_1.AutoSize = true;
+            this.RTS_1.Location = new System.Drawing.Point(4, 9);
+            this.RTS_1.Name = "RTS_1";
+            this.RTS_1.Size = new System.Drawing.Size(14, 13);
+            this.RTS_1.TabIndex = 18;
+            this.RTS_1.TabStop = true;
+            this.toolTip1.SetToolTip(this.RTS_1, "1");
+            this.RTS_1.UseVisualStyleBackColor = true;
+            this.RTS_1.CheckedChanged += new System.EventHandler(this.RTS_1_CheckedChanged);
+            // 
             // checkBox1
             // 
             this.checkBox1.AutoSize = true;
             this.checkBox1.Checked = true;
             this.checkBox1.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.checkBox1.Location = new System.Drawing.Point(67, 253);
+            this.checkBox1.Location = new System.Drawing.Point(69, 303);
             this.checkBox1.Name = "checkBox1";
             this.checkBox1.Size = new System.Drawing.Size(15, 14);
             this.checkBox1.TabIndex = 16;
@@ -346,9 +480,9 @@
             // 
             // buttonFindPort
             // 
-            this.buttonFindPort.Location = new System.Drawing.Point(2, 336);
+            this.buttonFindPort.Location = new System.Drawing.Point(3, 343);
             this.buttonFindPort.Name = "buttonFindPort";
-            this.buttonFindPort.Size = new System.Drawing.Size(80, 23);
+            this.buttonFindPort.Size = new System.Drawing.Size(86, 23);
             this.buttonFindPort.TabIndex = 15;
             this.buttonFindPort.Text = "Find Port";
             this.buttonFindPort.UseVisualStyleBackColor = true;
@@ -366,7 +500,7 @@
             // radioButtonHEX
             // 
             this.radioButtonHEX.AutoSize = true;
-            this.radioButtonHEX.Location = new System.Drawing.Point(0, 274);
+            this.radioButtonHEX.Location = new System.Drawing.Point(8, 325);
             this.radioButtonHEX.Name = "radioButtonHEX";
             this.radioButtonHEX.Size = new System.Drawing.Size(47, 17);
             this.radioButtonHEX.TabIndex = 14;
@@ -378,16 +512,17 @@
             // comboBoxPortName
             // 
             this.comboBoxPortName.FormattingEnabled = true;
-            this.comboBoxPortName.Location = new System.Drawing.Point(3, 18);
+            this.comboBoxPortName.Location = new System.Drawing.Point(3, 16);
             this.comboBoxPortName.Name = "comboBoxPortName";
-            this.comboBoxPortName.Size = new System.Drawing.Size(80, 21);
+            this.comboBoxPortName.Size = new System.Drawing.Size(86, 21);
             this.comboBoxPortName.TabIndex = 1;
             this.comboBoxPortName.SelectedIndexChanged += new System.EventHandler(this.comboBoxPortName_SelectedIndexChanged);
+            this.comboBoxPortName.MouseDown += new System.Windows.Forms.MouseEventHandler(this.comboBoxPortName_MouseDown);
             // 
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(3, 50);
+            this.label1.Location = new System.Drawing.Point(3, 39);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(32, 13);
             this.label1.TabIndex = 2;
@@ -397,7 +532,7 @@
             // radioButtonASCII
             // 
             this.radioButtonASCII.AutoSize = true;
-            this.radioButtonASCII.Location = new System.Drawing.Point(2, 251);
+            this.radioButtonASCII.Location = new System.Drawing.Point(8, 302);
             this.radioButtonASCII.Name = "radioButtonASCII";
             this.radioButtonASCII.Size = new System.Drawing.Size(52, 17);
             this.radioButtonASCII.TabIndex = 13;
@@ -418,18 +553,18 @@
             "4800",
             "2400",
             "1200"});
-            this.comboBoxBaudRate.Location = new System.Drawing.Point(3, 66);
+            this.comboBoxBaudRate.Location = new System.Drawing.Point(3, 53);
             this.comboBoxBaudRate.Name = "comboBoxBaudRate";
-            this.comboBoxBaudRate.Size = new System.Drawing.Size(80, 21);
+            this.comboBoxBaudRate.Size = new System.Drawing.Size(86, 21);
             this.comboBoxBaudRate.TabIndex = 3;
             this.comboBoxBaudRate.SelectedIndexChanged += new System.EventHandler(this.comboBoxBaudRate_SelectedIndexChanged);
             // 
             // comboBoxParity
             // 
             this.comboBoxParity.FormattingEnabled = true;
-            this.comboBoxParity.Location = new System.Drawing.Point(3, 118);
+            this.comboBoxParity.Location = new System.Drawing.Point(3, 98);
             this.comboBoxParity.Name = "comboBoxParity";
-            this.comboBoxParity.Size = new System.Drawing.Size(80, 21);
+            this.comboBoxParity.Size = new System.Drawing.Size(52, 21);
             this.comboBoxParity.TabIndex = 5;
             this.comboBoxParity.SelectedIndexChanged += new System.EventHandler(this.comboBoxParity_SelectedIndexChanged);
             // 
@@ -441,61 +576,81 @@
             "6",
             "7",
             "8"});
-            this.comboBoxDataBits.Location = new System.Drawing.Point(3, 173);
+            this.comboBoxDataBits.Location = new System.Drawing.Point(59, 98);
             this.comboBoxDataBits.Name = "comboBoxDataBits";
-            this.comboBoxDataBits.Size = new System.Drawing.Size(80, 21);
+            this.comboBoxDataBits.Size = new System.Drawing.Size(30, 21);
             this.comboBoxDataBits.TabIndex = 6;
             this.comboBoxDataBits.SelectedIndexChanged += new System.EventHandler(this.comboBoxDataBits_SelectedIndexChanged);
             // 
             // comboBoxStopBits
             // 
             this.comboBoxStopBits.FormattingEnabled = true;
-            this.comboBoxStopBits.Location = new System.Drawing.Point(3, 224);
+            this.comboBoxStopBits.Location = new System.Drawing.Point(4, 139);
             this.comboBoxStopBits.Name = "comboBoxStopBits";
-            this.comboBoxStopBits.Size = new System.Drawing.Size(80, 21);
+            this.comboBoxStopBits.Size = new System.Drawing.Size(51, 21);
             this.comboBoxStopBits.TabIndex = 7;
             this.comboBoxStopBits.SelectedIndexChanged += new System.EventHandler(this.comboBoxStopBits_SelectedIndexChanged);
+            // 
+            // label6
+            // 
+            this.label6.AutoSize = true;
+            this.label6.Location = new System.Drawing.Point(5, 271);
+            this.label6.Name = "label6";
+            this.label6.Size = new System.Drawing.Size(34, 13);
+            this.label6.TabIndex = 12;
+            this.label6.Text = "mSec";
             // 
             // label5
             // 
             this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(0, 294);
+            this.label5.Location = new System.Drawing.Point(56, 124);
             this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(71, 13);
+            this.label5.Size = new System.Drawing.Size(34, 13);
             this.label5.TabIndex = 12;
-            this.label5.Text = "Timeout (sec)";
+            this.label5.Text = "T Out";
             // 
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(3, 102);
+            this.label2.Location = new System.Drawing.Point(3, 80);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(33, 13);
             this.label2.TabIndex = 8;
             this.label2.Text = "Parity";
             // 
+            // textBoxToggle
+            // 
+            this.textBoxToggle.Location = new System.Drawing.Point(45, 268);
+            this.textBoxToggle.Name = "textBoxToggle";
+            this.textBoxToggle.Size = new System.Drawing.Size(43, 20);
+            this.textBoxToggle.TabIndex = 11;
+            this.textBoxToggle.Text = "100";
+            this.textBoxToggle.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            this.textBoxToggle.TextChanged += new System.EventHandler(this.textBoxToggleTime_TextChanged);
+            // 
             // textBoxTimeout
             // 
-            this.textBoxTimeout.Location = new System.Drawing.Point(3, 310);
+            this.textBoxTimeout.Location = new System.Drawing.Point(59, 140);
             this.textBoxTimeout.Name = "textBoxTimeout";
-            this.textBoxTimeout.Size = new System.Drawing.Size(80, 20);
+            this.textBoxTimeout.Size = new System.Drawing.Size(30, 20);
             this.textBoxTimeout.TabIndex = 11;
             this.textBoxTimeout.Text = "0.5";
+            this.textBoxTimeout.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             this.textBoxTimeout.TextChanged += new System.EventHandler(this.textBoxTimeout_TextChanged);
             // 
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(3, 157);
+            this.label3.Location = new System.Drawing.Point(56, 82);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(50, 13);
+            this.label3.Size = new System.Drawing.Size(30, 13);
             this.label3.TabIndex = 9;
-            this.label3.Text = "Data Bits";
+            this.label3.Text = "Data";
             // 
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(3, 206);
+            this.label4.Location = new System.Drawing.Point(3, 123);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(49, 13);
             this.label4.TabIndex = 10;
@@ -539,6 +694,7 @@
             this.removeToolStripMenuItem.Name = "removeToolStripMenuItem";
             this.removeToolStripMenuItem.Size = new System.Drawing.Size(206, 22);
             this.removeToolStripMenuItem.Text = "Remove All Buttons";
+            this.removeToolStripMenuItem.Click += new System.EventHandler(this.removeToolStripMenuItem_Click);
             // 
             // button1
             // 
@@ -765,7 +921,7 @@
             // loadScriptToolStripMenuItem
             // 
             this.loadScriptToolStripMenuItem.Name = "loadScriptToolStripMenuItem";
-            this.loadScriptToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.loadScriptToolStripMenuItem.Size = new System.Drawing.Size(150, 22);
             this.loadScriptToolStripMenuItem.Text = "LoadScript";
             this.loadScriptToolStripMenuItem.Click += new System.EventHandler(this.loadScriptToolStripMenuItem_Click);
             // 
@@ -773,9 +929,16 @@
             // 
             this.runScriptToolStripMenuItem.Name = "runScriptToolStripMenuItem";
             this.runScriptToolStripMenuItem.ShortcutKeys = System.Windows.Forms.Keys.F12;
-            this.runScriptToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.runScriptToolStripMenuItem.Size = new System.Drawing.Size(150, 22);
             this.runScriptToolStripMenuItem.Text = "RunScript";
             this.runScriptToolStripMenuItem.Click += new System.EventHandler(this.runScriptToolStripMenuItem_Click);
+            // 
+            // setDelayToolStripMenuItem
+            // 
+            this.setDelayToolStripMenuItem.Name = "setDelayToolStripMenuItem";
+            this.setDelayToolStripMenuItem.Size = new System.Drawing.Size(150, 22);
+            this.setDelayToolStripMenuItem.Text = "Set Delay";
+            this.setDelayToolStripMenuItem.Click += new System.EventHandler(this.setDelayToolStripMenuItem_Click);
             // 
             // helpToolStripMenuItem
             // 
@@ -850,12 +1013,24 @@
             this.clearAllButtonsToolStripMenuItem.Text = "Remove All Buttons";
             this.clearAllButtonsToolStripMenuItem.Click += new System.EventHandler(this.clearAllButtonsToolStripMenuItem_Click);
             // 
-            // setDelayToolStripMenuItem
+            // textBoxTerminal
             // 
-            this.setDelayToolStripMenuItem.Name = "setDelayToolStripMenuItem";
-            this.setDelayToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
-            this.setDelayToolStripMenuItem.Text = "Set Delay";
-            this.setDelayToolStripMenuItem.Click += new System.EventHandler(this.setDelayToolStripMenuItem_Click);
+            this.textBoxTerminal.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+                        | System.Windows.Forms.AnchorStyles.Left)
+                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.textBoxTerminal.BackColor = System.Drawing.Color.Black;
+            this.textBoxTerminal.ContextMenuStrip = this.contextMenuStrip1;
+            this.textBoxTerminal.Font = new System.Drawing.Font("Lucida Console", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.textBoxTerminal.ForeColor = System.Drawing.SystemColors.ActiveBorder;
+            this.textBoxTerminal.HideSelection = false;
+            this.textBoxTerminal.Location = new System.Drawing.Point(6, 3);
+            this.textBoxTerminal.Name = "textBoxTerminal";
+            this.textBoxTerminal.ReadOnly = true;
+            this.textBoxTerminal.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.Vertical;
+            this.textBoxTerminal.Size = new System.Drawing.Size(798, 393);
+            this.textBoxTerminal.TabIndex = 5;
+            this.textBoxTerminal.Text = "";
+            this.textBoxTerminal.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.textBoxTerminal_KeyPress);
             // 
             // SerialWindow
             // 
@@ -870,6 +1045,7 @@
             this.Controls.Add(this.menuStrip1);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MainMenuStrip = this.menuStrip1;
+            this.MinimumSize = new System.Drawing.Size(256, 180);
             this.Name = "SerialWindow";
             this.Text = "COMET";
             this.Load += new System.EventHandler(this.SerialWindow_Load);
@@ -877,6 +1053,7 @@
             this.SizeChanged += new System.EventHandler(this.SerialWindow_SizeChanged);
             this.splitContainer1.Panel1.ResumeLayout(false);
             this.splitContainer1.Panel2.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).EndInit();
             this.splitContainer1.ResumeLayout(false);
             this.panel1.ResumeLayout(false);
             this.panel5.ResumeLayout(false);
@@ -886,6 +1063,12 @@
             this.contextMenuStrip1.ResumeLayout(false);
             this.panel2.ResumeLayout(false);
             this.panel2.PerformLayout();
+            this.panel7.ResumeLayout(false);
+            this.panel7.PerformLayout();
+            this.panel8.ResumeLayout(false);
+            this.panel8.PerformLayout();
+            this.panel6.ResumeLayout(false);
+            this.panel6.PerformLayout();
             this.panelHistory.ResumeLayout(false);
             this.panelHistory.PerformLayout();
             this.contextMenuHistoryPane.ResumeLayout(false);
@@ -905,12 +1088,8 @@
 
         private System.Windows.Forms.SplitContainer splitContainer1;
         private System.Windows.Forms.TextBox textBox2;
-        private System.Windows.Forms.TextBox textBox1;
-        private System.Windows.Forms.Button button1;
-        private  RichTextBoxExtra textBoxTerminal;
         private System.Windows.Forms.ContextMenuStrip contextMenuStrip1;
         private System.Windows.Forms.ToolStripMenuItem clearTerminalToolStripMenuItem;
-        private System.Windows.Forms.CheckBox recordHistory;
         private System.Windows.Forms.ToolStripMenuItem toggleScrollToolStripMenuItem;
         private System.Windows.Forms.StatusStrip statusStrip1;
         private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel1;
@@ -918,21 +1097,6 @@
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem1;
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem2;
         private System.Windows.Forms.ToolTip toolTip1;
-        private System.Windows.Forms.FlowLayoutPanel panelHistory;
-        private System.Windows.Forms.Panel panel1;
-        private System.Windows.Forms.Label label5;
-        private System.Windows.Forms.TextBox textBoxTimeout;
-        private System.Windows.Forms.Label label4;
-        private System.Windows.Forms.Label label3;
-        private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.ComboBox comboBoxStopBits;
-        private System.Windows.Forms.ComboBox comboBoxDataBits;
-        private System.Windows.Forms.ComboBox comboBoxParity;
-        private System.Windows.Forms.ComboBox comboBoxBaudRate;
-        private System.Windows.Forms.Button buttonOpenSerial;
-        private System.Windows.Forms.Label labelPort;
-        private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.ComboBox comboBoxPortName;
         private System.Windows.Forms.ToolStripMenuItem fileToolStripMenuItem1;
         private System.Windows.Forms.ToolStripMenuItem newToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem openToolStripMenuItem;
@@ -948,21 +1112,14 @@
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem3;
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem4;
         private System.Windows.Forms.ToolStripMenuItem clearAllButtonsToolStripMenuItem;
-        private System.Windows.Forms.RadioButton radioButtonHEX;
-        private System.Windows.Forms.RadioButton radioButtonASCII;
         private System.Windows.Forms.ContextMenuStrip contextMenuHistoryPane;
         private System.Windows.Forms.ToolStripMenuItem toggleCMDDescriptionToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem toggleCMDDescriptionToolStripMenuItem1;
-        private System.Windows.Forms.Panel panel3;
-        private System.Windows.Forms.Panel panel2;
-        private System.Windows.Forms.Panel panel4;
-        private System.Windows.Forms.Panel panel5;
         private System.Windows.Forms.ToolStripSeparator toolStripMenuItem5;
         private System.Windows.Forms.ToolStripMenuItem copyCommandToolStripMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripMenuItem6;
         private System.Windows.Forms.ToolStripSeparator toolStripMenuItem8;
         private System.Windows.Forms.ToolStripSeparator toolStripMenuItem7;
-        private System.Windows.Forms.Button buttonFindPort;
         private System.Windows.Forms.ToolStripProgressBar toolStripProgressBar1;
         private System.Windows.Forms.ToolStripMenuItem transferToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem xModemToolStripMenuItem;
@@ -971,7 +1128,6 @@
         private System.Windows.Forms.ToolStripMenuItem yModemToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem sendToolStripMenuItem1;
         private System.Windows.Forms.ToolStripMenuItem receiveToolStripMenuItem1;
-        private System.Windows.Forms.CheckBox checkBox1;
         private System.Windows.Forms.ToolStripMenuItem helpToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem aboutToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem removeToolStripMenuItem;
@@ -980,6 +1136,47 @@
         private System.Windows.Forms.ToolStripMenuItem loadScriptToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem runScriptToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem setDelayToolStripMenuItem;
+        private System.Windows.Forms.Panel panel1;
+        private System.Windows.Forms.Panel panel5;
+        private System.Windows.Forms.Button buttonOpenSerial;
+        private System.Windows.Forms.TextBox textBox1;
+        private System.Windows.Forms.CheckBox recordHistory;
+        private System.Windows.Forms.Panel panel3;
+        private System.Windows.Forms.Panel panel4;
+        private RichTextBoxExtra textBoxTerminal;
+        private System.Windows.Forms.Panel panel2;
+        private System.Windows.Forms.Panel panel7;
+        private System.Windows.Forms.RadioButton DTR_0;
+        private System.Windows.Forms.Button button2;
+        private System.Windows.Forms.RadioButton DTR_1;
+        private System.Windows.Forms.Panel panel6;
+        private System.Windows.Forms.RadioButton RTS_0;
+        private System.Windows.Forms.Button button3;
+        private System.Windows.Forms.RadioButton RTS_1;
+        private System.Windows.Forms.CheckBox checkBox1;
+        private System.Windows.Forms.Button buttonFindPort;
+        private System.Windows.Forms.Label labelPort;
+        private System.Windows.Forms.RadioButton radioButtonHEX;
+        private System.Windows.Forms.ComboBox comboBoxPortName;
+        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.RadioButton radioButtonASCII;
+        private System.Windows.Forms.ComboBox comboBoxBaudRate;
+        private System.Windows.Forms.ComboBox comboBoxParity;
+        private System.Windows.Forms.ComboBox comboBoxDataBits;
+        private System.Windows.Forms.ComboBox comboBoxStopBits;
+        private System.Windows.Forms.Label label5;
+        private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.TextBox textBoxTimeout;
+        private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.FlowLayoutPanel panelHistory;
+        private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.Panel panel8;
+        private System.Windows.Forms.RadioButton SBREAK_0;
+        private System.Windows.Forms.Button button4;
+        private System.Windows.Forms.RadioButton SBREAK_1;
+        private System.Windows.Forms.Label label6;
+        private System.Windows.Forms.TextBox textBoxToggle;
 
 
 

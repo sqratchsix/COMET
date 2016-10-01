@@ -1,0 +1,12 @@
+qdver			qdver
+sdboot			sdboot
+sbl				sbl
+sdyuld,1		sdyuld,1
+
+qdscrc,1		qdscrc,1
+
+ulcmd			ulcmd
+sfupdate,1		sfupdate,1
+
+qdfcrc			qdfcrc
+rbt				rbt
