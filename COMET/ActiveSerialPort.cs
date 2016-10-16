@@ -29,7 +29,9 @@ namespace Comet1
         //Data handling
         public event EventHandler DataReadyToRead;
         private System.Timers.Timer aTimer;
-        int portReadTimeoutMS = 30;
+        //the timeout to wait until the read data is written to the terminal
+        //must be less than the senders period between messages, or the terminal will never update
+        int portReadTimeoutMS = 0;
         string newData = "";
         string currentData = "";
         string lineEnd = System.Environment.NewLine;
@@ -82,7 +84,7 @@ namespace Comet1
             }
         }
 
-        public Boolean openSerialPort(string m_portName, int m_baudRate, Parity m_parity, int m_dataBits, StopBits m_stopBits, int m_timeoutMS, Boolean DataTypeASCII)
+        public Boolean openSerialPort(string m_portName, int m_baudRate, Parity m_parity, int m_dataBits, StopBits m_stopBits, int m_timeoutMS, Boolean DataTypeASCII, int portReadTimeout)
         {
             setDataType(DataTypeASCII);
             portName = m_portName;
@@ -92,6 +94,7 @@ namespace Comet1
             stopBits = m_stopBits;
             portTimeoutReadMS = m_timeoutMS;
             portTimeoutWriteMS = m_timeoutMS;
+            this.portReadTimeoutMS = portReadTimeout;
 
             return createSerialPort();
         }
@@ -328,8 +331,8 @@ namespace Comet1
         {
             this.portReadTimeoutMS = newReadTimeout;
             //re-create the timeout timer for reading data
-            this.aTimer = new System.Timers.Timer(portReadTimeoutMS);
-            this.aTimer.AutoReset = false;
+            aTimer.Interval = portReadTimeoutMS;
+
         }
 
         private void OnTimedEvent(Object source, System.Timers.ElapsedEventArgs e)

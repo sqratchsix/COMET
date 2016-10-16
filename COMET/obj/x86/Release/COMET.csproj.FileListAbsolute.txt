@@ -10,4 +10,5 @@ C:\ttp\Xtra\COMET\COMET\obj\x86\Release\Comet1.Properties.Resources.resources
 C:\ttp\Xtra\COMET\COMET\obj\x86\Release\COMET.csproj.GenerateResource.Cache
 C:\ttp\Xtra\COMET\COMET\obj\x86\Release\Comet.exe
 C:\ttp\Xtra\COMET\COMET\obj\x86\Release\Comet.pdb
+C:\ttp\Xtra\COMET\COMET\obj\x86\Release\Comet1.DialogWin.resources
 C:\ttp\Xtra\COMET\COMET\obj\x86\Release\COMET.csprojResolveAssemblyReference.cache

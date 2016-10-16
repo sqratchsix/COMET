@@ -95,6 +95,9 @@
     <EmbeddedResource Include="Convertor.resx">
       <DependentUpon>Convertor.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="DialogWin.resx">
+      <DependentUpon>DialogWin.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Form1.resx">
       <DependentUpon>PromptSmartEdit.cs</DependentUpon>
     </EmbeddedResource>

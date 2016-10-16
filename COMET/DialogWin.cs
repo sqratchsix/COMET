@@ -13,24 +13,28 @@ namespace Comet1
     {
         private Label displaytext;
         private Button buttonOK;
-        private Form parent;
+        private Label detail;
+        private bool SingleWindow = false;
     
-        public DialogWin()
+        public DialogWin(bool single_window)
         {
             InitializeComponent();
-            this.StartPosition = FormStartPosition.CenterParent;
+            SingleWindow = single_window;
         }
 
         private void InitializeComponent()
         {
             this.displaytext = new System.Windows.Forms.Label();
             this.buttonOK = new System.Windows.Forms.Button();
+            this.detail = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // displaytext
             // 
+            this.displaytext.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+                        | System.Windows.Forms.AnchorStyles.Right)));
             this.displaytext.AutoSize = true;
-            this.displaytext.Location = new System.Drawing.Point(57, 29);
+            this.displaytext.Location = new System.Drawing.Point(66, 9);
             this.displaytext.Name = "displaytext";
             this.displaytext.Size = new System.Drawing.Size(158, 13);
             this.displaytext.TabIndex = 0;
@@ -40,60 +44,74 @@ namespace Comet1
             // 
             // buttonOK
             // 
-            this.buttonOK.Location = new System.Drawing.Point(100, 79);
+            this.buttonOK.Anchor = System.Windows.Forms.AnchorStyles.Top;
+            this.buttonOK.Location = new System.Drawing.Point(96, 72);
             this.buttonOK.Name = "buttonOK";
-            this.buttonOK.Size = new System.Drawing.Size(75, 23);
+            this.buttonOK.Size = new System.Drawing.Size(91, 23);
             this.buttonOK.TabIndex = 1;
             this.buttonOK.Text = "OK";
             this.buttonOK.UseVisualStyleBackColor = true;
             this.buttonOK.Click += new System.EventHandler(this.buttonOK_Click);
             // 
+            // detail
+            // 
+            this.detail.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.detail.Location = new System.Drawing.Point(0, 98);
+            this.detail.Name = "detail";
+            this.detail.Size = new System.Drawing.Size(284, 23);
+            this.detail.TabIndex = 2;
+            this.detail.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
             // DialogWin
             // 
             this.ClientSize = new System.Drawing.Size(284, 121);
+            this.Controls.Add(this.detail);
             this.Controls.Add(this.buttonOK);
             this.Controls.Add(this.displaytext);
+            this.MaximumSize = new System.Drawing.Size(500, 160);
+            this.MinimumSize = new System.Drawing.Size(300, 160);
             this.Name = "DialogWin";
             this.ResumeLayout(false);
             this.PerformLayout();
 
         }
 
-        public void setFail()
+        public void setDetail(string text)
         {
+            this.detail.Text = text;
+        }
+
+        public void setFail(string detailtext)
+        {
+            this.setDetail(detailtext);
             this.BackColor = Color.Red;
             this.displaytext.Text = "FAILED";
             this.displaytext.Font = new Font("Arial", 30,FontStyle.Bold);
             this.displaytext.TextAlign = ContentAlignment.MiddleCenter;
             this.Show();
+            this.Focus();
         }
 
-        public void setPass()
+        public void setPass(string detailtext)
         {
+            this.setDetail(detailtext);
             this.BackColor = Color.LightGreen;
             this.displaytext.Text = "PASSED";
             this.displaytext.Font = new Font("Arial", 30, FontStyle.Bold);
             this.displaytext.TextAlign = ContentAlignment.MiddleCenter;
             this.Show();
+            this.Focus();
         }
 
         private void buttonOK_Click(object sender, EventArgs e)
         {
             this.Hide();
-            this.Close();
+            if(!SingleWindow)this.Close();
         }
 
         private void displaytext_Click(object sender, EventArgs e)
         {
 
-        }
-
-        public Point centerNewWindow(Point center)
-        {
-            int newWinWidth = this.Width;
-            int newWinHeight = this.Height;
-            Point centerWait = new Point(newWinWidth / 2, newWinHeight / 2);
-            return new Point(center.X + centerWait.X, center.Y + centerWait.Y);
         }
     }
 }

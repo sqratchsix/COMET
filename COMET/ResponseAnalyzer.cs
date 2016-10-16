@@ -10,12 +10,21 @@ namespace Comet1
 {
     class ResponseAnalyzer
     {
+        DialogWin Error;
         string expectedResponse = "";
 
         public ResponseAnalyzer(string input)
         {
-            //constructor
+            //constructor where each instance creates a new dialog window
             expectedResponse = input;
+            Error = new DialogWin(false);
+        }
+
+        public ResponseAnalyzer(string input, DialogWin Error_in)
+        {
+            //constructor that uses a single dialg from the parent
+            expectedResponse = input;
+            Error = Error_in;
         }
         
         public void loadNewData(string input)
@@ -41,13 +50,15 @@ namespace Comet1
             return false;
         }
 
-        public bool checkForResponse(String input)
+        public bool checkForResponse(String input, out bool passed)
         {
+            passed = false;
             string expResLC = expectedResponse.ToLower();
             string inputLC = input.ToLower();
 
                 if (inputLC.Contains(expResLC))
                 {
+                    passed = true;
                     return true;
                 }
             return false;
@@ -64,37 +75,42 @@ namespace Comet1
             return(int.TryParse(intValString,out intval));
         }
 
-        public bool checkValBetween(String input, int lowVal, int highVal)
+        public bool checkValBetween(String input, int lowVal, int highVal, out string detail, out bool passed)
         {
+            detail = "";
+            passed = false;
             //search for the line that has the data
-            string dataLC = expectedResponse.ToLower();
+            string expectedLC = expectedResponse.ToLower();
             string inputLC = input.ToLower();
-            if (inputLC.Contains(dataLC))
+            if (inputLC.Contains(expectedLC))
             {
                 int foundvalInt = 0;
 
-                //find the data first
+                //find the data first and return true if the comparison is made
                 if (parseOutInt(inputLC, out foundvalInt))
                 {
+                    detail = "Measured: " + foundvalInt + " :between: " + lowVal + " & " + highVal;
+
                     if ((lowVal < foundvalInt) && (highVal > foundvalInt))
                     {
-                        return true;
+                        passed = true;
                     }
+                    return true;
                 }
+                detail = "ERROR Parsing Response";
             }
+            detail = expectedLC + " :: NOT FOUND ";
             return false;
         }
 
-        public void showFailure()
+        public void showFailure(string detailtext)
         {
-            DialogWin Error = new DialogWin();
-            Error.setFail();
+            Error.setFail(detailtext);
         }
 
-        public void showPass()
+        public void showPass(string detailtext)
         {
-            DialogWin Error = new DialogWin();
-            Error.setPass();
+            Error.setPass(detailtext);
         }
 
   

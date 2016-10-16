@@ -28,6 +28,8 @@ namespace Comet1
         StopBits currentStopBits = (StopBits)1;
         int timeoutMS = 500;
         int toggleTime = 500;
+        //the time to wait for no more new data before writing the received data to the terminal window
+        int portReadTimeout = 3;
         Boolean Timedout = false;
         bool portOpen = false;
         bool textReverse = false;
@@ -44,6 +46,7 @@ namespace Comet1
         Color textSend = Color.FromName("DarkTurquoise");
         Boolean ASCII = true;
         ScriptRunner serialScript;
+        DialogWin ResultWindow;
         Boolean stopThread = false;
         int historyWidth = 0;
         int WINDOWMARGINS1 = 30;//used to set the buttons size small enough that a horizontal scroll won't appear
@@ -54,7 +57,8 @@ namespace Comet1
 
         System.Collections.ArrayList lastCommandList = new System.Collections.ArrayList(); //list of last typed commands
         int lastCommandIndex = 0;
-
+        string iniFilePath = "COMET.ini";
+        string currentHistoryFile = "";
         //Data for history Buttons
         Button lastButtonForLocation;
 
@@ -68,17 +72,20 @@ namespace Comet1
         {
             InitializeComponent();
             updateSerialPortList();
-            
+
             initializeHistoryButtons();
             selectDefaults();
             registerEvents();
+
+            //look for an .ini file and try to load the initial state
+            loadInitialState();
         }
         public void updateSerialPortList()
         {
             string[] currentSerialPortList = SerialPort.GetPortNames();
-              
-                Array.Sort(currentSerialPortList, new NaturalComparer());
-                comboBoxPortName.DataSource = currentSerialPortList;
+
+            Array.Sort(currentSerialPortList, new NaturalComparer());
+            comboBoxPortName.DataSource = currentSerialPortList;
         }
         public void setComboBoxStates(Boolean newstate)
         {
@@ -110,6 +117,9 @@ namespace Comet1
             comboBoxDataBits.SelectedIndex = 3;
             comboBoxStopBits.SelectedIndex = 1;
 
+            textBoxPortReadTimeout.Text = portReadTimeout.ToString();
+            checkBoxAddNewLine.Checked = AddNewLineToTerminal;
+
             if (ASCII)
             {
                 radioButtonASCII.Select();
@@ -132,7 +142,32 @@ namespace Comet1
         }
         private void registerEvents()
         {
-            this.Closing += new CancelEventHandler(CleanClose); 
+            this.Closing += new CancelEventHandler(CleanClose);
+        }
+        private void loadInitialState()
+        {
+            try
+            {
+                //build the path based on the current directory
+                string directory = System.IO.Directory.GetParent(Application.ExecutablePath).FullName;
+                string iniFileFullPath = directory + "\\" + iniFilePath;
+                //look for the .ini file
+                if (File.Exists(iniFileFullPath))
+                {
+                    loadSmartButtons(File.ReadAllLines(iniFileFullPath));
+                    //set the panel to show the descriptions
+                    showCMD = false;
+                    changeHistoryButtonDisplay(showCMD);
+                }
+                else
+                {
+                    Console.WriteLine(".ini file not found");
+                }
+            }
+            catch (Exception)
+            {
+                Console.WriteLine("Error Loading .ini file");
+            }
         }
         #endregion
 
@@ -170,7 +205,7 @@ namespace Comet1
             try
             {
                 currentConnection = new ActiveSerialPort();
-                if (currentConnection.openSerialPort(currentPortName, currentBaudRate, currentParity, currentDataBits, currentStopBits, timeoutMS, ASCII))
+                if (currentConnection.openSerialPort(currentPortName, currentBaudRate, currentParity, currentDataBits, currentStopBits, timeoutMS, ASCII, portReadTimeout))
                 {
                     currentConnection.DataReadyToRead += serialPortDataReadyToRead;
                     Console.Write("\n" + currentPortName + "\n");
@@ -288,18 +323,33 @@ namespace Comet1
         }
         private void CleanClose(object sender, EventArgs e)
         {
+            //close the serial port on close
             try
             {
                 this.currentConnection.closeSerialPort();
             }
             catch { }
+
+            //close any results window
+            try
+            {
+                ResultWindow.Close();
+                ResultWindow.Dispose();
+            }
+            catch { }
+            
+
+
         }
         private void updateTimeout()
         {
             float timeoutVal = 0;
             if (float.TryParse(textBoxTimeout.Text, out timeoutVal))
             {
-                timeoutMS = (int)(timeoutVal * 1000);
+                //if seconds
+                //timeoutMS = (int)(timeoutVal * 1000);
+                //if ms
+                timeoutMS = (int)(timeoutVal);
                 //System.Console.WriteLine(timeoutMS);
             }
             this.currentConnection.setPortTimeout(timeoutMS, timeoutMS);
@@ -328,9 +378,9 @@ namespace Comet1
         {
             try
             {
-                    transferData = new Transfer(currentConnection);
-                    transferData.ProgressChanged += transferProgressChanged;
-                    return true;
+                transferData = new Transfer(currentConnection);
+                transferData.ProgressChanged += transferProgressChanged;
+                return true;
             }
             catch (Exception)
             {
@@ -339,13 +389,13 @@ namespace Comet1
 
         }
         #endregion
-        
+
         #region Serial Terminal
         public void focusInput()
         {
-            textBox1.Select();
-            textBox1.SelectionStart = textBox1.Text.Length;
-            textBox1.SelectionLength = 0;
+                textBox1.Select();
+                textBox1.SelectionStart = textBox1.Text.Length;
+                textBox1.SelectionLength = 0; 
         }
         private void updateTerminal(String newText, Boolean output)
         {
@@ -489,13 +539,13 @@ namespace Comet1
             lastButtonForLocation = newbutton;
             //set the size
 
-            
+
         }
 
         private void setButtonEventHandlers(SmartButton newbutton)
         {
             //add the event handlers
-            
+
             //clicking the button sends its history data to the terminal
             if (newbutton.buttonType == SmartButton.buttonTypes.SerialCommand)
             {
@@ -577,7 +627,7 @@ namespace Comet1
                 var historyButtons = panelHistory.Controls.OfType<SmartButton>().ToArray();
                 foreach (var control in historyButtons)
                 {
-                     ((SmartButton)control).removeThisButton();
+                    ((SmartButton)control).removeThisButton();
                 }
             }
             catch (Exception)
@@ -715,9 +765,9 @@ namespace Comet1
                             {
                                 String command = parsed[0];
                                 String description = parsed[0];
-                                
+
                                 //find out if there is a special command
-                                if(command.Trim().StartsWith("**"))
+                                if (command.Trim().StartsWith("**"))
                                 {
                                     //command = command.Substring(2).ToLower();
                                     if (command.Contains("**script"))
@@ -742,7 +792,7 @@ namespace Comet1
                                         }
                                     }
                                 }
-                                if(!(command.Contains("**script")))
+                                if (!(command.Contains("**script")))
                                 {
                                     if (scriptbutton)
                                     {
@@ -783,11 +833,14 @@ namespace Comet1
 
             //openfile dialog was hanging after .net4 upgrade - this fixes it?
             openFileDialog1.ShowHelp = true;
+            openFileDialog1.AutoUpgradeEnabled = true;
 
             // Process input if the user clicked OK.
             if (openFileDialog1.ShowDialog() == DialogResult.OK)
             {
                 string readThisFile = openFileDialog1.FileName;
+                //set the current file to readThisFile
+                currentHistoryFile = readThisFile;
                 return File.ReadAllLines(readThisFile);
             }
             else
@@ -851,12 +904,12 @@ namespace Comet1
                 serialScript.clearCurrentScript();
                 if (fromFile)
                 {
-                    if(serialScript.loadScriptFromFile())
+                    if (serialScript.loadScriptFromFile())
                     {
-                         return true;
+                        return true;
                     }
                 }
-               
+
             }
             catch (Exception)
             {
@@ -911,13 +964,13 @@ namespace Comet1
                     }
 
                 }
-                
+
             }
             catch (Exception)
             {
                 Console.WriteLine("Error Running Script");
             }
-                SetProgress(false, false);          
+            SetProgress(false, false);
         }
         private void scriptHandleFunction(ArrayList currentItem, ScriptRunner RunningScript)
         {
@@ -931,14 +984,14 @@ namespace Comet1
             string functionName = "";
             object[] arguments = null;
             //populate the funciton name and arguments, if any
-            if(length >= 2)  //FUNCTION , **functionname
+            if (length >= 2)  //FUNCTION , **functionname
             {
                 functionName = (string)currentItemToRun[1];
             }
             if (length >= 3) //FUNCTION , **functionname, arguments
             {
                 arguments = new Object[length - 2];
-                Array.Copy(currentItemToRun, 2, arguments, 0, length-2);
+                Array.Copy(currentItemToRun, 2, arguments, 0, length - 2);
             }
             //case statement to handle functions
             switch (functionName.ToLower())
@@ -950,12 +1003,12 @@ namespace Comet1
                         YModemSendFile((string)arguments[0]);
                     }
                     break;
-                
+
                 case "delay":
                     if (arguments != null)
                     {
                         int newDelay = 1000;
-                        if(int.TryParse((string)arguments[0], out newDelay))
+                        if (int.TryParse((string)arguments[0], out newDelay))
                         {
                             RunningScript.changeDelay(newDelay);
                         }
@@ -974,7 +1027,7 @@ namespace Comet1
                     break;
 
                 case "serialbreak":
-                        currentConnection.serialBreak();
+                    currentConnection.serialBreak();
                     break;
 
                 case "sbreak":
@@ -990,7 +1043,7 @@ namespace Comet1
                         {
                         }
                         setSBREAK(serialtermval);
-                        
+
                     }
                     break;
 
@@ -1007,7 +1060,7 @@ namespace Comet1
                         {
                         }
                         setRTS(serialtermval);
-                        
+
                     }
                     break;
 
@@ -1061,8 +1114,12 @@ namespace Comet1
                 //this is the response to look for
                 string checkString = (string)arguments[2];
 
-                ResponseAnalyzer res = new ResponseAnalyzer(checkString);
-                bool found = false;
+                //make sure there is a dialog available
+                createTestDialog();
+                ResponseAnalyzer res = new ResponseAnalyzer(checkString, ResultWindow);
+                bool passedtest = false;
+                bool testcomplete = false;
+                string detail = "";
 
                 //turn on the local buffer so the data is kept 
                 localBuffer = true;
@@ -1083,14 +1140,14 @@ namespace Comet1
                     switch (comparisontype)
                     {
                         case "string":
-                            found = res.checkForResponse(localBufferData);
+                            testcomplete = res.checkForResponse(localBufferData, out passedtest);
                             break;
                         case "between":
                             int lowVal = 0;
                             int.TryParse((string)arguments[3], out lowVal);
                             int highVal = 100;
                             int.TryParse((string)arguments[4], out highVal);
-                            found = res.checkValBetween(localBufferData,lowVal, highVal );
+                            testcomplete = res.checkValBetween(localBufferData, lowVal, highVal, out detail, out passedtest);
                             break;
 
                         default:
@@ -1098,7 +1155,7 @@ namespace Comet1
                     }
 
 
-                    if (found)
+                    if (testcomplete)
                     {
                         stopnow = true;
                     }
@@ -1111,17 +1168,29 @@ namespace Comet1
                 }
                 //timed out or found
                 stopWatch.Stop();
-                if (found)
+
+                if (passedtest)
                 {
-                    res.showPass();
+                    res.showPass(detail);
+                    this.ResultWindow.Location = centerNewWindow(ResultWindow.Width, ResultWindow.Height);
                 }
                 else
                 {
-                    res.showFailure();
+                    res.showFailure(detail);
+                    this.ResultWindow.Location = centerNewWindow(ResultWindow.Width, ResultWindow.Height);
                 }
                 //clear the buffer and stop recording
                 resetbuffer();
             }
+        }
+
+        private void createTestDialog()
+        {
+            if (ResultWindow == null || ResultWindow.IsDisposed)
+            {
+                ResultWindow = new DialogWin(true);
+            }
+            ResultWindow.Location = centerNewWindow(ResultWindow.Width, ResultWindow.Height);
         }
         #endregion
 
@@ -1143,7 +1212,7 @@ namespace Comet1
                 bool parseOK = Int32.TryParse(comboBoxBaudRate.SelectedItem.ToString(), out this.currentBaudRate);
             }
 
-            
+
         }
         private void buttonOpen_Click(object sender, EventArgs e)
         {
@@ -1195,17 +1264,17 @@ namespace Comet1
             switch (e.KeyCode)
             {
                 case Keys.Up:
-                    if((lastCommandIndex) > 0)
+                    if ((lastCommandIndex) > 0)
                     {
                         lastCommandIndex--;
                         textBox1.Text = (String)lastCommandList[lastCommandIndex];
                     }
                     focusInput();
-                    e.Handled =true;
+                    e.Handled = true;
                     writeSmartButton = false;
                     break;
                 case Keys.Down:
-                    if ((lastCommandIndex) <= lastCommandList.Count-2)
+                    if ((lastCommandIndex) <= lastCommandList.Count - 2)
                     {
                         lastCommandIndex++;
                         textBox1.Text = (String)lastCommandList[lastCommandIndex];
@@ -1222,7 +1291,7 @@ namespace Comet1
                 default:
                     writeSmartButton = true;
                     break;
-           }
+            }
 
         }
         private void sendBreakToolStripMenuItem_Click(object sender, EventArgs e)
@@ -1232,13 +1301,13 @@ namespace Comet1
         private void textBoxTerminal_KeyPress(object sender, KeyPressEventArgs e)
         {
             //if the cursor is in the terminal box, send the key to input text box and change the focus
-              {
+            {
                 try
                 {
                     if ((Control.ModifierKeys & Keys.Control) != Keys.Control)
                     {
                         textBox1.Text = e.KeyChar.ToString();
-                        
+
                     }
                     focusInput();
                 }
@@ -1291,12 +1360,12 @@ namespace Comet1
         }
         private void textBoxTimeout_TextChanged(object sender, EventArgs e)
         {
-            updateToggleTime();
+            updateTimeout();
         }
         private void SmartButton_SendSerial(object sender, EventArgs e)
         {
             string storedData = ((SmartButton)sender).CommandToSend;
-            sendDataToSerialConnectionBasic(storedData);     
+            sendDataToSerialConnectionBasic(storedData);
         }
         private void SmartButton_RunScript(object sender, EventArgs e)
         {
@@ -1342,7 +1411,7 @@ namespace Comet1
             ContextMenuStrip CMenu = (ContextMenuStrip)TSItem.Owner;
             SmartButton SButton = (SmartButton)CMenu.SourceControl;
 
-           SButton.removeThisButton();
+            SButton.removeThisButton();
         }
         private void toolStripMenuItem4_Click(object sender, EventArgs e)
         {
@@ -1364,9 +1433,9 @@ namespace Comet1
                 //center the window
                 Edit.Location = centerNewWindow(Edit.Width, Edit.Height);
             }
-            
-            
-         }
+
+
+        }
         private void copyCommandToolStripMenuItem_Click(object sender, EventArgs e)
         {
             ToolStripItem TSItem = (ToolStripItem)sender;
@@ -1385,12 +1454,37 @@ namespace Comet1
         }
         private void saveToolStripMenuItem1_Click(object sender, EventArgs e)
         {
+            string fileToSave = currentHistoryFile;
+            //find a filepath that is unused 
+            if (currentHistoryFile == "")
+            {
+                fileToSave = findUniqueFilepath("COMET_History_", ".txt");
+            }
+
+            saveHistoryButtonsToFile(fileToSave);
+        }
+
+        private string findUniqueFilepath(string basePathName, string extension)
+        {
+            string path = "";
+            for (int i = 1; i < 999; i++)
+            {
+                path = basePathName + i.ToString("000") + extension;
+
+                //quit looking if the file doesn't exist yet
+                if (!File.Exists(path)) break;
+            }
+            return path;
+        }
+
+        private void saveHistoryButtonsToFile(string filePath)
+        {
             //collect the history button data
             String[] AllHistoryData = collectAllSmartButtonData();
 
             SaveFileDialog save = new SaveFileDialog();
-            save.FileName = "COMET_History_01.txt";
-            save.Filter = "Text File | *.txt";
+            save.FileName = filePath;
+            save.Filter = "Text Files (*.txt)|*.txt|All Files (*.*)|*.*";
             if (save.ShowDialog() == DialogResult.OK)
             {
                 StreamWriter writer = new StreamWriter(save.OpenFile());
@@ -1405,7 +1499,7 @@ namespace Comet1
         private void panelHistory_DragEnter(object sender, DragEventArgs e)
         {
             if (e.Data.GetDataPresent(DataFormats.FileDrop)) e.Effect = DragDropEffects.Copy;
-            
+
         }
         private void panelHistory_DragDrop(object sender, DragEventArgs e)
         {
@@ -1413,10 +1507,10 @@ namespace Comet1
             string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
             string[] dataToLoad = File.ReadAllLines(files[0]);
             loadSmartButtons(dataToLoad);
-           
+
             panelHistory.VerticalScroll.Value = panelHistory.VerticalScroll.Maximum;
             updateLayoutHistoryPanel();
-            
+
         }
         public void updateLayoutHistoryPanel()
         {
@@ -1455,12 +1549,12 @@ namespace Comet1
                 }
             }
 
-            Console.Out.WriteLine(r.Replace(textBox1.Text, evaluator));
+            //Console.Out.WriteLine(r.Replace(textBox1.Text, evaluator));
 
         }
         private void removeAllButtonsToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            
+
         }
         private void toggleCMDDescriptionToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -1553,7 +1647,7 @@ namespace Comet1
         {
             //Action handler for changing the progress from the transfer
             SetProgress(xferProgress);
-            Console.WriteLine(xferProgress);
+            //Console.WriteLine(xferProgress);
         }
         private void checkBox1_CheckedChanged(object sender, EventArgs e)
         {
@@ -1699,12 +1793,12 @@ namespace Comet1
             }
             catch (Exception)
             {
-                
+
             }
         }
         private void SerialWindow_ResizeEnd(object sender, EventArgs e)
         {
-            correctHistoryFrame();
+            //correctHistoryFrame();
         }
         private void splitContainer1_MouseDown(object sender, MouseEventArgs e)
         {
@@ -1920,22 +2014,22 @@ namespace Comet1
         {
             //close the current port
             closePortAction();
-            toolStripProgressBar1.Visible = true; 
+            toolStripProgressBar1.Visible = true;
             //cycle through the serial ports and find one that returns the same thing that was sent
             for (int openPort = 0; openPort < comboBoxPortName.Items.Count; openPort++)
             {
-                toolStripProgressBar1.Value = (int)(((float)(openPort+1)/(float)comboBoxPortName.Items.Count)*100);
+                toolStripProgressBar1.Value = (int)(((float)(openPort + 1) / (float)comboBoxPortName.Items.Count) * 100);
                 try
                 {
-                    comboBoxPortName.SelectedIndex= openPort;
+                    comboBoxPortName.SelectedIndex = openPort;
                     openPortAction();
-                   
+
                     //send the port name as a string and check the response
                     //TODO should wait for the event that data is received
                     currentConnection.sendData(currentPortName, endline);
 
                     safeSleep(this.timeoutMS);
-                    
+
                     //the event is already reading and clearing the data, so this won't work if using currentConnection
                     //Need to create a different connectiont that doesn't listen if this functionality is desired
                     /*String response = currentConnection.readData();
@@ -1951,9 +2045,9 @@ namespace Comet1
                     closePortAction();
                 }
                 catch (Exception)
-                { 
+                {
                     //throw;
-                } 
+                }
             }
             toolStripProgressBar1.Visible = false;
         }
@@ -1988,9 +2082,9 @@ namespace Comet1
                     }
                     else
                     {
-                        testport.closeSerialPort();    
+                        testport.closeSerialPort();
                     }
-                    
+
                 }
                 catch (Exception)
                 {
@@ -2006,7 +2100,7 @@ namespace Comet1
             aTimer.Elapsed += new ElapsedEventHandler(OnTimedEvent);
             aTimer.Interval = timeoutMS;
             aTimer.Enabled = true;
-            aTimer.Start();           
+            aTimer.Start();
             while (!Timedout)
             {
                 //handle all pending events
@@ -2028,14 +2122,74 @@ namespace Comet1
             localBufferData = "";
         }
 
-
-
-
-
-    
-
-        
-
-
+        private void SerialWindow_Shown(object sender, EventArgs e)
+        {
+            correctHistoryFrame();
         }
+
+        private void saveAsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            string fileToSave = findUniqueFilepath("COMET_History_", ".txt");
+            saveHistoryButtonsToFile(fileToSave);
+        }
+
+        private void openFolderToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            //open the folder this program (COMET) is running in
+            string directory = System.IO.Directory.GetParent(Application.ExecutablePath).FullName;
+            try
+            {
+                Process.Start(@directory);
+            }
+            catch (Exception)
+            {
+                Console.WriteLine("Couldn't open directory");
+            }
+        }
+
+        private void button5_Click(object sender, EventArgs e)
+        {
+            panelPortOptions.Visible = !panelPortOptions.Visible;
+        }
+
+        private void panelPortOptions_MouseEnter(object sender, EventArgs e)
+        {
+            panelPortOptions.Visible = true;
+        }
+
+        private void panelPortOptions_MouseLeave(object sender, EventArgs e)
+        {
+            //panelPortOptions.Visible = false;
+        }
+
+        private void panelPortOptions_MouseHover(object sender, EventArgs e)
+        {
+            panelPortOptions.Visible = true;
+        }
+
+        private void textBoxPortReadTimeout_TextChanged(object sender, EventArgs e)
+        {
+            int.TryParse(textBoxPortReadTimeout.Text, out portReadTimeout);
+            if (currentConnection != null)
+            {
+                try
+                {
+                    currentConnection.changeReadTimeout(portReadTimeout);
+                }
+                catch (Exception)
+                {
+                }
+            }
+        }
+
+        private void textBoxTerminal_Click(object sender, EventArgs e)
+        {
+            panelPortOptions.Visible = false;
+        }
+
+        private void checkBoxAddNewLine_CheckedChanged(object sender, EventArgs e)
+        {
+            AddNewLineToTerminal = ((CheckBox)sender).Checked;
+        }
+    }
     }
