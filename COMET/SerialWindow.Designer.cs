@@ -514,7 +514,7 @@
             // button5
             // 
             this.button5.Font = new System.Drawing.Font("Microsoft Sans Serif", 2.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.button5.Location = new System.Drawing.Point(59, 8);
+            this.button5.Location = new System.Drawing.Point(61, 6);
             this.button5.Name = "button5";
             this.button5.Size = new System.Drawing.Size(29, 12);
             this.button5.TabIndex = 17;

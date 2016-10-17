@@ -31,7 +31,7 @@ namespace Comet1
         private System.Timers.Timer aTimer;
         //the timeout to wait until the read data is written to the terminal
         //must be less than the senders period between messages, or the terminal will never update
-        int portReadTimeoutMS = 0;
+        int portReadTimeoutMS = 500;
         string newData = "";
         string currentData = "";
         string lineEnd = System.Environment.NewLine;
