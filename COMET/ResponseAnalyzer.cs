@@ -12,6 +12,8 @@ namespace Comet1
     {
         DialogWin Error;
         string expectedResponse = "";
+        string logfilename = "COMETResponseLog.txt";
+        string timeNow = "";
 
         public ResponseAnalyzer(string input)
         {
@@ -50,6 +52,24 @@ namespace Comet1
             return false;
         }
 
+        public bool getResponseData(String input, out string responseData)
+        {
+            string expResLC = expectedResponse.ToLower();
+            string inputLC = input.ToLower();
+            responseData = "";
+
+            string[] responseStrings = inputLC.Split(new string[] { Environment.NewLine }, StringSplitOptions.None);
+            foreach (string line in responseStrings)
+            {
+                if (line.Contains(expResLC))
+                {
+                    responseData = line.Replace(expResLC,"");
+                    return true;
+                }
+            }
+            return false;
+        }
+
         public bool checkForResponse(String input, out bool passed)
         {
             passed = false;
@@ -62,6 +82,30 @@ namespace Comet1
                     return true;
                 }
             return false;
+        }
+
+        public bool logResponse(String input)
+        {
+            bool written = false;
+            //get the current time
+            timeNow = DateTime.Now.ToString(); 
+            string log = timeNow + "\t" + input;
+            if (Utilities.writeStringToFile(logfilename, log))
+            {
+                written = true;
+            }
+            return written;
+        }
+
+
+        public void setLogFilename(string newFilename)
+        {
+            this.logfilename = newFilename;
+        }
+
+        public string getLogFilename()
+        {
+            return this.logfilename;
         }
 
         public bool parseOutInt(String input, out int intval)

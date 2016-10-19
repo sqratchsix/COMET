@@ -54,6 +54,7 @@
             this.textBoxTimeout = new System.Windows.Forms.TextBox();
             this.label9 = new System.Windows.Forms.Label();
             this.label7 = new System.Windows.Forms.Label();
+            this.textBoxTerminal = new Comet1.RichTextBoxExtra();
             this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.sendBreakToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem8 = new System.Windows.Forms.ToolStripSeparator();
@@ -130,7 +131,6 @@
             this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolStripProgressBar1 = new System.Windows.Forms.ToolStripProgressBar();
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
-            this.textBoxTerminal = new Comet1.RichTextBoxExtra();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
@@ -431,6 +431,26 @@
             this.label7.Size = new System.Drawing.Size(34, 13);
             this.label7.TabIndex = 12;
             this.label7.Text = "mSec";
+            // 
+            // textBoxTerminal
+            // 
+            this.textBoxTerminal.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+                        | System.Windows.Forms.AnchorStyles.Left)
+                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.textBoxTerminal.BackColor = System.Drawing.Color.Black;
+            this.textBoxTerminal.ContextMenuStrip = this.contextMenuStrip1;
+            this.textBoxTerminal.Font = new System.Drawing.Font("Lucida Console", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.textBoxTerminal.ForeColor = System.Drawing.SystemColors.ActiveBorder;
+            this.textBoxTerminal.HideSelection = false;
+            this.textBoxTerminal.Location = new System.Drawing.Point(0, 0);
+            this.textBoxTerminal.Name = "textBoxTerminal";
+            this.textBoxTerminal.ReadOnly = true;
+            this.textBoxTerminal.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.Vertical;
+            this.textBoxTerminal.Size = new System.Drawing.Size(809, 370);
+            this.textBoxTerminal.TabIndex = 5;
+            this.textBoxTerminal.Text = "";
+            this.textBoxTerminal.Click += new System.EventHandler(this.textBoxTerminal_Click);
+            this.textBoxTerminal.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.textBoxTerminal_KeyPress);
             // 
             // contextMenuStrip1
             // 
@@ -753,7 +773,7 @@
             this.textBoxToggle.Name = "textBoxToggle";
             this.textBoxToggle.Size = new System.Drawing.Size(43, 20);
             this.textBoxToggle.TabIndex = 11;
-            this.textBoxToggle.Text = "100";
+            this.textBoxToggle.Text = "500";
             this.textBoxToggle.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             this.toolTip1.SetToolTip(this.textBoxToggle, "Toggle Time for the above buttons");
             this.textBoxToggle.TextChanged += new System.EventHandler(this.textBoxToggleTime_TextChanged);
@@ -1128,26 +1148,6 @@
             this.statusStrip1.Size = new System.Drawing.Size(1002, 22);
             this.statusStrip1.TabIndex = 7;
             this.statusStrip1.Text = "statusStrip1";
-            // 
-            // textBoxTerminal
-            // 
-            this.textBoxTerminal.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
-            this.textBoxTerminal.BackColor = System.Drawing.Color.Black;
-            this.textBoxTerminal.ContextMenuStrip = this.contextMenuStrip1;
-            this.textBoxTerminal.Font = new System.Drawing.Font("Lucida Console", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.textBoxTerminal.ForeColor = System.Drawing.SystemColors.ActiveBorder;
-            this.textBoxTerminal.HideSelection = false;
-            this.textBoxTerminal.Location = new System.Drawing.Point(0, 0);
-            this.textBoxTerminal.Name = "textBoxTerminal";
-            this.textBoxTerminal.ReadOnly = true;
-            this.textBoxTerminal.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.Vertical;
-            this.textBoxTerminal.Size = new System.Drawing.Size(809, 370);
-            this.textBoxTerminal.TabIndex = 5;
-            this.textBoxTerminal.Text = "";
-            this.textBoxTerminal.Click += new System.EventHandler(this.textBoxTerminal_Click);
-            this.textBoxTerminal.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.textBoxTerminal_KeyPress);
             // 
             // SerialWindow
             // 

@@ -35,5 +35,5 @@ using System.Runtime.InteropServices;
 
 // USING * causes the following error:  unable to copy exe-file from obj\debug to bin\debug
 //[assembly: AssemblyVersion("0.1.*")]
-[assembly: AssemblyVersion("0.3.1")]
+[assembly: AssemblyVersion("0.3.2")]
 //[assembly: AssemblyFileVersion("1.0.0.0")]

@@ -23,6 +23,12 @@ namespace Comet1
             public string scriptName = "";
             public string scriptPath = "";
 
+            bool stop = false;
+
+            //looping parameters
+            int loopTimeMS = 5000;
+            int loopCount = 1;
+
             public ScriptRunner(int delay_in_MS)
             {
                 this.delayMS = delay_in_MS;
@@ -77,6 +83,21 @@ namespace Comet1
             public int getDelay()
             {
                 return delayMS;
+            }
+
+            public void setLoopParamters(int loopTime, int loops)
+            {
+                this.loopTimeMS = loopTime;
+                this.loopCount = loops;
+            }
+
+            public int getLoopTime()
+            {
+                return this.loopTimeMS;
+            }
+            public int getLoopCount()
+            {
+                return this.loopCount;
             }
 
             public void addCommandIntoCurrentScript(string dataIn)
@@ -173,6 +194,11 @@ namespace Comet1
                 return tempDT;
             }
 
+
+            internal void Close()
+            {
+                stop = true;
+            }
         }
 
 

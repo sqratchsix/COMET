@@ -28,6 +28,9 @@ namespace Comet1
             this.textBoxDescription.Text = SmartButtonToEdit.CommandDescription;
             this.textBoxDelayTime.Text = ScriptToEdit.getDelay().ToString();
             this.dataGridView1.DataSource = ScriptToEdit.convertScriptToDataTable();
+
+            this.textBoxNumLoops.Text = ScriptToEdit.getLoopCount().ToString();
+            this.textBoxLoopDelay.Text = ScriptToEdit.getLoopTime().ToString();
         }
 
         public PromptScriptEdit()
@@ -37,8 +40,29 @@ namespace Comet1
 
         private void button1_Click(object sender, EventArgs e)
         {
-            this.DialogResult = DialogResult.OK;
-            this.Close();
+            //collect all the changed parameters
+            int newLoopTime = 0;
+            int newLoops = 0;
+            int defaultDelayTime = 0;
+
+            try
+            {
+                int.TryParse(textBoxLoopDelay.Text, out newLoopTime);
+                int.TryParse(textBoxNumLoops.Text, out newLoops);
+                int.TryParse(textBoxDelayTime.Text, out defaultDelayTime);
+
+                //update the delay time & loop paramters
+                ScriptToEdit.setLoopParamters(newLoopTime, newLoops);
+                ScriptToEdit.changeDelay(defaultDelayTime);
+
+                SmartButtonToEdit.storedScript = ScriptToEdit;
+
+                this.DialogResult = DialogResult.OK;
+                this.Close();
+            }
+            catch (Exception)
+            {
+            }
         }
 
         private void TextBox1_TextChanged(object sender, EventArgs e)

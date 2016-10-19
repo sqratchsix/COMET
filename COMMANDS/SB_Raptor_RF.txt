@@ -83,10 +83,16 @@ AT+CSQ?				Radio: RSSI
 
 at+wmtxpower=0							Tx Off
 at+wmtxpower=?							Tx List
-at+wmtxpower=1,4,19950,0,0				Tx LTE 4G
 
 at+wmrxpower=0							Rx Off
 at+wmrxpower=?							Rx List
-at+wmrxpower=1,2,9662 					Rx LTE 3G
+
+at+wmtxpower=1,4,19950,0,0				HL7 Tx LTE 4G 
+at+wmrxpower=1,2,9662 					HL7 Rx LTE 3G
+at+wmrxpower=1,13,5180 					HL7 Rx 746 MHz
+
+at+wmrxpower=1,850,192,-50				HL8 Rx 882 MHz -50dBm
+
+
 
 
