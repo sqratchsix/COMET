@@ -13,6 +13,7 @@ namespace Comet1
     {
         SmartButton SmartButtonToEdit;
         ScriptRunner ScriptToEdit;
+        int timeSelectedIndex = 1; //min
         public PromptScriptEdit(SmartButton SmartIn)
         {
             InitializeComponent();
@@ -30,7 +31,13 @@ namespace Comet1
             this.dataGridView1.DataSource = ScriptToEdit.convertScriptToDataTable();
 
             this.textBoxNumLoops.Text = ScriptToEdit.getLoopCount().ToString();
-            this.textBoxLoopDelay.Text = ScriptToEdit.getLoopTime().ToString();
+            //figure out ms as sec
+            this.comboBoxtime.SelectedIndex = timeSelectedIndex;
+            this.textBoxLoopDelay.Text = Utilities.convertMS(ScriptToEdit.getLoopTime(), comboBoxtime.Text, false).ToString();
+            
+            //this.textBoxLoopDelay.Text = ScriptToEdit.getLoopTime().ToString();
+            
+
         }
 
         public PromptScriptEdit()
@@ -50,6 +57,9 @@ namespace Comet1
                 int.TryParse(textBoxLoopDelay.Text, out newLoopTime);
                 int.TryParse(textBoxNumLoops.Text, out newLoops);
                 int.TryParse(textBoxDelayTime.Text, out defaultDelayTime);
+
+                //convert the loop time
+                newLoopTime = Utilities.convertMS(newLoopTime, comboBoxtime.Text, true);
 
                 //update the delay time & loop paramters
                 ScriptToEdit.setLoopParamters(newLoopTime, newLoops);
@@ -73,6 +83,25 @@ namespace Comet1
         private void label1_Click(object sender, EventArgs e)
         {
 
+        }
+
+        private void comboBoxtime_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            //convert the previous time to MS, then convert to the new time
+            int oldTime = 0;
+            int.TryParse(textBoxLoopDelay.Text, out oldTime);
+            int ms = Utilities.convertMS(oldTime, comboBoxtime.Items[timeSelectedIndex].ToString(), true);
+
+            this.textBoxLoopDelay.Text = Utilities.convertMS(ms, comboBoxtime.Text, false).ToString();
+
+            //now update to the current time variable index
+            timeSelectedIndex = comboBoxtime.SelectedIndex;
+        }
+
+        private void buttonCancel_Click(object sender, EventArgs e)
+        {
+            this.DialogResult = DialogResult.Cancel;
+            this.Close();
         }
     }
 }

@@ -72,6 +72,7 @@
             this.label5 = new System.Windows.Forms.Label();
             this.textBoxLoopDelay = new System.Windows.Forms.TextBox();
             this.textBoxNumLoops = new System.Windows.Forms.TextBox();
+            this.comboBoxtime = new System.Windows.Forms.ComboBox();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
@@ -101,7 +102,7 @@
             // 
             this.label1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(576, 235);
+            this.label1.Location = new System.Drawing.Point(488, 235);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(97, 13);
             this.label1.TabIndex = 2;
@@ -400,12 +401,12 @@
             this.buttonCancel.TabIndex = 1;
             this.buttonCancel.Text = "Cancel";
             this.buttonCancel.UseVisualStyleBackColor = true;
-            this.buttonCancel.Click += new System.EventHandler(this.button1_Click);
+            this.buttonCancel.Click += new System.EventHandler(this.buttonCancel_Click);
             // 
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(576, 35);
+            this.label4.Location = new System.Drawing.Point(488, 35);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(90, 13);
             this.label4.TabIndex = 2;
@@ -415,7 +416,7 @@
             // label5
             // 
             this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(576, 61);
+            this.label5.Location = new System.Drawing.Point(488, 61);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(61, 13);
             this.label5.TabIndex = 4;
@@ -425,7 +426,7 @@
             // 
             this.textBoxLoopDelay.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
                         | System.Windows.Forms.AnchorStyles.Right)));
-            this.textBoxLoopDelay.Location = new System.Drawing.Point(679, 58);
+            this.textBoxLoopDelay.Location = new System.Drawing.Point(601, 58);
             this.textBoxLoopDelay.Name = "textBoxLoopDelay";
             this.textBoxLoopDelay.Size = new System.Drawing.Size(72, 20);
             this.textBoxLoopDelay.TabIndex = 5;
@@ -434,16 +435,31 @@
             // 
             this.textBoxNumLoops.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
                         | System.Windows.Forms.AnchorStyles.Right)));
-            this.textBoxNumLoops.Location = new System.Drawing.Point(679, 32);
+            this.textBoxNumLoops.Location = new System.Drawing.Point(601, 32);
             this.textBoxNumLoops.Name = "textBoxNumLoops";
             this.textBoxNumLoops.Size = new System.Drawing.Size(72, 20);
             this.textBoxNumLoops.TabIndex = 6;
+            // 
+            // comboBoxtime
+            // 
+            this.comboBoxtime.FormattingEnabled = true;
+            this.comboBoxtime.Items.AddRange(new object[] {
+            "milli",
+            "sec",
+            "min",
+            "hour"});
+            this.comboBoxtime.Location = new System.Drawing.Point(679, 57);
+            this.comboBoxtime.Name = "comboBoxtime";
+            this.comboBoxtime.Size = new System.Drawing.Size(74, 21);
+            this.comboBoxtime.TabIndex = 9;
+            this.comboBoxtime.SelectedIndexChanged += new System.EventHandler(this.comboBoxtime_SelectedIndexChanged);
             // 
             // PromptScriptEdit
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(766, 293);
+            this.Controls.Add(this.comboBoxtime);
             this.Controls.Add(this.dataGridView1);
             this.Controls.Add(this.textBoxNumLoops);
             this.Controls.Add(this.textBoxCommand);
@@ -514,6 +530,7 @@
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.TextBox textBoxLoopDelay;
         private System.Windows.Forms.TextBox textBoxNumLoops;
+        private System.Windows.Forms.ComboBox comboBoxtime;
 
     }
 }
