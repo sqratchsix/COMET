@@ -1,0 +1,98 @@
+qdver				qdver
+qdeeinfo				qdeeinfo
+**script				Inventory
+qdver
+sdboot
+sbl
+qdver
+ulcmd
+sinvmode
+rbt
+**script				Inventory
+
+**script				GPS ON Lockstep
+SDOUT,19,1
+SDOUT,5,1
+SDOUT,4,1
+SL6
+**script				GPS ON Lockstep
+qdainlist				Analog In List
+qdaoutlist				Analog Out List
+qdain,1				Battery Voltage
+**script				LED Test
+sdboot
+sbl
+SDOUT,18,1
+SDOUT,18,0
+SDOUT,11,1
+SDOUT,11,0
+SDOUT,10,1
+SDOUT,10,0
+SDOUT,9,1
+SDOUT,9,0
+SDOUT,9,1
+SDOUT,9,0
+SDOUT,10,1
+SDOUT,10,0
+SDOUT,11,1
+SDOUT,11,0
+SDOUT,18,1
+SDOUT,18,0
+SDOUT,18,1
+SDOUT,18,0
+SDOUT,11,1
+SDOUT,11,0
+SDOUT,10,1
+SDOUT,10,0
+SDOUT,9,1
+SDOUT,9,0
+SDOUT,9,1
+SDOUT,9,0
+SDOUT,10,1
+SDOUT,10,0
+SDOUT,11,1
+SDOUT,11,0
+SDOUT,18,1
+SDOUT,18,0
+SDOUT,18,1
+SDOUT,11,1
+SDOUT,10,1
+SDOUT,9,1
+SDOUT,18,0
+SDOUT,11,0
+SDOUT,10,0
+SDOUT,9,0
+**script				LED Test
+
+**script				Radio ON Lockstep
+SDOUT,4,1
+SDOUT,6,1
+SDOUT,6,0
+QDIN,9
+SL1
+**script				Radio ON Lockstep
+**script				Radio Info
+AT+CGMI
+AT+CGMM
+AT+CGMR
+AT+CGSN
+AT+CIMI
+**script				Radio Info
+AT+CREG=2				Radio: Register
+AT+CSQ?				Radio: RSSI
+
+at+wmtxpower=0							Tx Off
+at+wmtxpower=?							Tx List
+
+at+wmrxpower=0							Rx Off
+at+wmrxpower=?							Rx List
+
+at+wmtxpower=1,4,19950,0,0				HL7 Tx LTE 4G 
+at+wmrxpower=1,2,9662 					HL7 Rx LTE 3G
+at+wmrxpower=1,13,5180 					HL7 Rx 746 MHz
+
+at+wmrxpower=1,850,192,-50				HL8 Rx 882 MHz -50dBm
+
+
+
+

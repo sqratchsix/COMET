@@ -1,0 +1,117 @@
+qdver
+
+
+**script		BootLoader
+sdboot
+sbl
+**script		BootLoader
+
+**script		Inventory
+**delay			200
+qdver
+sdboot			sdboot
+sbl				sbl
+qdver			qdver
+ulcmd			ulcmd
+sinvmode		sinvmode
+rbt				rbt
+**script
+
+**script		Radio ON Lockstep
+**delay			200
+SDOUT,4,1		Radio: RADIO_PWR charge super cap
+SDOUT,6,1		Radio: RADIO_ON
+**sleep			2000
+SDOUT,6,0		Radio: RADIO_ON off
+QDIN,9			Radio: Radio Ready Read
+SL1				Radio: Lockstep To Radio UART
+AT
+**script
+AT
+**script		Radio Info
+AT+CGMI
+AT+CGMM
+AT+CGMR
+AT+CGSN
+AT+CIMI
+**script		Radio Info			
+
+AT+CREG=2					Radio: Register
+AT+CSQ?						Radio: RSSI
+
+**script		Exit Lockstep
+**serialbreak
+**serialbreak
+qdver
+**script		Exit Lockstep
+
+**script		GPS ON Lockstep
+SDOUT,19,1					GPS: Power on the GPS VBACK
+SDOUT,5,1					GPS: GPS_PWR ON
+SDOUT,4,1					GPS: RADIO_PWR ON
+SL6							GPS:Lockstep to GPS UART
+**script
+
+qdeeinfo					EEPROM Info
+qdinlist					Input List
+qdoutlist					Output List
+
+rma							Main Mode
+
+qdainlist					Analog In List
+qdain,1						Battery Voltage
+
+**script		LED Test
+**delay			20
+sdboot
+sbl
+SDOUT,18,1					LED1 ON
+SDOUT,18,0					LED1 OFF
+SDOUT,11,1					LED2 ON
+SDOUT,11,0					LED2 OFF
+SDOUT,10,1					LED3 ON
+SDOUT,10,0					LED3 OFF
+SDOUT,9,1					LED4 ON
+SDOUT,9,0					LED4 OFF
+
+SDOUT,9,1					LED4 ON
+SDOUT,9,0					LED4 OFF
+SDOUT,10,1					LED3 ON
+SDOUT,10,0					LED3 OFF
+SDOUT,11,1					LED2 ON
+SDOUT,11,0					LED2 OFF
+SDOUT,18,1					LED1 ON
+SDOUT,18,0					LED1 OFF
+
+SDOUT,18,1					LED1 ON
+SDOUT,18,0					LED1 OFF
+SDOUT,11,1					LED2 ON
+SDOUT,11,0					LED2 OFF
+SDOUT,10,1					LED3 ON
+SDOUT,10,0					LED3 OFF
+SDOUT,9,1					LED4 ON
+SDOUT,9,0					LED4 OFF
+
+SDOUT,9,1					LED4 ON
+SDOUT,9,0					LED4 OFF
+SDOUT,10,1					LED3 ON
+SDOUT,10,0					LED3 OFF
+SDOUT,11,1					LED2 ON
+SDOUT,11,0					LED2 OFF
+SDOUT,18,1					LED1 ON
+SDOUT,18,0					LED1 OFF
+
+**sleep			500
+**delay			20
+SDOUT,18,1					LED1 ON
+SDOUT,11,1					LED2 ON
+SDOUT,10,1					LED3 ON
+SDOUT,9,1					LED4 ON
+**sleep			500
+SDOUT,18,0					LED1 OFF
+SDOUT,11,0					LED2 OFF
+SDOUT,10,0					LED3 OFF
+SDOUT,9,0					LED4 OFF
+**script
+sdout,17,0					Battery Disconnect
+

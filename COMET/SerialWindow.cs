@@ -57,7 +57,6 @@ namespace Comet1
         private string localBufferData = "";
 
         //variable to let safesleep know that everything is closing and it should quit
-        //set in 
         private bool AllWindowsClosed = false;
         private System.Collections.ArrayList lastCommandList = new System.Collections.ArrayList(); //list of last typed commands
         private int lastCommandIndex = 0;
@@ -275,6 +274,7 @@ namespace Comet1
             else
             {
                 setNoConnection();
+                focusComPort();
                 return false;
             }
         }
@@ -287,6 +287,8 @@ namespace Comet1
                 setComboBoxStates(true);
                 toolStripStatusLabel1.Text = currentConnection.getConnectionInfo(1);
                 this.Text = "COMET - " + currentConnection.getConnectionInfo(0);
+                //set the focus to the COM Port box
+                focusComPort();
                 return true;
             }
             else
@@ -429,12 +431,18 @@ namespace Comet1
             textBox1.SelectionStart = textBox1.Text.Length;
             textBox1.SelectionLength = 0;
         }
+        public void focusComPort()
+        {
+            comboBoxPortName.Focus();
+        }
 
         private void updateTerminal(String newText, Boolean output)
         {
+
             if (newText.Length >= 1)
             {
-                if (localBuffer)
+                //only log the output data!
+                if (localBuffer && output)
                 {
                     localBufferData += newText + Environment.NewLine;
                 }
@@ -584,13 +592,30 @@ namespace Comet1
             }
             if (newbutton.buttonType == SmartButton.buttonTypes.ScriptRunner)
             {
-                newbutton.Click += new System.EventHandler(this.SmartButton_RunScript);
+                newbutton.Click += new System.EventHandler(this.SmartButton_RunScript);              
             }
-
+            newbutton.ContextMenuStrip = setupToolStripMenu(true);
             newbutton.MouseHover += new System.EventHandler(this.newbutton_MouseHover);
             newbutton.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.textBoxTerminal_KeyPress);
-            newbutton.ContextMenuStrip = this.contextMenuSmartButton;
+            //add the context menu
+            newbutton.ContextMenuStrip = contextMenuSmartButton;
             this.panelHistory.Controls.Add(newbutton);
+        }
+
+        private ContextMenuStrip setupToolStripMenu(bool isScript)
+        {//not used!
+            //get the generic Smart Button tool strip
+            ContextMenuStrip contextMenu = contextMenuSmartButton;
+            ToolStripItemCollection tsic = contextMenu.Items;
+
+                foreach (ToolStripItem tsi in tsic)
+                {
+                    if (tsi.Text == "Stop")
+                    {
+                        tsi.Visible = isScript;                       
+                    }
+                }
+            return contextMenu;
         }
 
         private void setButtonStyle(Button newbutton, int buttonStyle)
@@ -807,8 +832,8 @@ namespace Comet1
                                 //find out if there is a special command
                                 if (command.Trim().StartsWith("**"))
                                 {
-                                    //command = command.Substring(2).ToLower();
-                                    if (command.Contains("**script"))
+                                    
+                                    if (command.ToLower().Contains("**script"))
                                     {
                                         //toggle script creation on and off
                                         scriptbutton = !scriptbutton;
@@ -830,7 +855,7 @@ namespace Comet1
                                         }
                                     }
                                 }
-                                if (!(command.Contains("**script")))
+                                if (!(command.ToLower().Contains("**script")))
                                 {
                                     if (scriptbutton)
                                     {
@@ -851,6 +876,10 @@ namespace Comet1
                         }
                     }
                 }
+
+                //if everything loaded correctly, display the descriptions
+                showCMD = !showCMD;
+                changeHistoryButtonDisplay(showCMD);
             }
             catch (Exception)
             {
@@ -968,6 +997,8 @@ namespace Comet1
             {
                 if (scriptToRun != null)
                 {
+                    //tell the script that it is going to run
+                    scriptToRun.stop = false;
                     SetProgress(true, false);
                     var commandArray = scriptToRun.currentScript.ToArray();
                     ArrayList currentItem = new ArrayList();
@@ -980,6 +1011,9 @@ namespace Comet1
 
                     for (loopIteration = 0; loopIteration < loopcount; loopIteration++)
                     {
+                        //check to see if the script to stop
+                        if (scriptToRun.stop) break;
+
                         //add on the loop delay AFTER the first time the loop is run
                         if (loopIteration > 0) safeSleep(loopdelay);
                         //The Script
@@ -1116,18 +1150,15 @@ namespace Comet1
                 case "dtr":
                     if (arguments != null)
                     {
-                        bool serialtermval = false;
-
-                        try
-                        {
-                            //usage: false or true as the argument
-                            serialtermval = Convert.ToBoolean((string)arguments[0]);
-                        }
-                        catch
-                        {
-                        }
-                        setDTR(serialtermval);
+                        setDTRandParseInput((string)arguments[0]);
                     }
+                    break;
+
+                case "settings":
+                    //usage:
+                    //function name {tab} baud {tab} ASCIIorHEX {tab} DTR {tab}  PortReadTime
+                    //**settings   9600   ASCII   True  30
+                    ScriptSetCometSettings(arguments);
                     break;
 
                 case "response_str":
@@ -1154,6 +1185,36 @@ namespace Comet1
                 default:
                     break;
             }
+        }
+
+        private void setDTRandParseInput(string argument)
+        {
+            bool serialtermval = false;
+
+            try
+            {
+                //usage: false or true as the argument
+                serialtermval = Convert.ToBoolean(argument);
+            }
+            catch
+            {
+            }
+            setDTR(serialtermval);
+        }
+
+        private void ScriptSetCometSettings(object[] arguments)
+        {
+            //function name {tab} baud {tab} ASCIIorHEX {tab} DTR {tab}  PortReadTime
+            //**settings   9600   ASCII   True  30
+
+            //try to set these settings
+            closePortAction();
+            comboBoxBaudRate.SelectedIndex = comboBoxBaudRate.Items.IndexOf((string)arguments[0]);
+            openPortAction();
+            setASCIIorHEX((string)arguments[1]);
+            setDTRandParseInput((string)arguments[2]);
+            textBoxPortReadTimeout.Text = ((string)arguments[3]);
+
         }
 
         private void ScriptCheckForResponse(object[] arguments, string comparisontype)
@@ -1252,9 +1313,13 @@ namespace Comet1
                 int timeout = 3000;
                 int.TryParse((string)arguments[0], out timeout);
                 string commandToSend = (string)arguments[1];
-                //this is the response to look for
-                string checkString = (string)arguments[2];
-
+                //this is the response to look for if there is no argument
+                string checkString = "";
+                if (arguments.Length > 2)
+                {
+                    //this is the response to look for if there is an argument
+                    checkString = (string)arguments[2];
+                }
                 //make sure there is a dialog available
                 createTestDialog();
                 ResponseAnalyzer res = new ResponseAnalyzer(checkString, ResultWindow);
@@ -1290,7 +1355,7 @@ namespace Comet1
 
                     if (testcomplete)
                     {
-                        res.logResponse(collectedData);
+                        res.logResponse(commandToSend, collectedData);
                         stopnow = true;
                     }
                     else
@@ -1338,7 +1403,7 @@ namespace Comet1
         private void comboBoxPortName_SelectedIndexChanged(object sender, EventArgs e)
         {
             this.currentPortName = (String)comboBoxPortName.SelectedItem;
-        }
+        }   
 
         private void comboBoxBaudRate_SelectedIndexChanged(object sender, EventArgs e)
         {
@@ -1668,6 +1733,19 @@ namespace Comet1
             focusInput();
         }
 
+        private void setASCIIorHEX(string type)
+        {
+            
+            if (type == "ASCII")
+            {
+                radioButtonASCII.Select();
+            }
+            else
+            {
+                radioButtonHEX.Select();
+            }
+        }
+
         private void textBox1_KeyPress(object sender, KeyPressEventArgs e)
         {
             {
@@ -1960,7 +2038,15 @@ namespace Comet1
 
         private void textBoxPortReadTimeout_TextChanged(object sender, EventArgs e)
         {
-            int.TryParse(textBoxPortReadTimeout.Text, out portReadTimeout);
+
+            updatePortTimeout(textBoxPortReadTimeout.Text);
+        }
+
+        private void updatePortTimeout(string portTimeoutString)
+        {
+            int portReadTimeoutTemp = 0;
+            int.TryParse(portTimeoutString, out portReadTimeoutTemp);
+            portReadTimeout = portReadTimeoutTemp;
             if (currentConnection != null)
             {
                 try
@@ -2331,5 +2417,40 @@ namespace Comet1
         }
 
         #endregion
+
+        private void toolStripMenuItemStopScript_Click(object sender, EventArgs e)
+        {
+            ToolStripItem TSItem = (ToolStripItem)sender;
+            ContextMenuStrip CMenu = (ContextMenuStrip)TSItem.Owner;
+            SmartButton SButton = (SmartButton)CMenu.SourceControl;
+            //pop up a dialog box to change the smart button
+
+            //decide what kind of edit window to open based on the type of button
+            if (SButton.buttonType == SmartButton.buttonTypes.ScriptRunner)
+            {
+                //stop the script from running
+                SButton.storedScript.Close();
+            }
+
+        }
+
+        private void labelPort_DoubleClick(object sender, EventArgs e)
+        {
+            //when the user double clicks, close the port 
+            if (currentConnection.isOpen)
+            {
+                //try to close the port
+                closePortAction();
+            }
+            else
+            {
+                openPortAction();
+            }
+        }
+
+        private void labelPort_Click(object sender, EventArgs e)
+        {
+
+        }
     }
 }

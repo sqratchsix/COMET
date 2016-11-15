@@ -61,10 +61,21 @@ namespace Comet1
             string[] responseStrings = inputLC.Split(new string[] { Environment.NewLine }, StringSplitOptions.None);
             foreach (string line in responseStrings)
             {
+                //response is found OR there is no expected response
                 if (line.Contains(expResLC))
                 {
-                    responseData = line.Replace(expResLC,"");
-                    return true;
+                    //if you are looking for as response to parse out
+                    if (!expResLC.Equals(""))
+                    {
+                        responseData = line.Replace(expResLC, "");
+                        return true;
+                    } 
+                    else if((expResLC.Equals("")) && (line.Length > 0))
+                    {
+                        //if there's actually some data to look at
+                        responseData = line;
+                        return true;
+                    }
                 }
             }
             return false;
@@ -84,12 +95,12 @@ namespace Comet1
             return false;
         }
 
-        public bool logResponse(String input)
+        public bool logResponse(String input, String collectedData)
         {
             bool written = false;
             //get the current time
-            timeNow = DateTime.Now.ToString(); 
-            string log = timeNow + "\t" + input;
+            timeNow = DateTime.Now.ToString();
+            string log = input + "\t" + timeNow + "\t" + collectedData;
             if (Utilities.writeStringToFile(logfilename, log))
             {
                 written = true;

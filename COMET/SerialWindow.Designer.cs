@@ -54,7 +54,6 @@
             this.textBoxTimeout = new System.Windows.Forms.TextBox();
             this.label9 = new System.Windows.Forms.Label();
             this.label7 = new System.Windows.Forms.Label();
-            this.textBoxTerminal = new Comet1.RichTextBoxExtra();
             this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.sendBreakToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem8 = new System.Windows.Forms.ToolStripSeparator();
@@ -125,12 +124,14 @@
             this.toolStripMenuItem5 = new System.Windows.Forms.ToolStripSeparator();
             this.copyCommandToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem4 = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItemStopScript = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem6 = new System.Windows.Forms.ToolStripSeparator();
             this.toolStripMenuItem3 = new System.Windows.Forms.ToolStripMenuItem();
             this.clearAllButtonsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolStripProgressBar1 = new System.Windows.Forms.ToolStripProgressBar();
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
+            this.textBoxTerminal = new Comet1.RichTextBoxExtra();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
@@ -165,15 +166,15 @@
             // 
             this.splitContainer1.Panel1.BackColor = System.Drawing.SystemColors.Control;
             this.splitContainer1.Panel1.Controls.Add(this.panel1);
-            this.splitContainer1.Panel1MinSize = 600;
+            this.splitContainer1.Panel1MinSize = 100;
             // 
             // splitContainer1.Panel2
             // 
             this.splitContainer1.Panel2.AllowDrop = true;
             this.splitContainer1.Panel2.Controls.Add(this.panelHistory);
-            this.splitContainer1.Panel2MinSize = 90;
-            this.splitContainer1.Size = new System.Drawing.Size(1002, 398);
-            this.splitContainer1.SplitterDistance = 901;
+            this.splitContainer1.Panel2MinSize = 98;
+            this.splitContainer1.Size = new System.Drawing.Size(840, 433);
+            this.splitContainer1.SplitterDistance = 720;
             this.splitContainer1.TabIndex = 1;
             this.splitContainer1.MouseDown += new System.Windows.Forms.MouseEventHandler(this.splitContainer1_MouseDown);
             this.splitContainer1.MouseMove += new System.Windows.Forms.MouseEventHandler(this.splitContainer1_MouseMove);
@@ -187,7 +188,7 @@
             this.panel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panel1.Location = new System.Drawing.Point(0, 0);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(901, 398);
+            this.panel1.Size = new System.Drawing.Size(720, 433);
             this.panel1.TabIndex = 5;
             // 
             // panel5
@@ -196,9 +197,9 @@
             this.panel5.Controls.Add(this.textBox1);
             this.panel5.Controls.Add(this.recordHistory);
             this.panel5.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.panel5.Location = new System.Drawing.Point(0, 371);
+            this.panel5.Location = new System.Drawing.Point(0, 406);
             this.panel5.Name = "panel5";
-            this.panel5.Size = new System.Drawing.Size(899, 25);
+            this.panel5.Size = new System.Drawing.Size(718, 25);
             this.panel5.TabIndex = 17;
             // 
             // buttonOpenSerial
@@ -222,7 +223,7 @@
             this.textBox1.ForeColor = System.Drawing.Color.DarkTurquoise;
             this.textBox1.Location = new System.Drawing.Point(92, 3);
             this.textBox1.Name = "textBox1";
-            this.textBox1.Size = new System.Drawing.Size(783, 20);
+            this.textBox1.Size = new System.Drawing.Size(602, 20);
             this.textBox1.TabIndex = 0;
             this.textBox1.KeyDown += new System.Windows.Forms.KeyEventHandler(this.textBox1_KeyDown);
             this.textBox1.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.textBox1_KeyPress);
@@ -233,7 +234,7 @@
             this.recordHistory.AutoSize = true;
             this.recordHistory.Checked = true;
             this.recordHistory.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.recordHistory.Location = new System.Drawing.Point(881, 5);
+            this.recordHistory.Location = new System.Drawing.Point(700, 5);
             this.recordHistory.Name = "recordHistory";
             this.recordHistory.Size = new System.Drawing.Size(15, 14);
             this.recordHistory.TabIndex = 6;
@@ -248,7 +249,7 @@
             this.panel3.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panel3.Location = new System.Drawing.Point(0, 0);
             this.panel3.Name = "panel3";
-            this.panel3.Size = new System.Drawing.Size(899, 396);
+            this.panel3.Size = new System.Drawing.Size(718, 431);
             this.panel3.TabIndex = 16;
             // 
             // panel4
@@ -258,7 +259,7 @@
             this.panel4.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panel4.Location = new System.Drawing.Point(92, 0);
             this.panel4.Name = "panel4";
-            this.panel4.Size = new System.Drawing.Size(807, 396);
+            this.panel4.Size = new System.Drawing.Size(626, 431);
             this.panel4.TabIndex = 16;
             // 
             // panelPortOptions
@@ -432,26 +433,6 @@
             this.label7.TabIndex = 12;
             this.label7.Text = "mSec";
             // 
-            // textBoxTerminal
-            // 
-            this.textBoxTerminal.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
-            this.textBoxTerminal.BackColor = System.Drawing.Color.Black;
-            this.textBoxTerminal.ContextMenuStrip = this.contextMenuStrip1;
-            this.textBoxTerminal.Font = new System.Drawing.Font("Lucida Console", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.textBoxTerminal.ForeColor = System.Drawing.SystemColors.ActiveBorder;
-            this.textBoxTerminal.HideSelection = false;
-            this.textBoxTerminal.Location = new System.Drawing.Point(0, 0);
-            this.textBoxTerminal.Name = "textBoxTerminal";
-            this.textBoxTerminal.ReadOnly = true;
-            this.textBoxTerminal.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.Vertical;
-            this.textBoxTerminal.Size = new System.Drawing.Size(809, 370);
-            this.textBoxTerminal.TabIndex = 5;
-            this.textBoxTerminal.Text = "";
-            this.textBoxTerminal.Click += new System.EventHandler(this.textBoxTerminal_Click);
-            this.textBoxTerminal.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.textBoxTerminal_KeyPress);
-            // 
             // contextMenuStrip1
             // 
             this.contextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -528,7 +509,7 @@
             this.panel2.Dock = System.Windows.Forms.DockStyle.Left;
             this.panel2.Location = new System.Drawing.Point(0, 0);
             this.panel2.Name = "panel2";
-            this.panel2.Size = new System.Drawing.Size(92, 396);
+            this.panel2.Size = new System.Drawing.Size(92, 431);
             this.panel2.TabIndex = 15;
             // 
             // button5
@@ -693,6 +674,8 @@
             this.labelPort.Size = new System.Drawing.Size(26, 13);
             this.labelPort.TabIndex = 4;
             this.labelPort.Text = "Port";
+            this.labelPort.Click += new System.EventHandler(this.labelPort_Click);
+            this.labelPort.DoubleClick += new System.EventHandler(this.labelPort_DoubleClick);
             // 
             // radioButtonHEX
             // 
@@ -787,9 +770,8 @@
             this.panelHistory.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panelHistory.FlowDirection = System.Windows.Forms.FlowDirection.BottomUp;
             this.panelHistory.Location = new System.Drawing.Point(0, 0);
-            this.panelHistory.MinimumSize = new System.Drawing.Size(98, 0);
             this.panelHistory.Name = "panelHistory";
-            this.panelHistory.Size = new System.Drawing.Size(98, 398);
+            this.panelHistory.Size = new System.Drawing.Size(116, 433);
             this.panelHistory.TabIndex = 8;
             this.panelHistory.WrapContents = false;
             this.panelHistory.DragDrop += new System.Windows.Forms.DragEventHandler(this.panelHistory_DragDrop);
@@ -824,7 +806,7 @@
             this.button1.AutoSize = true;
             this.button1.BackColor = System.Drawing.SystemColors.Control;
             this.button1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.button1.Location = new System.Drawing.Point(3, 370);
+            this.button1.Location = new System.Drawing.Point(3, 405);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(88, 25);
             this.button1.TabIndex = 2;
@@ -946,7 +928,7 @@
             this.helpToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(1002, 24);
+            this.menuStrip1.Size = new System.Drawing.Size(840, 24);
             this.menuStrip1.TabIndex = 2;
             this.menuStrip1.Text = "menuStrip1";
             this.menuStrip1.ItemClicked += new System.Windows.Forms.ToolStripItemClickedEventHandler(this.menuStrip1_ItemClicked);
@@ -1068,11 +1050,12 @@
             this.toolStripMenuItem5,
             this.copyCommandToolStripMenuItem,
             this.toolStripMenuItem4,
+            this.toolStripMenuItemStopScript,
             this.toolStripMenuItem6,
             this.toolStripMenuItem3,
             this.clearAllButtonsToolStripMenuItem});
             this.contextMenuSmartButton.Name = "contextMenuSmartButton";
-            this.contextMenuSmartButton.Size = new System.Drawing.Size(207, 126);
+            this.contextMenuSmartButton.Size = new System.Drawing.Size(207, 148);
             // 
             // toggleCMDDescriptionToolStripMenuItem1
             // 
@@ -1099,6 +1082,13 @@
             this.toolStripMenuItem4.Size = new System.Drawing.Size(206, 22);
             this.toolStripMenuItem4.Text = "Edit Command";
             this.toolStripMenuItem4.Click += new System.EventHandler(this.toolStripMenuItem4_Click);
+            // 
+            // toolStripMenuItemStopScript
+            // 
+            this.toolStripMenuItemStopScript.Name = "toolStripMenuItemStopScript";
+            this.toolStripMenuItemStopScript.Size = new System.Drawing.Size(206, 22);
+            this.toolStripMenuItemStopScript.Text = "Stop";
+            this.toolStripMenuItemStopScript.Click += new System.EventHandler(this.toolStripMenuItemStopScript_Click);
             // 
             // toolStripMenuItem6
             // 
@@ -1141,13 +1131,33 @@
             this.toolStripStatusLabel1,
             this.toolStripProgressBar1});
             this.statusStrip1.LayoutStyle = System.Windows.Forms.ToolStripLayoutStyle.HorizontalStackWithOverflow;
-            this.statusStrip1.Location = new System.Drawing.Point(0, 431);
+            this.statusStrip1.Location = new System.Drawing.Point(0, 466);
             this.statusStrip1.Name = "statusStrip1";
             this.statusStrip1.RenderMode = System.Windows.Forms.ToolStripRenderMode.Professional;
             this.statusStrip1.RightToLeft = System.Windows.Forms.RightToLeft.No;
-            this.statusStrip1.Size = new System.Drawing.Size(1002, 22);
+            this.statusStrip1.Size = new System.Drawing.Size(840, 22);
             this.statusStrip1.TabIndex = 7;
             this.statusStrip1.Text = "statusStrip1";
+            // 
+            // textBoxTerminal
+            // 
+            this.textBoxTerminal.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+                        | System.Windows.Forms.AnchorStyles.Left)
+                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.textBoxTerminal.BackColor = System.Drawing.Color.Black;
+            this.textBoxTerminal.ContextMenuStrip = this.contextMenuStrip1;
+            this.textBoxTerminal.Font = new System.Drawing.Font("Lucida Console", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.textBoxTerminal.ForeColor = System.Drawing.SystemColors.ActiveBorder;
+            this.textBoxTerminal.HideSelection = false;
+            this.textBoxTerminal.Location = new System.Drawing.Point(0, 0);
+            this.textBoxTerminal.Name = "textBoxTerminal";
+            this.textBoxTerminal.ReadOnly = true;
+            this.textBoxTerminal.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.Vertical;
+            this.textBoxTerminal.Size = new System.Drawing.Size(628, 405);
+            this.textBoxTerminal.TabIndex = 5;
+            this.textBoxTerminal.Text = "";
+            this.textBoxTerminal.Click += new System.EventHandler(this.textBoxTerminal_Click);
+            this.textBoxTerminal.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.textBoxTerminal_KeyPress);
             // 
             // SerialWindow
             // 
@@ -1155,7 +1165,7 @@
             this.AllowDrop = true;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1002, 453);
+            this.ClientSize = new System.Drawing.Size(840, 488);
             this.Controls.Add(this.statusStrip1);
             this.Controls.Add(this.splitContainer1);
             this.Controls.Add(this.menuStrip1);
@@ -1305,6 +1315,7 @@
         private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel1;
         private System.Windows.Forms.ToolStripProgressBar toolStripProgressBar1;
         private System.Windows.Forms.StatusStrip statusStrip1;
+        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItemStopScript;
 
 
 

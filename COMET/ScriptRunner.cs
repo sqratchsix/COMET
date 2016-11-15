@@ -23,7 +23,7 @@ namespace Comet1
             public string scriptName = "";
             public string scriptPath = "";
 
-            bool stop = false;
+            public bool stop = false;
 
             //looping parameters
             int loopTimeMS = 5000;
@@ -195,9 +195,14 @@ namespace Comet1
             }
 
 
-            internal void Close()
+            public void Close()
             {
-                stop = true;
+                this.stop = true;
+            }
+
+            public void Start()
+            {
+                this.stop = false;
             }
         }
 
