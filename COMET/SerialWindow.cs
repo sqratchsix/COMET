@@ -7,10 +7,12 @@ using System.Drawing;
 using System.IO;
 using System.IO.Ports;
 using System.Linq;
+using System.Management;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Timers;
 using System.Windows.Forms;
+
 
 namespace Comet1
 {
@@ -29,7 +31,7 @@ namespace Comet1
         private int toggleTime = 500;
 
         //the time to wait for no more new data before writing the received data to the terminal window
-        private int portReadTimeout = 3;
+        private int portReadTimeout = 20;
 
         private Boolean Timedout = false;
         private bool portOpen = false;
@@ -60,8 +62,11 @@ namespace Comet1
         private bool AllWindowsClosed = false;
         private System.Collections.ArrayList lastCommandList = new System.Collections.ArrayList(); //list of last typed commands
         private int lastCommandIndex = 0;
+
+        //Filepaths for SmartButton History
         private string iniFilePath = "COMET.ini";
         private string currentHistoryFile = "";
+        private string[] FilesInDirectory;
 
         //Data for history Buttons
         private Button lastButtonForLocation;
@@ -89,6 +94,29 @@ namespace Comet1
         {
             string[] currentSerialPortList = SerialPort.GetPortNames();
 
+            //trying to get the device descriptions - only seems to work for actual serial ports, not FTDI USB serial ports
+            try
+            {
+                using (var searcher = new ManagementObjectSearcher
+                ("SELECT * FROM WIN32_SerialPort"))
+                //("root\\CIMV2",    "SELECT * FROM Win32_PnPEntity WHERE ClassGuid=\"{4d36e978-e325-11ce-bfc1-08002be10318}\""))
+            {
+
+                var ports = searcher.Get().Cast<ManagementBaseObject>().ToList();
+                var tList = (from n in currentSerialPortList
+                             join p in ports on n equals p["DeviceID"].ToString()
+                             select n + " - " + p["Caption"]).ToList();
+
+                foreach (string s in tList)
+                {
+                    Console.WriteLine(s);
+                }
+            }
+            }
+            catch (Exception)
+            {
+
+            }
             Array.Sort(currentSerialPortList, new NaturalComparer());
             comboBoxPortName.DataSource = currentSerialPortList;
         }
@@ -398,12 +426,15 @@ namespace Comet1
 
         public void setPortType(String PortType)
         {
-            try
+            if (currentConnection != null)
             {
-                currentConnection.dataType = PortType;
-            }
-            catch (Exception)
-            {
+                try
+                {
+                    currentConnection.dataType = PortType;
+                }
+                catch (Exception)
+                {
+                }
             }
         }
 
@@ -800,14 +831,26 @@ namespace Comet1
 
         private void loadSmartButtons(string[] dataIn)
         {
-            String[] recalledData = dataIn;
+            try
+            {
+                String[] recalledData = dataIn;
+            int max_data_length = 200;
+            //if this is a really large file, alert the user
+            if (recalledData.Length > max_data_length)
+            {
+                var response = MessageBox.Show("File is greater than " + max_data_length.ToString() + " lines long. \nProceed ?", "Large File", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+
+                if (response == DialogResult.No)
+                {
+                    recalledData = null;
+                }
+            }
             string[] stringSeparator = new string[] { "\t" };
             int buttonStyle = 0;
             //variable to set wheter a script button is being created
             Boolean scriptbutton = false;
             SmartButton tempButton = new SmartButton();
-            try
-            {
+            
                 if (!(recalledData == null || recalledData.Length == 0))
                 {
                     for (int i = 0; i < recalledData.Length; i++)
@@ -880,6 +923,8 @@ namespace Comet1
                 //if everything loaded correctly, display the descriptions
                 showCMD = !showCMD;
                 changeHistoryButtonDisplay(showCMD);
+                //move the scroll bar back to the bottom
+                panelHistory.ScrollControlIntoView(button1);
             }
             catch (Exception)
             {
@@ -1019,7 +1064,8 @@ namespace Comet1
                         //The Script
                         for (int current = 0; current < commandArray.Length; current++)
                         {
-                            transferProgressChanged((int)(100 * ((float)current / (float)commandArray.Length)));
+                            //currently this is a blocking command
+                            transferProgressChanged((int)(100 * ((float)current / (float)commandArray.Length)), true);
                             if (!stopThread)
                             {
                                 //get each instruction
@@ -1681,6 +1727,20 @@ namespace Comet1
             loadSmartButtons(openSavedSmartButtons());
         }
 
+        private void loadSmartButtonsEvent(object sender, EventArgs e)
+        {
+
+            try
+            {
+                string pathname = ((ToolStripMenuItem)sender).Text;
+                loadSmartButtons(File.ReadAllLines(pathname));
+            }
+            catch (Exception)
+            {
+                Console.Write("Unable to load smart buttons from directory");
+            }
+        }
+
         private void saveToolStripMenuItem1_Click(object sender, EventArgs e)
         {
             string fileToSave = currentHistoryFile;
@@ -1700,12 +1760,19 @@ namespace Comet1
         private void panelHistory_DragDrop(object sender, DragEventArgs e)
         {
             Console.WriteLine("Loading Files");
-            string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
-            string[] dataToLoad = File.ReadAllLines(files[0]);
-            loadSmartButtons(dataToLoad);
+            try
+            {
+                string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
+                string[] dataToLoad = File.ReadAllLines(files[0]);
+                loadSmartButtons(dataToLoad);
 
-            panelHistory.VerticalScroll.Value = panelHistory.VerticalScroll.Maximum;
-            updateLayoutHistoryPanel();
+                panelHistory.VerticalScroll.Value = panelHistory.VerticalScroll.Maximum;
+                updateLayoutHistoryPanel();
+            }
+            catch (Exception)
+            {
+            Console.WriteLine("Failed Loading Files");
+            }
         }
 
         public void updateLayoutHistoryPanel()
@@ -1819,7 +1886,11 @@ namespace Comet1
             if (pathToOpen != null)
             {
                 SetProgress(true, false);
-                transferData.YmodemUploadFile(pathToOpen);
+                //stop updating this GUI - unsubscribe from the event
+
+                transferData.YmodemUploadFile(pathToOpen, true);
+
+                //re-update the GUI
                 SetProgress(false, false);
             }
         }
@@ -1859,10 +1930,10 @@ namespace Comet1
             Console.WriteLine("Not Implemented");
         }
 
-        private void transferProgressChanged(int xferProgress)
+        private void transferProgressChanged(int xferProgress, bool blocking)
         {
             //Action handler for changing the progress from the transfer
-            SetProgress(xferProgress);
+            SetProgress(xferProgress, blocking);
             //Console.WriteLine(xferProgress);
         }
 
@@ -1929,38 +2000,56 @@ namespace Comet1
 
         private void DTR_0_CheckedChanged(object sender, EventArgs e)
         {
-            //set DTR low
-            currentConnection.setDTR(!((RadioButton)sender).Checked);
+            if (currentConnection != null)
+            {
+                //set DTR low
+                currentConnection.setDTR(!((RadioButton)sender).Checked);
+            }
         }
 
         private void DTR_1_CheckedChanged(object sender, EventArgs e)
         {
-            //set DTR high
-            currentConnection.setDTR(((RadioButton)sender).Checked);
+            if (currentConnection != null)
+            {
+                //set DTR high
+                currentConnection.setDTR(((RadioButton)sender).Checked);
+            }
         }
 
         private void RTS_0_CheckedChanged(object sender, EventArgs e)
         {
-            //set RTS low
-            currentConnection.setRTS(!((RadioButton)sender).Checked);
+            if (currentConnection != null)
+            {
+                //set RTS low
+                currentConnection.setRTS(!((RadioButton)sender).Checked);
+            }
         }
 
         private void RTS_1_CheckedChanged(object sender, EventArgs e)
         {
-            //set RTS high
-            currentConnection.setRTS(((RadioButton)sender).Checked);
+            if (currentConnection != null)
+            {
+                //set RTS high
+                currentConnection.setRTS(((RadioButton)sender).Checked);
+            }
         }
 
         private void SBREAK_0_CheckedChanged(object sender, EventArgs e)
         {
-            //set serial break low
-            currentConnection.setSBREAK(!((RadioButton)sender).Checked);
+            if (currentConnection != null)
+            {
+                //set serial break low
+                currentConnection.setSBREAK(!((RadioButton)sender).Checked);
+            }
         }
 
         private void SBREAK_1_CheckedChanged(object sender, EventArgs e)
         {
-            //set serial break high
-            currentConnection.setSBREAK(((RadioButton)sender).Checked);
+            if (currentConnection != null)
+            {
+                //set serial break high
+                currentConnection.setSBREAK(((RadioButton)sender).Checked);
+            }
         }
 
         private void button2_Click(object sender, EventArgs e)
@@ -2177,12 +2266,14 @@ namespace Comet1
             toolStripStatusLabel1.Text = "No Connection";
             this.Text = "No Connection";
         }
-        public void SetProgress(int progress)
+        public void SetProgress(int progress, bool blocking)
         {
             try
             {
                 toolStripProgressBar1.Visible = true;
                 toolStripProgressBar1.Value = progress;
+                //handle all pending events
+                if(!blocking)Application.DoEvents();
             }
             catch (Exception)
             {
@@ -2246,6 +2337,48 @@ namespace Comet1
             Point centerApp = new Point(this.Width / 2, this.Height / 2);
             Point centerWait = new Point(newWinWidth / 2, newWinHeight / 2);
             return new Point(cornerApp.X + centerApp.X - centerWait.X, cornerApp.Y + centerApp.Y - centerWait.Y);
+        }
+        //resize all open windows and tile them
+        public void TileOpenWindows()
+        {
+            //get the screen resolution
+            int screen_w = Screen.PrimaryScreen.WorkingArea.Width;
+            int screen_h = Screen.PrimaryScreen.WorkingArea.Height;
+
+            int tile_w = 100;
+            int tile_h = 100;
+
+            //find out how nmany open forms there are
+            int openForms = Application.OpenForms.Count;
+
+            //calculate the tile size based on how many forms are open
+            double columns = Math.Ceiling(Math.Sqrt(openForms));
+            double rows = Math.Ceiling(openForms / (double)columns);
+
+            //divide the available screensize to find each tile's dimensions
+            tile_w = (int)(screen_w / (int)columns);
+            tile_h = (int)(screen_h / (int)rows);
+
+            int _col = 0;
+            int _row = 0;
+            foreach (Form frm in Application.OpenForms)
+            {
+                //fill up the columns first
+                //if all the columns are full, move to the next row
+                if(_col == columns)
+                { _col = 0;
+                  _row++;
+                }
+
+                frm.Width = tile_w;
+                frm.Height = tile_h;
+                frm.Location = new Point(tile_w*(_col), (tile_h * (_row)));
+
+                //move to the next column
+                _col++;
+            }
+
+
         }
         private void setRTSDTR()
         {
@@ -2452,5 +2585,89 @@ namespace Comet1
         {
 
         }
+
+        private void load_folder_SmartButtons(object sender, EventArgs e)
+        {
+            loadDirectoriesIntoMenu(false);
+        }
+
+        private void toolStripMenuItem9_Click_1(object sender, EventArgs e)
+        {
+            loadDirectoriesIntoMenu(true);
+        }
+
+        private void loadDirectoriesIntoMenu(Boolean eraseprevious)
+        {
+            //look through the folder (and sub folders) that COMET is in an populate all the .txt files into the menu
+            //open the folder this program (COMET) is running in
+            if(eraseprevious)
+            {
+                FilesInDirectory = null;
+                foreach (ToolStripItem d in toolStripMenuItem9.DropDownItems)
+                {
+                    d.Click -= loadSmartButtonsEvent;
+                }
+                this.toolStripMenuItem9.DropDownItems.Clear();
+            }
+            //only do this the first time!
+            if (FilesInDirectory == null)
+            {
+                string directory = System.IO.Directory.GetParent(Application.ExecutablePath).FullName;
+                try
+                {
+                    RecursiveFileProcessor FilesInDir = new RecursiveFileProcessor();
+                    FilesInDirectory = FilesInDir.GetAllPaths(new string[] { directory});
+                    //make a menu item for each file
+                    foreach (var filename in FilesInDirectory)
+                    {
+                        ToolStripItem subItem = new ToolStripMenuItem(filename);
+                        this.toolStripMenuItem9.DropDownItems.Add(subItem);
+                        //register an event
+                        subItem.Click += new System.EventHandler(loadSmartButtonsEvent);
+                    }
+                }
+                catch (Exception)
+                {
+                    Console.WriteLine("Couldn't load textfile Smartbuttons");
+                }
+            }
+        }
+
+        private void OpenToolbox_Click(object sender, EventArgs e)
+        {
+            ToolBox ToolBox = new ToolBox();
+            ToolBox.Show(); 
+        }
+
+        private void closeOtherPortsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            //get the name of the current form
+            Form currentopenform = Form.ActiveForm;
+            for (int i = Application.OpenForms.Count - 1; i >= 0; i--)
+            {
+                if (Application.OpenForms[i] != currentopenform)
+                    Application.OpenForms[i].Close();
+            }
+            //reset the window to the default size
+            currentopenform.Size = new Size(856, 527);
+            this.CenterToScreen();
+        }
+
+        private void openAllPortsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            //Open all the ports and tile the COMET windows so that the user can see all serial activity
+            for (int openPort = 1; openPort < comboBoxPortName.Items.Count; openPort++)
+            {
+                openNewInstanceOfSerial();
+            }
+            //tile the windows
+            TileOpenWindows();
+        }
+
+        private void tileWindowsToolStripMenuItem1_Click(object sender, EventArgs e)
+        {
+            TileOpenWindows();
+        }
     }
+
 }

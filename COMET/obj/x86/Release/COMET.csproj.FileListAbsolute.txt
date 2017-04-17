@@ -3,6 +3,7 @@ C:\ttp\Xtra\COMET\COMET\bin\Release\Comet.exe
 C:\ttp\Xtra\COMET\COMET\bin\Release\Comet.pdb
 C:\ttp\Xtra\COMET\COMET\obj\x86\Release\Comet1.About.resources
 C:\ttp\Xtra\COMET\COMET\obj\x86\Release\Comet1.Convertor.resources
+C:\ttp\Xtra\COMET\COMET\obj\x86\Release\Comet1.DialogWin.resources
 C:\ttp\Xtra\COMET\COMET\obj\x86\Release\Comet1.PromptSmartButtonEdit.resources
 C:\ttp\Xtra\COMET\COMET\obj\x86\Release\Comet1.PromptScriptEdit.resources
 C:\ttp\Xtra\COMET\COMET\obj\x86\Release\Comet1.SerialWindow.resources
@@ -10,5 +11,3 @@ C:\ttp\Xtra\COMET\COMET\obj\x86\Release\Comet1.Properties.Resources.resources
 C:\ttp\Xtra\COMET\COMET\obj\x86\Release\COMET.csproj.GenerateResource.Cache
 C:\ttp\Xtra\COMET\COMET\obj\x86\Release\Comet.exe
 C:\ttp\Xtra\COMET\COMET\obj\x86\Release\Comet.pdb
-C:\ttp\Xtra\COMET\COMET\obj\x86\Release\Comet1.DialogWin.resources
-C:\ttp\Xtra\COMET\COMET\obj\x86\Release\COMET.csprojResolveAssemblyReference.cache

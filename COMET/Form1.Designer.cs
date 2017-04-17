@@ -99,7 +99,7 @@
             this.Controls.Add(this.textBoxDescription);
             this.Controls.Add(this.textBoxCommand);
             this.Name = "PromptSmartButtonEdit";
-            this.Text = "Edit Smart Button";
+            this.Text = "Edit";
             this.ResumeLayout(false);
             this.PerformLayout();
 

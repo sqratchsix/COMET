@@ -43,6 +43,7 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Management" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Data" />
@@ -58,7 +59,7 @@
     </Compile>
     <Compile Include="ResponseAnalyzer.cs" />
     <Compile Include="ScriptRunner.cs" />
-    <Compile Include="Convertor.cs">
+    <Compile Include="ToolBox.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="About.cs">
@@ -93,8 +94,8 @@
     <EmbeddedResource Include="About.resx">
       <DependentUpon>About.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Convertor.resx">
-      <DependentUpon>Convertor.cs</DependentUpon>
+    <EmbeddedResource Include="ToolBox.resx">
+      <DependentUpon>ToolBox.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="DialogWin.resx">
       <DependentUpon>DialogWin.cs</DependentUpon>
@@ -137,6 +138,10 @@
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PreBuildEvent>taskkill /f /fi "pid gt 0" /im "Comet.exe</PreBuildEvent>
+  </PropertyGroup>
+  <PropertyGroup>
+    <PostBuildEvent>copy /Y "$(TargetDir)$(TargetName).exe" "..\..\..\$(TargetName).exe"
+</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

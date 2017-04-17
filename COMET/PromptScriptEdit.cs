@@ -48,21 +48,21 @@ namespace Comet1
         private void button1_Click(object sender, EventArgs e)
         {
             //collect all the changed parameters
-            int newLoopTime = 0;
+            double newLoopTime = 0;
             int newLoops = 0;
             int defaultDelayTime = 0;
 
             try
             {
-                int.TryParse(textBoxLoopDelay.Text, out newLoopTime);
+                double.TryParse(textBoxLoopDelay.Text, out newLoopTime);
                 int.TryParse(textBoxNumLoops.Text, out newLoops);
                 int.TryParse(textBoxDelayTime.Text, out defaultDelayTime);
 
                 //convert the loop time
-                newLoopTime = Utilities.convertMS(newLoopTime, comboBoxtime.Text, true);
+                newLoopTime = (int)Utilities.convertMS(newLoopTime, comboBoxtime.Text, true);
 
                 //update the delay time & loop paramters
-                ScriptToEdit.setLoopParamters(newLoopTime, newLoops);
+                ScriptToEdit.setLoopParamters((int)newLoopTime, newLoops);
                 ScriptToEdit.changeDelay(defaultDelayTime);
 
                 SmartButtonToEdit.storedScript = ScriptToEdit;
@@ -88,9 +88,9 @@ namespace Comet1
         private void comboBoxtime_SelectedIndexChanged(object sender, EventArgs e)
         {
             //convert the previous time to MS, then convert to the new time
-            int oldTime = 0;
-            int.TryParse(textBoxLoopDelay.Text, out oldTime);
-            int ms = Utilities.convertMS(oldTime, comboBoxtime.Items[timeSelectedIndex].ToString(), true);
+            double oldTime = 0;
+            double.TryParse(textBoxLoopDelay.Text, out oldTime);
+            int ms = (int)Utilities.convertMS(oldTime, comboBoxtime.Items[timeSelectedIndex].ToString(), true);
 
             this.textBoxLoopDelay.Text = Utilities.convertMS(ms, comboBoxtime.Text, false).ToString();
 

@@ -1,49 +1,51 @@
-﻿//ADAPTED FROM: https://sites.google.com/site/adamficsor1024/home/programming/xymodem   
+﻿//ADAPTED FROM: https://sites.google.com/site/adamficsor1024/home/programming/xymodem
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.IO;
 using System.IO.Ports;
 
 namespace Comet1
 {
     public enum InitialCrcValue { Zeros, NonZero1 = 0xffff, NonZero2 = 0x1D0F }
-    
-    class Transfer
-    {
-        SerialPort serialPort;
 
-        public event Action<int> ProgressChanged;
-        
+    internal class Transfer
+    {
+        private ActiveSerialPort serialPort;
+
+        public delegate void progHandler(int p1, bool p2);
+
+        public event progHandler ProgressChanged;
+
         //constructor
-        public Transfer(ActiveSerialPort currentConnection){
-            this.serialPort = currentConnection.activeSerial;
-            Console.WriteLine(serialPort.ReadTimeout);
-            Console.WriteLine(serialPort.WriteTimeout);
-            serialPort.ReadTimeout = 10000;
-            Console.WriteLine(serialPort.ReadTimeout);
+        public Transfer(ActiveSerialPort currentConnection)
+        {
+            this.serialPort = currentConnection;
+            //Console.WriteLine(serialPort.ReadTimeout);
+            //Console.WriteLine(serialPort.WriteTimeout);
+            serialPort.setPortTimeout(10000, 10000);
+            //Console.WriteLine(serialPort.ReadTimeout);
         }
 
-        private void OnProgressChanged(int progress)
+        private void OnProgressChanged(int progress, bool blocking)
         {
             var eh = ProgressChanged;
             if (eh != null)
             {
-                eh(progress);
+                eh(progress, blocking);
             }
         }
 
         #region YMODEM
+
         /*
          * Upload file via Ymodem protocol to the device
          * ret: is the transfer succeeded? true is if yes
          */
-        public bool YmodemUploadFile(string path)
+
+        public bool YmodemUploadFile(string path, bool AckPayloads)
         {
             /* control signals */
-            const byte STX = 2;  // Start of TeXt 
+            const byte STX = 2;  // Start of TeXt
             const byte EOT = 4;  // End Of Transmission
             const byte ACK = 6;  // Positive ACknowledgement
             const byte C = 67;   // capital letter C
@@ -67,7 +69,8 @@ namespace Comet1
             long totalFileSize = fileStream.Length;
             double currentdata = 0;
             Console.WriteLine(totalFileSize);
-            OnProgressChanged((int)((currentdata / totalFileSize) * 100));
+            OnProgressChanged((int)((currentdata / totalFileSize) * 100), true);
+
             try
             {
                 /* send the initial packet with filename and filesize */
@@ -88,20 +91,31 @@ namespace Comet1
                     return false;
 
                 /* send packets with a cycle until we send the last byte */
-                int fileReadCount;
+                int fileReadCount = 0; ;
+
+                //retry sending packets 3 times
+                int retrycount = 0;
+                int maxretry = 3;
+                Boolean lastPacketReceived = true;
+
                 do
                 {
-                    /* if this is the last packet fill the remaining bytes with 0 */
-                    fileReadCount = fileStream.Read(data, 0, dataSize);
-                    if (fileReadCount == 0) break;
-                    if (fileReadCount != dataSize)
-                        for (int i = fileReadCount; i < dataSize; i++)
-                            data[i] = 0;
+                    //Generate a New Packet
+                    if (lastPacketReceived | !AckPayloads)
+                    {
+                        /* if this is the last packet fill the remaining bytes with 0 */
+                        fileReadCount = fileStream.Read(data, 0, dataSize);
+                        if (fileReadCount == 0) break;
+                        if (fileReadCount != dataSize)
+                            for (int i = fileReadCount; i < dataSize; i++)
+                                data[i] = 0;
 
-                    /* calculate packetNumber */
-                    packetNumber++;
-                    if (packetNumber > 255)
-                        packetNumber -= 256;
+                        /* calculate packetNumber */
+                        packetNumber++;
+                        if (packetNumber > 255)
+                            packetNumber -= 256;
+                    }
+
                     Console.WriteLine(packetNumber);
 
                     /* calculate invertedPacketNumber */
@@ -113,26 +127,49 @@ namespace Comet1
 
                     /* send the packet */
                     sendYmodemPacket(STX, packetNumber, invertedPacketNumber, data, dataSize, CRC, crcSize);
-                    /* wait for ACK */
-                    //is this necessary - no ACK>?!?!?!?!
-                    /*
-                    if (serialPort.ReadByte() != ACK)
-                    {
-                        Console.WriteLine("Couldn't send a packet.");
-                        return false;
-                    }
-                     * */
-                    
-                    //update how much data was sent
-                    currentdata = currentdata + dataSize;
 
-                    OnProgressChanged((int)((currentdata / totalFileSize) * 100));
-                    Console.WriteLine("currentdata");
-                    Console.WriteLine(currentdata);
-                    Console.WriteLine("totalFilesize");
-                    Console.WriteLine(totalFileSize);
-                    Console.WriteLine("percent");
-                    Console.WriteLine((currentdata / totalFileSize));
+                    /* wait for ACK */
+                    if (AckPayloads)
+                    {
+                        int responseByte = serialPort.ReadByte();
+                        //Reads 67 or 'C' when the data is all 0xFF
+                        //meaning the receiver is responding with C to start the transmission>?
+                        //TODO - Fix Bug
+                        if ((responseByte == ACK) | (responseByte == C))
+                        {
+                            lastPacketReceived = true;
+                        }
+                        else
+                        {
+                            if (retrycount >= maxretry)
+                            {
+                                lastPacketReceived = true;
+                            }
+                            else
+                            {
+                                lastPacketReceived = false;
+                                //otherwise, retry
+                                retrycount++;
+                                Console.WriteLine("Couldn't send a packet - Retry: " + retrycount.ToString());
+                                
+                            }                           
+                        }
+                    }
+
+                    if (lastPacketReceived | !AckPayloads)
+                    {
+                        //update how much data was sent
+                        currentdata = currentdata + dataSize;
+                    }
+                    //display the progress
+                        OnProgressChanged((int)((currentdata / totalFileSize) * 100), true);
+                        Console.WriteLine("currentdata");
+                        Console.WriteLine(currentdata);
+                        Console.WriteLine("totalFilesize");
+                        Console.WriteLine(totalFileSize);
+                        Console.WriteLine("percent");
+                        Console.WriteLine((currentdata / totalFileSize));
+                    
                 } while (dataSize == fileReadCount);
 
                 /* send EOT (tell the downloader we are finished) */
@@ -144,10 +181,15 @@ namespace Comet1
                 CRC = new byte[crcSize];
                 sendYmodemClosingPacket(STX, packetNumber, invertedPacketNumber, data, dataSize, CRC, crcSize);
                 /* get ACK (downloader acknowledge the EOT) */
-                if (serialPort.ReadByte() != ACK)
+
+                if (AckPayloads)
                 {
-                    Console.WriteLine("Can't complete the transfer.");
-                    return false;
+                    int responseByte = serialPort.ReadByte();
+                    if (responseByte != ACK)
+                    {
+                        Console.WriteLine("Can't complete the transfer.");
+                        return false;
+                    }
                 }
             }
             catch (TimeoutException)
@@ -160,7 +202,7 @@ namespace Comet1
             }
 
             Console.WriteLine("End transfer Session");
-            
+
             return true;
         }
 
@@ -217,7 +259,8 @@ namespace Comet1
             serialPort.Write(data, 0, dataSize);
             serialPort.Write(CRC, 0, crcSize);
         }
-        #endregion
+
+        #endregion YMODEM
 
         #region XMODEM
 
@@ -312,15 +355,16 @@ namespace Comet1
             }
             return false;
         }
-        #endregion
 
+        #endregion XMODEM
 
         #region Helper Methods
+
         public class Crc16Ccitt
         {
-            const ushort poly = 0x1021;
-            ushort[] table = new ushort[256];
-            ushort initialValue = 0;
+            private const ushort poly = 0x1021;
+            private ushort[] table = new ushort[256];
+            private ushort initialValue = 0;
 
             public ushort ComputeChecksum(byte[] bytes)
             {
@@ -362,6 +406,7 @@ namespace Comet1
                 }
             }
         }
-        #endregion
+
+        #endregion Helper Methods
     }
- }
+}

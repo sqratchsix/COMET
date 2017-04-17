@@ -132,6 +132,16 @@ namespace Comet1
             activeSerial.WriteTimeout = portTimeoutWriteMS;
             activeSerial.ReadTimeout = portTimeoutReadMS;
         }
+        public int getReadTimeout()
+        {
+            return portTimeoutReadMS;
+        }
+
+        public int getWriteTimeout()
+        {
+            return portTimeoutWriteMS;
+        }
+
         public String getConnectionInfo(int returnformat)
         {
             //A concise String that has all the parameters of the open port
@@ -227,6 +237,11 @@ namespace Comet1
    
         }
 
+        public int ReadByte()
+        {
+            return activeSerial.ReadByte();
+        }
+
         public String sendData(String dataToSend, bool endline)
         {
             //only send actual data
@@ -275,6 +290,12 @@ namespace Comet1
                 }
             }
             return "";
+        }
+
+        public void Write(byte[] buffer, int offset, int count)
+        {
+            //passthru method to write byte arrays directly yo serial port
+            activeSerial.Write(buffer, offset, count);
         }
 
         public void serialBreak()

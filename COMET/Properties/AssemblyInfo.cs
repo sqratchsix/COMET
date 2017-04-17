@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("COMET")]
-[assembly: AssemblyCopyright("Copyright J.Simon ©  2015")]
+[assembly: AssemblyCopyright("Copyright J.Simon ©  2016")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -35,5 +35,5 @@ using System.Runtime.InteropServices;
 
 // USING * causes the following error:  unable to copy exe-file from obj\debug to bin\debug
 //[assembly: AssemblyVersion("0.1.*")]
-[assembly: AssemblyVersion("0.3.3")]
+[assembly: AssemblyVersion("0.3.6")]
 //[assembly: AssemblyFileVersion("1.0.0.0")]
