@@ -154,12 +154,10 @@ namespace Comet1
 
         private void label1_Click(object sender, EventArgs e)
         {
-
         }
 
         private void Convertor_Load(object sender, EventArgs e)
         {
-
         }
 
         private void button3_Click(object sender, EventArgs e)

@@ -1,0 +1,12 @@
+**script			9600 ASCII
+**settings	9600	ASCII	False	30
+**script			9600 ASCII
+
+*IDN?
+*RST
+
+READ?
+
+**script				SerialNum Data
+**user_input_log	30000	Get Serial Number	READ?
+**script				

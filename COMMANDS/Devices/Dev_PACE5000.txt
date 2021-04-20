@@ -1,0 +1,17 @@
+++addr 16			GPIB Addr
+*idn?				Device ID
+
+*CLS
+*RST
+UNIT:PRES PSI			SET PSI
+CAL:ZERO:AUTO 1			ZERO
+SOUR:VENT 1				VENT
+SENS?					Read Pressure
+
+
+OUTP:STAT ON			Regulate ON
+OUTP:STAT OFF			Regulate OFF
+OUTP:STAT?				Get Reg Status
+SOUR 1.420				Set Source PSI
+SENS:PRES:CORR:VOL?		Read Volume
+

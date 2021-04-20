@@ -130,7 +130,7 @@ namespace Comet1
         {
             string reportText = Application.ExecutablePath + "  ::  "+ Application.ProductName + "  ::  "+ Application.ProductVersion;
             System.Diagnostics.Process proc = new System.Diagnostics.Process();
-            proc.StartInfo.FileName = "mailto:jsimon@telular.com?subject=COMET : BUG : " + DateTime.Now.ToString() + "&body=" + reportText; ;
+            proc.StartInfo.FileName = "mailto:jared.b.simon@gmail.com?subject=COMET : BUG : " + DateTime.Now.ToString() + "&body=" + reportText; ;
             proc.Start();
             this.Close();
         }

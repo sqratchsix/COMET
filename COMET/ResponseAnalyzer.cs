@@ -59,7 +59,7 @@ namespace Comet1
             responseData = "";
 
             string[] responseStrings = inputLC.Split(new string[] { Environment.NewLine }, StringSplitOptions.None);
-            foreach (string line in responseStrings)
+                foreach (string line in responseStrings)
             {
                 //response is found OR there is no expected response
                 if (line.Contains(expResLC))
@@ -97,15 +97,10 @@ namespace Comet1
 
         public bool logResponse(String input, String collectedData)
         {
-            bool written = false;
             //get the current time
             timeNow = DateTime.Now.ToString();
             string log = input + "\t" + timeNow + "\t" + collectedData;
-            if (Utilities.writeStringToFile(logfilename, log))
-            {
-                written = true;
-            }
-            return written;
+            return Utilities.writeStringToFile(logfilename, log);
         }
 
 
@@ -123,11 +118,11 @@ namespace Comet1
         {
             string inputLC = input.ToLower();
             string lineOfData = "";
-            checkForResponse(inputLC,out lineOfData);
+            checkForResponse(inputLC, out lineOfData);
 
             string intValString = lineOfData.Replace(expectedResponse.ToLower(), "");
             intval = 0;
-            return(int.TryParse(intValString,out intval));
+            return int.TryParse(intValString,out intval);
         }
 
         public bool checkValBetween(String input, int lowVal, int highVal, out string detail, out bool passed)
@@ -146,12 +141,11 @@ namespace Comet1
                 {
                     detail = "Measured: " + foundvalInt + " :between: " + lowVal + " & " + highVal;
 
-                    if ((lowVal < foundvalInt) && (highVal > foundvalInt))
-                    {
-                        passed = true;
-                    }
+                    passed = (lowVal < foundvalInt) && (highVal > foundvalInt);
                     return true;
                 }
+                //this will always be overwritten before returning
+                //maybe follow with return false
                 detail = "ERROR Parsing Response";
             }
             detail = expectedLC + " :: NOT FOUND ";

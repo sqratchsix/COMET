@@ -1,0 +1,21 @@
+ate1					Ping Radio
+
+at#testmode="om"					Operation Mode
+at#testmode="tm"					Test Mode
+at+xpow=1,65535,255					Enable Radio
+
+at#testmode="init4g"					Initialize
+at#testmode="pl4g 384"					Power Level Setup
+
+at#testmode="ch4g 18900 3"					Transmit at 1880 MHz
+at#testmode="ch4g 20175 3"					Transmit at 1732.5 MHz
+at#testmode="ch4g 20525 3"					Transmit at 836.5 MHz
+at#testmode="ch4g 23095 3"					Transmit at 707.5 MHz
+at#testmode="ch4g 23230 3"					Transmit at 782 MHz
+
+at#testmode="tx4g"					Transmit Signal
+
+at#testmode="esc"					Escape
+at#testmode="deinit4g"					De-Initialize
+
+

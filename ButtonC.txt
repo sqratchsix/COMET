@@ -1,0 +1,37 @@
+**script				Start SCR
+qdver
+sthush
+**script				Start SCR
+
+**script				Enter MTID
+**user_input_string	500	swcmd,S268,%s,d	Enter MTID for WDS 
+**script				Enter MTID
+
+**script				SYNC
+**response_str	30000	swcmd,swcmd,0,qdver	RWQDVER
+**script				SYNC
+
+**script				Get MTID
+**response_log	30000	SWCMD,swcmd,0,q01	RWQ01, 
+**script
+
+**script				Door Closed
+**response_str	30000	swcmd,swcmd,0,swhcl,1	DOOR CLOSED
+**script				Door Closed
+
+**script				Door Open
+**response_str	30000	swcmd,swcmd,0,swhcl,0	DOOR OPEN
+**script				Door Open
+
+**script				CHECK
+**response_log	30000	swcmd,swcmd,0,qwhcl,1	RWQWHCL,1,
+**script
+
+**script				Inventory
+**response_str	30000	swcmd,swinv,0	RSWINV
+**script				Inventory
+
+**script				DROP
+**response_str	5000	swcmd,S268,0,d	Set Parameter[268] = 0: OK
+**script				DROP
+

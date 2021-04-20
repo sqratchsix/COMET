@@ -48,16 +48,13 @@ namespace Comet1
             NextToken();
          }
 
-         public TokenType TokenType
-         {
-            get { return mTokenType; }
-         }
+         public TokenType TokenType { get => mTokenType; }
 
          public decimal NumericalValue
          {
             get
             {
-               if (mTokenType == NaturalComparer.TokenType.Numerical)
+               if (mTokenType == TokenType.Numerical)
                {
                   return mNumericalValue;
                }
@@ -68,14 +65,11 @@ namespace Comet1
             }
          }
 
-         public string StringValue
-         {
-            get { return mStringValue; }
-         }
+         public string StringValue { get => mStringValue; }
 
          public void NextToken()
          {
-            do
+            while(true)
             {
                //CharUnicodeInfo.GetUnicodeCategory 
                if (mCurChar == '\0')
@@ -100,7 +94,6 @@ namespace Comet1
                   NextChar();
                }
             }
-            while (true);
          }
 
          private void NextChar()
@@ -121,20 +114,19 @@ namespace Comet1
             int start = mIdx;
             char NumberDecimalSeparator = NumberFormatInfo.CurrentInfo.NumberDecimalSeparator[0];
             char NumberGroupSeparator = NumberFormatInfo.CurrentInfo.NumberGroupSeparator[0];
-            do
+            while(true)
             {
                NextChar();
                if (mCurChar == NumberDecimalSeparator)
                {
                   // parse digits after the Decimal Separator 
-                  do
+                  while(true)
                   {
                      NextChar();
                      if (!char.IsDigit(mCurChar) && mCurChar != NumberGroupSeparator)
                         break; 
 
                   }
-                  while (true);
                   break; 
                }
                else
@@ -143,16 +135,15 @@ namespace Comet1
                      break; 
                }
             }
-            while (true);
             mStringValue = mSource.Substring(start, mIdx - start);
             if (decimal.TryParse(mStringValue, out mNumericalValue))
             {
-               mTokenType = NaturalComparer.TokenType.Numerical;
+               mTokenType = TokenType.Numerical;
             }
             else
             {
                // We probably have a too long value 
-               mTokenType = NaturalComparer.TokenType.String;
+               mTokenType = TokenType.String;
             }
          }
 
@@ -163,7 +154,7 @@ namespace Comet1
             int romanValue = 0;
             int lastRoman = int.MaxValue;
             int cptLastRoman = 0;
-            do
+            while(true)
             {
                if (roman)
                {
@@ -245,16 +236,15 @@ namespace Comet1
                }
                if (!char.IsLetter(mCurChar)) break; 
             }
-            while (true);
             mStringValue = mSource.Substring(start, mIdx - start);
             if (roman)
             {
                mNumericalValue = romanValue;
-               mTokenType = NaturalComparer.TokenType.Numerical;
+               mTokenType = TokenType.Numerical;
             }
             else
             {
-               mTokenType = NaturalComparer.TokenType.String;
+               mTokenType = TokenType.String;
             }
          }
 
@@ -279,7 +269,7 @@ namespace Comet1
          int result;
          do
          {
-            if (mParser1.TokenType == TokenType.Numerical & mParser2.TokenType == TokenType.Numerical)
+            if (mParser1.TokenType == TokenType.Numerical && mParser2.TokenType == TokenType.Numerical)
             {
                // both string1 and string2 are numerical 
                result = decimal.Compare(mParser1.NumericalValue, mParser2.NumericalValue);
@@ -298,7 +288,7 @@ namespace Comet1
                mParser2.NextToken();
             }
          }
-         while (!(mParser1.TokenType == TokenType.Nothing & mParser2.TokenType == TokenType.Nothing));
+         while (!(mParser1.TokenType == TokenType.Nothing && mParser2.TokenType == TokenType.Nothing));
          //identical 
          return 0;
       }

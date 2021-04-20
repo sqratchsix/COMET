@@ -1,0 +1,53 @@
+**script		Wake and Check VBAT
+**dtr				true
+**delay			500
+**dtr				false
+**delay			500
+**dtr				true
+**delay			2000
+sdboot			sdboot
+sbl				sbl
+rma				rma
+**delay			3000
+stmask,0		trace mask ALL
+**response_log	500	qdain,1	RQDAIN,1, Ain[1] (VBAT) = 
+**delay			3000
+sdboot
+sbl
+ulcmd
+sinvmode
+rbt
+**script
+
+**script		Check Charging
+**response_log	500	qdain,1	RQDAIN,1, Ain[1] (VBAT) = 
+**script
+
+
+**script		BootLoader
+sdboot
+sbl
+**script		BootLoader
+
+**script		VBAT
+**response_log	500	qdain,1	RQDAIN,1, Ain[1] (VBAT) = 
+**script
+
+**script		Main Quiet
+rma				Main
+stmask,0		trace mask ALL
+**script
+
+
+**script		Inventory
+**delay			200
+qdver
+sdboot			sdboot
+sbl				sbl
+qdver			qdver
+ulcmd			ulcmd
+sinvmode		sinvmode
+rbt				rbt
+**script
+
+

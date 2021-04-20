@@ -2,13 +2,12 @@ C:\ttp\Xtra\COMET\COMET\bin\Debug\Comet.exe.config
 C:\ttp\Xtra\COMET\COMET\bin\Debug\Comet.exe
 C:\ttp\Xtra\COMET\COMET\bin\Debug\Comet.pdb
 C:\ttp\Xtra\COMET\COMET\obj\x86\Debug\Comet1.About.resources
-C:\ttp\Xtra\COMET\COMET\obj\x86\Debug\Comet1.DialogWin.resources
-C:\ttp\Xtra\COMET\COMET\obj\x86\Debug\Comet1.PromptSmartButtonEdit.resources
 C:\ttp\Xtra\COMET\COMET\obj\x86\Debug\Comet1.PromptScriptEdit.resources
+C:\ttp\Xtra\COMET\COMET\obj\x86\Debug\Comet1.ToolBox.resources
 C:\ttp\Xtra\COMET\COMET\obj\x86\Debug\Comet1.SerialWindow.resources
 C:\ttp\Xtra\COMET\COMET\obj\x86\Debug\Comet1.Properties.Resources.resources
-C:\ttp\Xtra\COMET\COMET\obj\x86\Debug\COMET.csproj.GenerateResource.Cache
+C:\ttp\Xtra\COMET\COMET\obj\x86\Debug\COMET.csproj.GenerateResource.cache
+C:\ttp\Xtra\COMET\COMET\obj\x86\Debug\COMET.csproj.CoreCompileInputs.cache
 C:\ttp\Xtra\COMET\COMET\obj\x86\Debug\Comet.exe
 C:\ttp\Xtra\COMET\COMET\obj\x86\Debug\Comet.pdb
-C:\ttp\Xtra\COMET\COMET\obj\x86\Debug\COMET.csprojResolveAssemblyReference.cache
-C:\ttp\Xtra\COMET\COMET\obj\x86\Debug\Comet1.ToolBox.resources
+C:\ttp\Xtra\COMET\COMET\obj\x86\Debug\COMET.csprojAssemblyReference.cache

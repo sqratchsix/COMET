@@ -1,0 +1,36 @@
+QDVER
+
+**script		BootLoader
+SDBOOT
+SBL
+**script		BootLoader
+
+ULCMD			Unlock
+SID,3			Set MTID 3
+SID,7			Set MTID 7
+QDEEINFO		Flash Info
+RBT				Reboot from Bootloader
+
+QMTID			Query MTID
+
+RMA				Main Mode
+SDBOOT			Reboot from Main
+
+SL4				WLAN Radio Lockstep
+QDVER
+
+SWFREQ,0		Set Freq Ch 0
+SWPHY,3			Set Modulation Scheme
+
+SWPOW,190		Set Pwr 19 dBm
+QWPOW			Get Pwr Level
+
+SWTID,3			Assign Target ID 3
+SWTID,7			Assign Target ID 7
+SWRX			Rx Packets
+SWTX,10			Tx 10 Packets
+
+SWRXSWP			Rx Mode Sweep
+SWTXSWP,20		Tx 20 Packets Sweep
+
+SWTRXT			Terminate TxRx Mode

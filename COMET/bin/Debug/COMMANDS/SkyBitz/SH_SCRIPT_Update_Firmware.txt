@@ -1,0 +1,9 @@
+sdboot
+lll
+b
+y
+
+**script		Update Firmware
+**xmodem		C:\firmware\images\ea1048.bin
+**script
+

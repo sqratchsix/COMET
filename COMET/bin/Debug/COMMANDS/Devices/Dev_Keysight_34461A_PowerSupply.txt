@@ -1,0 +1,9 @@
+++addr 22				++addr 22
+*idn?				*idn?
+meas:RES?				meas:RES?
+meas:DC?				meas:DC?
+meas:CURR?				meas:CURR?
+meas:CONT?				meas:CONT?
+meas:CAP?				meas:CAP?
+meas:DIODE?				meas:DIODE?
+MEAS:temp?				MEAS:temp?

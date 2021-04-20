@@ -1,0 +1,35 @@
+**script			Set Port
+**settings	9600	ASCII	True	30
+**script			Set Port
+
+**Script			Initialize
+**DTR				True
+*idn?				Device ID
+SYSTem:ERRor?		Errors?
+*RST				Reset
+SYSTem:REMote		Remote Mode
+**Script			Initialize
+
+*idn?				Device ID
+SYSTem:REMote		Remote Mode
+
+outp ON				ON
+OUTP OFF			OFF
+
+VOLT 8.0			+8  V
+VOLT 12.0			+12 V
+
+:MEASURE:VOLTAGE:DC?	Meas Voltage
+:MEASURE:CURRent?	Meas Current
+
+**script			measure loop
+**log	500		:MEASURE:VOLTAGE:DC?
+**log	500		:MEASURE:CURRent?
+**script			measure loop
+
+*CLS				Clear
+*RST				Reset
+SYSTem:ERRor?		Errors?
+
+*OPC?				OPC
+

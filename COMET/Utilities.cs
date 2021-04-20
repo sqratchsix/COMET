@@ -42,26 +42,24 @@ namespace Comet1
 
         public static bool writeStringToFile(string fileName, string data)
         {
-            bool written = false;
             try
             {
                 using (FileStream fs = new FileStream(fileName, FileMode.Append, FileAccess.Write))
                 using (StreamWriter sw = new StreamWriter(fs))
                 {
                     sw.WriteLine(data);
-                    written = true;
+                    return true;
                 }
             }
             catch (Exception)
             {
                 
             }
-            return written;
+            return false;
         }
 
         internal static double convertMS(double input, string timeType, bool ToMS)
         {
-            double converted = 0;
             //convert to the appropriate time scale
             //timeType = mili sec min hour
             //ToMS : if true, the input is in MS already, so convert to the other type
@@ -69,50 +67,100 @@ namespace Comet1
             switch (timeType)
             {
                 case "milli":
-                    if (ToMS)
-                    {
-                        converted = input;
-                    }
-                    else
-                    {
-                        converted = input;
-                    }
-                    break;
+                    return input;
                 case "sec":
                     if (ToMS)
                     {
-                        converted = input*1000;
+                        return input*1000;
                     }
                     else
                     {
-                        converted = input/1000;
+                        return input/1000;
                     }
-                    break;
                 case "min":
                     if (ToMS)
                     {
-                        converted = input * 60 * 1000;
+                        return input * 60 * 1000;
                     }
                     else
                     {
-                        converted = input / (60 * 1000);
+                        return input / (60 * 1000);
                     }
-                    break;
                 case "hour":
                     if (ToMS)
                     {
-                        converted = input * 60 * 60 * 1000;
+                        return input * 60 * 60 * 1000;
                     }
                     else
                     {
-                        converted = input / (60 * 60 * 1000);
+                        return input / (60 * 60 * 1000);
                     }
-                    break;
-
                 default:
-                    break;
+                    return 0;
             }
-            return converted;
+        }
+
+        public static string ConvertHex(string hexString, bool removeWhitespace)
+        {
+            if(removeWhitespace)
+            {
+                //this would remove all whitespace characters, if that's better
+                //hexString = RegularExpressions.Replace(hexString, @"\s", "");
+                hexString = hexString.Replace(" ", String.Empty);
+                hexString = hexString.Replace("\r\n", String.Empty);
+                hexString = hexString.Replace("\n", String.Empty);
+            }
+            try
+            {
+                string ascii = string.Empty;
+
+                for (int i = 0; i < hexString.Length; i += 2)
+                {
+                    string hs = string.Empty;
+
+                    hs = hexString.Substring(i, 2);
+                    uint decval = System.Convert.ToUInt32(hs, 16);
+                    char character = System.Convert.ToChar(decval);
+                    ascii += character;
+
+                }
+
+                return ascii;
+            }
+            catch (Exception ex) { Console.WriteLine(ex.Message); }
+
+            return string.Empty;
+        }
+
+        public static string ConvertStringToHex(string InputString, bool removeWhitespace)
+        {
+            string hexOutput = "";
+
+            if (removeWhitespace)
+            {
+                //this would remove all whitespace characters, if that's better
+                //InputString = RegularExpressions.Replace(InputString, @"\s", "");
+                InputString = InputString.Replace(" ", string.Empty);
+            }
+
+            try
+            {
+                char[] charValues = InputString.ToCharArray();
+                foreach (char _eachChar in charValues)
+                {
+                    // Get the integral value of the character.
+                    int value = Convert.ToInt32(_eachChar);
+                    // Convert the decimal value to a hexadecimal value in string form.
+                    hexOutput += string.Format("{0:X}", value);
+                    // to make output as your eg 
+                    //  hexOutput +=" "+ String.Format("{0:X}", value);
+                }
+            }
+            catch (Exception)
+            {
+
+            }
+            return hexOutput;
         }
     }
 
@@ -169,6 +217,21 @@ namespace Comet1
         {
             AllFilePaths.Add(path);
             //Console.WriteLine("Processed file '{0}'.", path);
+        }
+    }
+
+    public static class ToolStripItemExtension
+    {
+        public static ContextMenuStrip GetContextMenuStrip(this ToolStripItem item)
+        {
+            ToolStripItem itemCheck = item;
+
+            while (!(itemCheck.GetCurrentParent() is ContextMenuStrip) && itemCheck.GetCurrentParent() is ToolStripDropDown)
+            {
+                itemCheck = (itemCheck.GetCurrentParent() as ToolStripDropDown).OwnerItem;
+            }
+
+            return itemCheck.GetCurrentParent() as ContextMenuStrip;
         }
     }
 }

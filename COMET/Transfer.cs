@@ -28,10 +28,9 @@ namespace Comet1
 
         private void OnProgressChanged(int progress, bool blocking)
         {
-            var eh = ProgressChanged;
-            if (eh != null)
+            if (ProgressChanged != null)
             {
-                eh(progress, blocking);
+                ProgressChanged(progress, blocking);
             }
         }
 
@@ -42,13 +41,15 @@ namespace Comet1
          * ret: is the transfer succeeded? true is if yes
          */
 
+        
+
         public bool YmodemUploadFile(string path, bool AckPayloads)
         {
             /* control signals */
             const byte STX = 2;  // Start of TeXt
             const byte EOT = 4;  // End Of Transmission
-            const byte ACK = 6;  // Positive ACknowledgement
-            const byte C = 67;   // capital letter C
+            const byte ACK = 6;  // Positive ACKnowledgement
+            const byte C = (byte)'C';   // capital letter C
 
             /* sizes */
             const int dataSize = 1024;
@@ -70,7 +71,6 @@ namespace Comet1
             double currentdata = 0;
             Console.WriteLine(totalFileSize);
             OnProgressChanged((int)((currentdata / totalFileSize) * 100), true);
-
             try
             {
                 /* send the initial packet with filename and filesize */
@@ -91,17 +91,17 @@ namespace Comet1
                     return false;
 
                 /* send packets with a cycle until we send the last byte */
-                int fileReadCount = 0; ;
+                int fileReadCount = 0;
 
                 //retry sending packets 3 times
                 int retrycount = 0;
                 int maxretry = 3;
-                Boolean lastPacketReceived = true;
+                bool lastPacketReceived = true;
 
                 do
                 {
                     //Generate a New Packet
-                    if (lastPacketReceived | !AckPayloads)
+                    if (lastPacketReceived || !AckPayloads)
                     {
                         /* if this is the last packet fill the remaining bytes with 0 */
                         fileReadCount = fileStream.Read(data, 0, dataSize);
@@ -135,7 +135,7 @@ namespace Comet1
                         //Reads 67 or 'C' when the data is all 0xFF
                         //meaning the receiver is responding with C to start the transmission>?
                         //TODO - Fix Bug
-                        if ((responseByte == ACK) | (responseByte == C))
+                        if ((responseByte == ACK) || (responseByte == C))
                         {
                             lastPacketReceived = true;
                         }
@@ -151,15 +151,14 @@ namespace Comet1
                                 //otherwise, retry
                                 retrycount++;
                                 Console.WriteLine("Couldn't send a packet - Retry: " + retrycount.ToString());
-                                
                             }                           
                         }
                     }
 
-                    if (lastPacketReceived | !AckPayloads)
+                    if (lastPacketReceived || !AckPayloads)
                     {
                         //update how much data was sent
-                        currentdata = currentdata + dataSize;
+                        currentdata += dataSize;
                     }
                     //display the progress
                         OnProgressChanged((int)((currentdata / totalFileSize) * 100), true);
@@ -213,7 +212,7 @@ namespace Comet1
 
             /* add filename to data */
             int i;
-            for (i = 0; i < fileName.Length && (fileName.ToCharArray()[i] != 0); i++)
+            for (i = 0; (i < fileName.Length) && (fileName.ToCharArray()[i] != 0); i++)
             {
                 data[i] = (byte)fileName.ToCharArray()[i];
             }
@@ -221,7 +220,7 @@ namespace Comet1
 
             /* add filesize to data */
             int j;
-            for (j = 0; j < fileSize.Length && (fileSize.ToCharArray()[j] != 0); j++)
+            for (j = 0; (j < fileSize.Length) && (fileSize.ToCharArray()[j] != 0); j++)
             {
                 data[(i + 1) + j] = (byte)fileSize.ToCharArray()[j];
             }
@@ -285,18 +284,21 @@ namespace Comet1
             /* footer: 1 byte */
             int checkSum = 0;
 
+            int retry = 0;
+
             /* get the file */
             FileStream fileStream = new FileStream(@path, FileMode.Open, FileAccess.Read);
 
             try
             {
+                                
                 /* get NAK */
                 if (serialPort.ReadByte() != NAK)
                 {
                     Console.WriteLine("Can't start the transfer");
                     return false;
                 }
-
+                
                 /* send packets with a cycle until we send the last byte */
                 int fileReadCount;
                 do
@@ -324,19 +326,25 @@ namespace Comet1
                     for (int i = 0; i < dataSize; i++)
                         checkSum += data[i];
 
-                    /* send the packet */
-                    serialPort.Write(new byte[] { SOH }, 0, 1);
-                    serialPort.Write(new byte[] { (byte)packetNumber }, 0, 1);
-                    serialPort.Write(new byte[] { (byte)invertedPacketNumber }, 0, 1);
-                    serialPort.Write(data, 0, dataSize);
-                    serialPort.Write(new byte[] { (byte)checkSum }, 0, 1);
-
+                    SendPacketXModem(SOH, dataSize, packetNumber, invertedPacketNumber, data, checkSum);
+                    retry = 0;
                     /* wait for ACK */
-                    if (serialPort.ReadByte() != ACK)
+                    /* COMET usually send CR/NL after commands. If a terminal isn't expecting this, 
+                     * the transfer can fail if a CR/NL was sent as the first byte, before the packet and instead of SOH
+                     * make sure you turn off line endings from the serial port parameters side menu if this is the case */
+                
+                    while (serialPort.ReadByte() != ACK)
                     {
-                        Console.WriteLine("Couldn't send a packet.");
-                        return false;
+                        //not sure if this retry works
+                        Console.WriteLine("Couldn't send a packet");
+                        if (retry > 2)
+                        {
+                            return false;
+                        }
+                        SendPacketXModem(SOH, dataSize, packetNumber, invertedPacketNumber, data, checkSum);
                     }
+
+                    //does fileReadCount update in another thread or does this update forever?
                 } while (dataSize == fileReadCount);
 
                 /* send EOT (tell the downloader we are finished) */
@@ -355,6 +363,18 @@ namespace Comet1
             }
             return false;
         }
+
+        private void SendPacketXModem(byte header, byte dataSize, int packetNumber, int invertedPacketNumber, byte[] data, int checkSum)
+        {
+            Console.WriteLine("Sending Packet");
+            /* send the packet */
+            serialPort.Write(new byte[] { header }, 0, 1);
+            serialPort.Write(new byte[] { (byte)packetNumber }, 0, 1);
+            serialPort.Write(new byte[] { (byte)invertedPacketNumber }, 0, 1);
+            serialPort.Write(data, 0, dataSize);
+            serialPort.Write(new byte[] { (byte)checkSum }, 0, 1);
+        }
+
 
         #endregion XMODEM
 

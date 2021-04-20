@@ -1,0 +1,19 @@
+QDVER
+
+**script		BootLoader
+sdboot
+sbl
+**script		BootLoader
+
+SDOUT,29,1		Pwr WLAN
+SL4				WLAN Lockstep
+
+**script		WLAN BootLoader
+sdboot
+sbl
+**script		WLAN BootLoader
+
+SDYULD			Enter YModem Wait
+
+QDFCRC			Check Flash CRC
+RBT				Reboot

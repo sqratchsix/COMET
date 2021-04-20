@@ -57,6 +57,7 @@
     <Compile Include="DialogWin.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="Ini.cs" />
     <Compile Include="ResponseAnalyzer.cs" />
     <Compile Include="ScriptRunner.cs" />
     <Compile Include="ToolBox.cs">
@@ -94,17 +95,11 @@
     <EmbeddedResource Include="About.resx">
       <DependentUpon>About.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="ToolBox.resx">
-      <DependentUpon>ToolBox.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="DialogWin.resx">
-      <DependentUpon>DialogWin.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Form1.resx">
-      <DependentUpon>PromptSmartEdit.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="PromptScriptEdit.resx">
       <DependentUpon>PromptScriptEdit.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ToolBox.resx">
+      <DependentUpon>ToolBox.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="SerialWindow.resx">
       <DependentUpon>SerialWindow.cs</DependentUpon>
@@ -122,6 +117,7 @@
     </Compile>
     <None Include="app.config" />
     <None Include="ClassDiagram5.cd" />
+    <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>

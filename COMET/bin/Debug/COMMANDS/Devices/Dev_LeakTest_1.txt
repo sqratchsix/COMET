@@ -1,0 +1,266 @@
+**Script			Set PS
+++addr 5
+**delay				100
+INST N25V
+APPL N25V, 0, 1
+INST P25V
+APPL P25V, 0, 1
+INST P6V
+APPL P6V, 0, 1
+OUTP OFF
+**script
+
+**Script			Engage Gaket Open
+++addr 5
+**delay				100
+INST P25V
+APPL P25V, 0, 1
+INST N25V
+APPL N25V, -24, 1
+OUTP ON
+
+**script
+
+**Script			Engage Gaket Lock
+++addr 5
+**delay				100
+INST P25V
+APPL P25V, 0, 1
+INST N25V
+APPL N25V, -24, 1
+OUTP ON
+INST N25V
+APPL N25V, 0, 1
+**script
+
+**Script			Release Gasket
+++addr 5
+**delay				100
+INST N25V
+APPL N25V, 0, 1
+INST P25V
+APPL P25V, 24, 1
+OUTP OFF
+**script
+
+++addr 16			GPIB Addr
+*idn?				Device ID
+
+**Script			Sense Pressure
+**log	500		SENS?
+**script
+
+*CLS
+*RST
+UNIT:PRES PSI			SET PSI
+CAL:ZERO:AUTO 1			ZERO
+SOUR:VENT 1				VENT
+SENS?					Read Pressure
+
+
+OUTP:STAT ON			Regulate ON
+OUTP:STAT OFF			Regulate OFF
+OUTP:STAT?				Get Reg Status
+SOUR 1.420				Set Source PSI
+SENS:PRES:CORR:VOL?		Read Volume
+
+**Script			LT Full 30sec Close
+++addr 5
+**delay				100
+INST P25V
+APPL P25V, 0, 1
+INST N25V
+APPL N25V, -24, 1
+OUTP ON
+INST N25V
+APPL N25V, 0, 1
+++addr 16			GPIB Addr
+SOUR 1.420				Set Source PSI
+OUTP:STAT ON			Regulate ON
+**sleep					30000
+OUTP:STAT OFF			Regulate OFF
+**delay					1000
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+++addr 5
+**delay				100
+INST N25V
+APPL N25V, 0, 1
+INST P25V
+APPL P25V, 24, 1
+OUTP OFF
+**sleep				10000
+**script
+
+**Script			LT Full 30sec Keep Open
+++addr 5
+**delay				100
+INST P25V
+APPL P25V, 0, 1
+INST N25V
+APPL N25V, -24, 1
+OUTP ON
+++addr 16			GPIB Addr
+SOUR 1.420				Set Source PSI
+OUTP:STAT ON			Regulate ON
+**sleep					30000
+OUTP:STAT OFF			Regulate OFF
+**delay					1000
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+++addr 5
+**delay				100
+INST N25V
+APPL N25V, 0, 1
+INST P25V
+APPL P25V, 24, 1
+OUTP OFF
+**sleep				30
+**script
+
+**Script			Leak Test 30sec
+++addr 16			GPIB Addr
+SOUR 1.420				Set Source PSI
+OUTP:STAT ON			Regulate ON
+**sleep					15000
+OUTP:STAT OFF			Regulate OFF
+**delay					1000
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+
+**script
+
+**Script			Vent Test 30sec
+++addr 16			GPIB Addr
+SOUR:VENT 1				VENT
+**sleep					5000
+
+**delay					1000
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+**log	1000	SENS?
+
+**script

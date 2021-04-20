@@ -10,22 +10,22 @@ namespace Comet1
 {
     class ActiveSerialPort
     {
-        //Serial Port Parameters
-        string portName = "COM1";
-        int baudRate = 115200;
+        public string PortName { get; set; } = "COM1";
+        public int BaudRate { get; set; } = 115200;
+
+
+
         Parity parity = (Parity)0;
-        int dataBits = 8;
         StopBits stopBits = (StopBits)1;
         int portTimeoutWriteMS = 2000;
         int portTimeoutReadMS = 2000;
-        public Boolean isOpen = false;
-        public SerialPort activeSerial;
-        public String PortName { get { return portName; } set { portName = value; } }
-        public int BaudRate { get { return baudRate; } set { baudRate = value; } }
+        public bool IsOpen { get; set; } = false;
+        public SerialPort ActiveSerial { get; set; }
+        public int DataBits { get; set; } = 8;
         //public int Parity { get { return parity; } set { parity = (Parity)value; } }
-        public int DataBits { get { return dataBits; } set { dataBits = value; } }
+
         //public int StopBits { get { return stopBits; } set { stopBits = (StopBits)value; } }
-        public string dataType = "ASCII"; //Can be "ASCII" or "HEX"
+        public enumDataType DataType { get; set; } = enumDataType.ASCII; //Can be "ASCII" or "HEX"
         //Data handling
         public event EventHandler DataReadyToRead;
         private System.Timers.Timer aTimer;
@@ -35,65 +35,54 @@ namespace Comet1
         string newData = "";
         string currentData = "";
         string lineEnd = System.Environment.NewLine;
+        public bool addByteSpaces = true;
 
-        public Boolean createBasicSerialPort(String portName_in, int baudRate_in, Boolean DataTypeASCII)
+        public bool createBasicSerialPort(string portName_in, int baudRate_in, enumDataType dataType)
         {
-            this.portName = portName_in;
-            this.baudRate = baudRate_in;
-            setDataType(DataTypeASCII);
+            this.PortName = portName_in;
+            this.BaudRate = baudRate_in;
+            this.DataType = dataType;
             return createSerialPort();
         }
 
-        private void setDataType(bool DataTypeASCII)
-        {
-            if (DataTypeASCII)
-            {
-                this.dataType = "ASCII";
-            }
-            else
-            {
-                this.dataType = "HEX";
-            }
-        }
-
-        public Boolean createSerialPort()
+        public bool createSerialPort()
         {
             try
             {
                 //most hardware does not support StopBits 'None' or 'OnePointFive"; will cause an exception
-                activeSerial = new SerialPort(portName, baudRate, parity, dataBits, stopBits);
-                activeSerial.Open();
+                ActiveSerial = new SerialPort(PortName, BaudRate, parity, DataBits, stopBits);
+                ActiveSerial.Open();
                 //set the port timeouts
                 updateReadWriteTimeout();
 
-                isOpen = activeSerial.IsOpen;
+                IsOpen = ActiveSerial.IsOpen;
                 //register the event handler
-                activeSerial.DataReceived += new SerialDataReceivedEventHandler(DataReceivedHandler);
+                ActiveSerial.DataReceived += new SerialDataReceivedEventHandler(DataReceivedHandler);
                 //create the timeout timer for reading data
                 aTimer = new System.Timers.Timer(portReadTimeoutMS);
                 this.aTimer.AutoReset = false;
                 // Hook up the Elapsed event for the timer. 
                 aTimer.Elapsed += OnTimedEvent;
 
-                return isOpen;
+                return IsOpen;
             }
             catch (Exception)
             {
-                isOpen = false;
-                return isOpen;
+                this.IsOpen = false;
+                return this.IsOpen;
             }
         }
 
-        public Boolean openSerialPort(string m_portName, int m_baudRate, Parity m_parity, int m_dataBits, StopBits m_stopBits, int m_timeoutMS, Boolean DataTypeASCII, int portReadTimeout)
+        public bool openSerialPort(string m_portName, int m_baudRate, Parity m_parity, int m_dataBits, StopBits m_stopBits, int m_timeoutMS, enumDataType dataType, int portReadTimeout)
         {
-            setDataType(DataTypeASCII);
-            portName = m_portName;
-            baudRate = m_baudRate;
-            parity = m_parity;
-            dataBits = m_dataBits;
-            stopBits = m_stopBits;
-            portTimeoutReadMS = m_timeoutMS;
-            portTimeoutWriteMS = m_timeoutMS;
+            this.DataType = dataType;
+            this.PortName = m_portName;
+            this.BaudRate = m_baudRate;
+            this.parity = m_parity;
+            this.DataBits = m_dataBits;
+            this.stopBits = m_stopBits;
+            this.portTimeoutReadMS = m_timeoutMS;
+            this.portTimeoutWriteMS = m_timeoutMS;
             this.portReadTimeoutMS = portReadTimeout;
 
             return createSerialPort();
@@ -101,36 +90,33 @@ namespace Comet1
 
         public int closeSerialPort()
         {
-            int returnVal = -1;
-
             try
             {
-                activeSerial.Close();
-                isOpen = activeSerial.IsOpen;
-                returnVal = 1;
+                ActiveSerial.Close();
+                IsOpen = ActiveSerial.IsOpen;
+                return 1;
             }
             catch (Exception)
             {
                 //C
             }
-            return returnVal;
+            return -1;
         }
 
         public void setPortTimeout(int writeTimeout, int readTimeout)
         {
             this.portTimeoutReadMS = readTimeout;
             this.portTimeoutWriteMS = writeTimeout;
-            if (isOpen)
+            if (IsOpen)
             {
                 updateReadWriteTimeout();
             }
-
         }
 
         private void updateReadWriteTimeout()
         {
-            activeSerial.WriteTimeout = portTimeoutWriteMS;
-            activeSerial.ReadTimeout = portTimeoutReadMS;
+            ActiveSerial.WriteTimeout = portTimeoutWriteMS;
+            ActiveSerial.ReadTimeout = portTimeoutReadMS;
         }
         public int getReadTimeout()
         {
@@ -142,31 +128,29 @@ namespace Comet1
             return portTimeoutWriteMS;
         }
 
-        public String getConnectionInfo(int returnformat)
+        public string getConnectionInfo(int returnformat)
         {
             //A concise String that has all the parameters of the open port
             //longer version returnformat =1
-            String connectionInfo = "";
-            if (isOpen)
+            if (IsOpen)
             {
                 if(returnformat == 1)
                 {
-                    connectionInfo = portName + ":  " + baudRate.ToString() + "," + parity.ToString() + "," + dataBits.ToString() + "," + stopBits.ToString();
+                    return PortName + ":  " + BaudRate.ToString() + "," + parity.ToString() + "," + DataBits.ToString() + "," + stopBits.ToString();
                 }
                 else
                 {
-                    connectionInfo = portName + "  (" + baudRate.ToString() + ")";
+                    return PortName + "  (" + BaudRate.ToString() + ")";
                 }
             }
-                else
-                {
-                    connectionInfo = "No Connection";
-                }
-            return connectionInfo;
+            else
+            {
+                return "No Connection";
+            }
         }
 
         //TODO need to decode the enumeration returned from dwSettableBaud
-        public static Int32 getAvailableBaudRates(string m_portName)
+        public static int getAvailableBaudRates(string m_portName)
         {
             //make a new serial port just to check the available baudrates
             SerialPort tempSerialPort = null;
@@ -177,7 +161,7 @@ namespace Comet1
                 //Getting COMMPROP structure, and its property dwSettableBaud.
                 object p = tempSerialPort.BaseStream.GetType().GetField("commProp",
                     BindingFlags.Instance | BindingFlags.NonPublic).GetValue(tempSerialPort.BaseStream);
-                Int32 dwSettableBaud = (Int32)p.GetType().GetField("dwSettableBaud",
+                int dwSettableBaud = (int)p.GetType().GetField("dwSettableBaud",
                     BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public).GetValue(p);
 
                 tempSerialPort.Close();
@@ -199,17 +183,19 @@ namespace Comet1
             aTimer.Start();
             SerialPort sp = (SerialPort)sender;
             //read the data
-            if(dataType.Equals("ASCII"))
+            switch(DataType)
             {
-                this.newData = activeSerial.ReadExisting();
-
-            }else{
-                int bytes = activeSerial.BytesToRead;
-                byte[] buffer = new byte[bytes];
-                activeSerial.Read(buffer, 0, bytes);
-
-                this.newData = BitConverter.ToString(buffer);
-               
+                case enumDataType.ASCII:
+                    this.newData = ActiveSerial.ReadExisting();
+                    break;
+                case enumDataType.HEX:
+                    int bytes = ActiveSerial.BytesToRead;
+                    byte[] buffer = new byte[bytes];
+                    ActiveSerial.Read(buffer, 0, bytes);
+                    this.newData = BitConverter.ToString(buffer);
+                    break;
+                default:
+                    throw new System.ComponentModel.InvalidEnumArgumentException("DataType");
             }
             continueDataRead();
         }
@@ -222,66 +208,63 @@ namespace Comet1
 
         public string readData()
         {
-                //prepare the data for output
-                String dataReceived = currentData;
-                //clear the buffer
-                this.currentData = "";
-                if (dataType.Equals("ASCII"))
-                {
+            //prepare the data for output
+            string dataReceived = currentData;
+            //clear the buffer
+            this.currentData = "";
+            switch(DataType)
+            {
+                case enumDataType.ASCII:
                     return dataReceived;
-                }
-                else
-                {
-                    return addByteSpacing(validateStringIsHex(dataReceived));
-                }
-   
+                case enumDataType.HEX:
+                    return validateStringIsHex(dataReceived);
+                default:
+                    throw new System.ComponentModel.InvalidEnumArgumentException("DataType");
+            }
         }
 
         public int ReadByte()
         {
-            return activeSerial.ReadByte();
+            return ActiveSerial.ReadByte();
         }
 
-        public String sendData(String dataToSend, bool endline)
+        public string sendData(string dataToSend, bool endline)
         {
             //only send actual data
-            if (isOpen & dataToSend.Length > 0)
+            if (IsOpen & dataToSend.Length > 0)
             {
                 try
                 {
-                    if (dataType.Equals("ASCII"))
+                    switch(DataType)
                     {
-                        //ASCII DATA
-                        string dataToSendToPort;
+                        case enumDataType.ASCII:
+                            //ASCII data
+                            string dataToSendToPort;
 
-                        if (endline)
-                        {
-                            dataToSendToPort = dataToSend + lineEnd;
-                        }
-                        else
-                        {
-                            dataToSendToPort = dataToSend;
-                        }
-                        activeSerial.Write(dataToSendToPort);
-                        return dataToSend;
-                        //Console.Write("ASCII");
+                            if (endline)
+                            {
+                                dataToSendToPort = dataToSend + lineEnd;
+                            }
+                            else
+                            {
+                                dataToSendToPort = dataToSend;
+                            }
+                            ActiveSerial.Write(dataToSendToPort);
+                            return dataToSend;
+                            //Console.Write("ASCII");
+                        case enumDataType.HEX:
+                            //HEX Data
+                            //Validate the String is hex
+
+                            //Console.Write("HEX");
+                            string formattedByteString = validateStringIsHex(dataToSend);
+                            byte[] bytesToSend = convertStringHEXToHEXBytes(formattedByteString);
+                            int offsetBytes = 0;
+                            ActiveSerial.Write(bytesToSend, offsetBytes, bytesToSend.Length);
+                            return formattedByteString;
+                        default:
+                            throw new System.ComponentModel.InvalidEnumArgumentException("DataType");
                     }
-                    else
-                    {
-                        //HEX Data
-                        //Validate the String is hex
-
-                        //Console.Write("HEX");
-                        String formattedByteString = addByteSpacing(validateStringIsHex(dataToSend));
-                        byte[] bytesToSend = convertStringHEXToHEXBytes(formattedByteString);
-                        int offsetBytes = 0;
-                        activeSerial.Write(bytesToSend, offsetBytes, bytesToSend.Length);
-
-                        return formattedByteString;
-
-                    }
-
-
                 }
                 catch (Exception)
                 {
@@ -295,7 +278,7 @@ namespace Comet1
         public void Write(byte[] buffer, int offset, int count)
         {
             //passthru method to write byte arrays directly yo serial port
-            activeSerial.Write(buffer, offset, count);
+            ActiveSerial.Write(buffer, offset, count);
         }
 
         public void serialBreak()
@@ -311,12 +294,12 @@ namespace Comet1
              * Sometimes this has to be sent twice to actually break ?
              */
             int extraBitTime = 2;
-            int bitsToBreak = this.dataBits + 2 + extraBitTime;
+            int bitsToBreak = this.DataBits + 2 + extraBitTime;
             int timeToBreakMS = 1;
             try
             {
                 
-                int calcBreakTime = bitsToBreak / this.baudRate;
+                int calcBreakTime = bitsToBreak / this.BaudRate;
                 if (calcBreakTime > 0)
                     timeToBreakMS = calcBreakTime;
             }
@@ -332,28 +315,25 @@ namespace Comet1
 
         public void SerialBreakToggle(int timeToBreakMS)
         {
-            this.activeSerial.BreakState = true;
+            this.ActiveSerial.BreakState = true;
             System.Threading.Thread.Sleep(timeToBreakMS);
-            this.activeSerial.BreakState = false;
+            this.ActiveSerial.BreakState = false;
         }
 
-        public void setSBREAK(bool setVal)
+        public void setSBREAK(bool breakState)
         {
             try
             {
-                activeSerial.BreakState = setVal;
+                ActiveSerial.BreakState = breakState;
             }
-            catch
-            {
-            }
+            catch { }
         }
 
         public void changeReadTimeout(int newReadTimeout)
         {
             this.portReadTimeoutMS = newReadTimeout;
             //re-create the timeout timer for reading data
-            aTimer.Interval = portReadTimeoutMS;
-
+            aTimer.Interval = this.portReadTimeoutMS;
         }
 
         private void OnTimedEvent(Object source, System.Timers.ElapsedEventArgs e)
@@ -366,18 +346,22 @@ namespace Comet1
 
         protected virtual void OnThresholdReached(EventArgs e)
         {
-            EventHandler handler = DataReadyToRead;
-            if (handler != null)
+            if (DataReadyToRead != null)
             {
-                handler(this, e);
+                DataReadyToRead(this, e);
             }
         }
 
-        private byte[] convertStringHEXToHEXBytes(String hexValuesString)
+        private byte[] convertStringHEXToHEXBytes(string hexValuesString)
         {
             //string must be delimited by " " {space}
             //"AA 11 22 33 44 55 66 77 88 99 AA BB CC DD EE FF"
-            return hexValuesString.Split().Select(s => Convert.ToByte(s, 16)).ToArray();
+            //return hexValuesString.Split().Select(s => Convert.ToByte(s, 16)).ToArray();
+            //Not Necessary as the string to be sent doesn't contain the spaces anymore
+            return Enumerable.Range(0, hexValuesString.Length)
+                 .Where(x => x % 2 == 0)
+                 .Select(x => Convert.ToByte(hexValuesString.Substring(x, 2), 16))
+                 .ToArray();
         }
 
         private string validateStringIsHex(string inputHexString)
@@ -398,7 +382,7 @@ namespace Comet1
 
                 String outputHexString = Regex.Replace(inputHexString, @"(\s|-)", "");
 
-                if (!(outputHexString.Length % 2 == 0))
+                if (outputHexString.Length % 2 != 0)
                 {
                     outputHexString = outputHexString.PadLeft(outputHexString.Length + 1, '0');
                 }
@@ -415,86 +399,41 @@ namespace Comet1
             
         
         }
-        private string addByteSpacing(String unspacedByteString)
-        {
-            int msgsize = unspacedByteString.Length;
-            if (msgsize == 0)
-            {
-                return "";
-            }
-                
-            //makes sure it's even
-            if (!(msgsize % 2 == 0))
-            {
-                unspacedByteString = unspacedByteString.PadLeft(unspacedByteString.Length + 1, '0');
-            }
-
-            StringBuilder addingSpacing = new StringBuilder();
-            Boolean complete = false;
-            int indexChar = 0;
-            while (!complete)
-            {
-                addingSpacing.Append(unspacedByteString[indexChar]);
-                addingSpacing.Append(unspacedByteString[indexChar+1]);
-                indexChar = indexChar + 2;
-                if (indexChar >= (msgsize))
-                {
-                    complete = true;
-                }
-                else
-                {
-                    addingSpacing.Append(" ");
-                }
-            }
-
-            return addingSpacing.ToString().ToUpper();
-        }
 
         public bool getDTR()
         {
             bool val = false;
             try
             {
-                val = activeSerial.DtrEnable;
+                val = ActiveSerial.DtrEnable;
             }
-            catch
-            {
-            }
+            catch { }
             return val;
         }
         public void setDTR(bool setVal)
         {
             try
             {
-                activeSerial.DtrEnable = setVal;
+                ActiveSerial.DtrEnable = setVal;
             }
-            catch
-            {
-            }
+            catch { }
         }
         public bool getRTS()
         {
-            bool val = false;
             try
             {
-                val = activeSerial.RtsEnable;
+                return ActiveSerial.RtsEnable;
             }
-            catch
-            {
-            }
-            return val;
+            catch { }
+            return false;
         }
         public void setRTS(bool setVal)
         {
             try
             {
-                activeSerial.RtsEnable = setVal;
+                ActiveSerial.RtsEnable = setVal;
             }
-            catch
-            {
-            }
+            catch { }
         }
     }
-
-
 }

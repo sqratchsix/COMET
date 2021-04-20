@@ -1,0 +1,49 @@
+qdver					qdver
+**script				BootLoader
+sdboot
+sbl
+**script				BootLoader
+rma						Main
+**script				Inventory
+**delay	200
+qdver
+sdboot
+sbl
+qdver
+ulcmd
+sinvmode
+rbt
+**script				Inventory
+**script				Radio ON Lockstep
+**delay	200
+SDOUT,4,1
+SDOUT,6,1
+**sleep	2000
+SDOUT,6,0
+QDIN,9
+SL1
+AT
+**script				Radio ON Lockstep
+**script				Radio Info
+AT+CGMI
+AT+CGMM
+AT+CGMR
+AT+CGSN
+AT+CIMI
+**script				Radio Info
+AT+CREG=2				Radio: Register
+AT+CESQ					Radio: ext sig qual
+**script				Exit Lockstep
+**serialbreak
+**serialbreak
+qdver
+**script				Exit Lockstep
+sdout,4,0				Radio Off
+
+sl1						lockstep
+at						at
+AT+KSLEEP?				AT+KSLEEP?
+AT+KSLEEP=2				AT+KSLEEP=2
+ati3					FW Info
+AT+NVRST=2				AT+NVRST=2
+

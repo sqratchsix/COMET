@@ -1,0 +1,17 @@
+++addr 5			GPIB Addr
+*idn?				Device ID
+
+*RST
+*CLS
+
+**Script			Set PS
+++addr 5
+INST N25V
+APPL N25V, 0, 1
+INST P25V
+APPL P25V, 0, 1
+INST P6V
+APPL P6V, 0, 1
+OUTP OFF
+**script
+

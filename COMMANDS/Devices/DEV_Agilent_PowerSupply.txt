@@ -23,8 +23,8 @@ VOLT 12.0			+12 V
 :MEASURE:CURRent?	Meas Current
 
 **script			measure loop
-**response_log	500		:MEASURE:VOLTAGE:DC?
-**response_log	500		:MEASURE:CURRent?
+**log	500		:MEASURE:VOLTAGE:DC?
+**log	500		:MEASURE:CURRent?
 **script			measure loop
 
 *CLS				Clear

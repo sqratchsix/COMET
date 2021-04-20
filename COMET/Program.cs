@@ -5,7 +5,6 @@ using System.Windows.Forms;
 
 namespace Comet1
 {
-
     class ProgramWithContext : ApplicationContext
     {
         ProgramWithContext()
@@ -14,14 +13,12 @@ namespace Comet1
             Application.Idle += new EventHandler(this.OnApplicationIsIdle);
         }
 
-
         private void OnApplicationIsIdle(object sender, EventArgs e){
             //If no forms are open, then close the program 
             if (Application.OpenForms.Count == 0)
             {
                 Application.Exit();
             }
-
         }
         /// <summary>
         /// The main entry point for the application.
@@ -51,4 +48,10 @@ namespace Comet1
 
        }
     }
+
+    public enum enumDataType
+    {
+        ASCII,
+        HEX
+    };
 }

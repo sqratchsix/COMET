@@ -1,0 +1,55 @@
+ate1		Ping Radio
+
+**script		Radio Setup
+at#testmode="om"		Operation Mode
+**sleep			2000
+at#testmode="tm"		Test Mode
+**sleep			800
+at+xpow=1,65535,255		Enable Radio
+**script		Radio Setup
+
+**script		Transmit 1880 MHz
+**delay			1500
+at#testmode="init4g"		Initialize
+at#testmode="pl4g 384"		Power Level Setup
+at#testmode="ch4g 18900 3"		1880 MHz
+at#testmode="tx4g"		Transmit Signal
+**script		Transmit 1880 MHz
+
+**script		Transmit 1732.5 MHz
+**delay			1500
+at#testmode="init4g"		Initialize
+at#testmode="pl4g 384"		Power Level Setup
+at#testmode="ch4g 20175 3"		1732.5 MHz
+at#testmode="tx4g"		Transmit Signal
+**script		Transmit 1732.5 MHz
+
+**script		Transmit 836.5 MHz
+**delay			1500
+at#testmode="init4g"		Initialize
+at#testmode="pl4g 384"		Power Level Setup
+at#testmode="ch4g 20525 3"		836.5 MHz
+at#testmode="tx4g"		Transmit Signal
+**script		Transmit 836.5 MHz
+
+**script		Transmit 707.5 MHz
+**delay			1500
+at#testmode="init4g"		Initialize
+at#testmode="pl4g 384"		Power Level Setup
+at#testmode="ch4g 23095 3"		707.5 MHz
+at#testmode="tx4g"		Transmit Signal
+**script		Transmit 707.5 MHz
+
+**script		Transmit 782 MHz
+**delay			1500
+at#testmode="init4g"		Initialize
+at#testmode="pl4g 384"		Power Level Setup
+at#testmode="ch4g 23230 3"		782 MHz
+at#testmode="tx4g"		Transmit Signal
+**script		Transmit 782 MHz
+
+**script		De-Initialize
+**delay			1500
+at#testmode="esc"					Escape
+at#testmode="deinit4g"					De-Initialize
+**script		De-Initialize

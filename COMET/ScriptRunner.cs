@@ -12,6 +12,7 @@ namespace Comet1
 {
     public class ScriptRunner
         {
+       
             //currentScript is an ArrayList of script items
             //each script item is its own ArrayList that starts with a commandtype (SERIAL or FUNCTION)
             //if the command type is serial, the command to be sent is a serial command
@@ -19,14 +20,15 @@ namespace Comet1
             public ArrayList currentScript;
             public DataTable dt;
 
-            int delayMS = 1000;     //default delay time between commands
+            public static int defaultDelayTimeMs = 500;
+            int delayMS = defaultDelayTimeMs;     //default delay time between commands
             public string scriptName = "";
             public string scriptPath = "";
 
             public bool stop = false;
 
             //looping parameters
-            int loopTimeMS = 5000;
+            int loopTimeMS = 100;
             int loopCount = 1;
 
             public ScriptRunner(int delay_in_MS)
@@ -120,14 +122,14 @@ namespace Comet1
 
                 try
                 {
-                    if (!(recalledData == null || recalledData.Length == 0))
+                    if (recalledData != null && recalledData.Length != 0)
                     {
                         for (int i = 0; i < recalledData.Length; i++)
                         {
                             String[] parsed = recalledData[i].Split(stringSeparator, StringSplitOptions.RemoveEmptyEntries);
                             //parse out the data
                             //look for lines that start with '**' which indicates a function
-                            if (!(parsed == null || parsed.Length == 0))
+                            if (parsed != null && parsed.Length != 0)
                             {
                                 //ignore skippedlines
                                 if (parsed[0].Length > 0)
@@ -194,8 +196,28 @@ namespace Comet1
                 return tempDT;
             }
 
+        public ArrayList convertDataTableToScript(DataTable inputTable)
+        {
+            ArrayList generatedScript = new ArrayList();
 
-            public void Close()
+            foreach (DataRow commandlist in inputTable.Rows)
+            {
+                ArrayList command = new ArrayList();
+                //most commands do not have multiple arguments, so only add what's there
+                for (int i = 0; i < inputTable.Columns.Count; i++)
+                {
+                    if (commandlist[i].ToString().Length > 0)
+                    {
+                        command.Add(commandlist[i]);
+                    }
+                }
+                generatedScript.Add(command);
+            }
+
+            return generatedScript;
+        }
+
+        public void Close()
             {
                 this.stop = true;
             }
@@ -206,6 +228,24 @@ namespace Comet1
             }
         }
 
-
+    public enum ScriptCommands
+    {
+        delay,
+        sleep,
+        serialbreak,
+        sbreak,
+        rts,
+        dtr,
+        settings,
+        time,
+        response_str,
+        response_int_between,
+        response_log,
+        user_input_command,
+        user_input_string,
+        ymodem,
+		set_writenewline,
+		set_readnewline
+    }
 
 }

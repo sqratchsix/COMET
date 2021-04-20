@@ -1,0 +1,32 @@
+**script				Set Port
+**settings	9600	ASCII	True	30
+**script				Set Port
+
+**script				Initialize PS
+++addr 14				++addr 14
+*idn?
+**script				Initialize
+
+**script				Power On
+VOLT 8.0
+OUTP ON
+**script				Power On
+OUTP OFF
+
+**script		Read New Line Off
+**set_readreadnewline		false
+**script		Read New Line Off
+
+**script				measure loop
+**log		500	:MEASURE:VOLTAGE:DC?
+**log		500	:MEASURE:CURRent?
+**script				measure loop
+
+**script				measure current
+**log		100	:MEASURE:CURRent?
+**script				measure current
+
+*CLS				Clear
+*RST				Reset
+SYSTem:ERRor?				Errors?
+

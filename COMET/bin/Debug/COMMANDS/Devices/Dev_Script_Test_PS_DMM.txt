@@ -1,0 +1,70 @@
+**script				Set Port
+**settings	9600	ASCII	True	30
+**script				Set Port
+
+**script				Initialize DMM
+++addr 22				++addr 6
+*idn?
+**script				Initialize
+
+**script				Initialize PS
+++addr 6				++addr 6
+*idn?
+**script				Initialize
+
+**script				Test1
+
+++addr 6
+volt 8;outp ON;MEASURE:VOLTAGE:DC?
+++addr 22
+**log	500	:MEASURE:VOLTAGE:DC?
+**log	500	:MEASURE:CURRent?
+++addr 6
+volt 9;outp ON;MEASURE:VOLTAGE:DC?
+++addr 22
+**log	500	:MEASURE:VOLTAGE:DC?
+**log	500	:MEASURE:CURRent?
+++addr 6
+volt 10;outp ON;MEASURE:VOLTAGE:DC?
+++addr 22
+**log	500	:MEASURE:VOLTAGE:DC?
+**log	500	:MEASURE:CURRent?
+++addr 6
+volt 11;outp ON;MEASURE:VOLTAGE:DC?
+++addr 22
+**log	500	:MEASURE:VOLTAGE:DC?
+**log	500	:MEASURE:CURRent?
+++addr 6
+volt 12;outp ON;MEASURE:VOLTAGE:DC?
+++addr 22
+**log	500	:MEASURE:VOLTAGE:DC?
+**log	500	:MEASURE:CURRent?
+++addr 6
+volt 13;outp ON;MEASURE:VOLTAGE:DC?
+++addr 22
+**log	500	:MEASURE:VOLTAGE:DC?
+**log	500	:MEASURE:CURRent?
+++addr 6
+volt 0;outp OFF;MEASURE:VOLTAGE:DC?
+
+**script				Test1
+
+++addr 22
+:MEASURE:CURRent?
+OUTP OFF				OFF
+
+VOLT 12.0				+12 V
+
+**script				measure loop
+**log	500	:MEASURE:VOLTAGE:DC?
+**log	500	:MEASURE:CURRent?
+**script				measure loop
+
+**script				measure current
+**log	500	:MEASURE:CURRent?
+**script				measure current
+
+*CLS				Clear
+*RST				Reset
+SYSTem:ERRor?				Errors?
+
