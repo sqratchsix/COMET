@@ -8,6 +8,7 @@ using System.IO;
 using System.IO.Ports;
 using System.Linq;
 using System.Management;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Timers;
@@ -99,6 +100,9 @@ namespace Comet1
 
             //look for an .ini file and try to load the initial state
             loadInitialState();
+
+            //this.AutoScaleDimensions = new System.Drawing.SizeF(5F, 12F);
+            //this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
         }
 
         public void updateSerialPortList()
@@ -410,16 +414,21 @@ namespace Comet1
             //close the serial port on close
             try
             {
+                if (currentConnection != null) {
                 this.currentConnection.closeSerialPort();
+                }
             }
             catch { }
 
             //close any results window
             try
             {
-                ResultWindow.Close();
-                ResultWindow.Dispose();
-                ResultWindow = null;
+                if (ResultWindow != null)
+                {
+                    ResultWindow.Close();
+                    ResultWindow.Dispose();
+                    ResultWindow = null;
+                }
             }
             catch { }
 
@@ -598,6 +607,11 @@ namespace Comet1
         {
             var newbutton = new SmartButton(buttonType, buttonCommandText, buttonDescriptionText, displayCMD);
 
+            setButtonStyle(newbutton, buttonStyle);
+            setButtonLocation(newbutton);
+            setButtonEventHandlers(newbutton, true);
+
+            //Tooltip needs to be added after the button event handlers are created, as setButtonEventHandlers clears all events!
             if (displayCMD)
             {
                 this.toolTip1.SetToolTip(newbutton, newbutton.CommandDescription);
@@ -607,10 +621,7 @@ namespace Comet1
                 this.toolTip1.SetToolTip(newbutton, newbutton.CommandToSend);
             }
 
-            setButtonStyle(newbutton, buttonStyle);
-            setButtonLocation(newbutton);
-            setButtonEventHandlers(newbutton, true);
-
+            
             return newbutton;
         }
         
@@ -619,13 +630,16 @@ namespace Comet1
             newbutton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
 
             //find the relative relative location
+            //Based on either the Send button (first time) or the last smart button that was added
+
             Point basePoint = lastButtonForLocation.Location;
             Point offsetPoint = new Point(0, -29);
             basePoint.Offset(offsetPoint);
             newbutton.Location = basePoint;
+            //set the size to match the last button
             newbutton.Size = lastButtonForLocation.Size;
             lastButtonForLocation = newbutton;
-            //set the size
+
         }
 
         private void setButtonEventHandlers(SmartButton newbutton, bool IsNew)
@@ -748,7 +762,8 @@ namespace Comet1
                 var historyButtons = panelHistory.Controls.OfType<SmartButton>().ToArray();
                 foreach (var control in historyButtons)
                 {
-                    ((SmartButton)control).removeThisButton();
+                    //((SmartButton)control).removeThisButton();
+                    ((SmartButton)control).Dispose();
                 }
             }
             catch (Exception)
@@ -756,6 +771,7 @@ namespace Comet1
                 Console.WriteLine("Error Clearing History Buttons");
             }
         }
+        
 
         private String[] collectAllSmartButtonData()
         {
@@ -859,6 +875,8 @@ namespace Comet1
 
         private void loadSmartButtons(string[] dataIn)
         {
+            //suspend layout updates temporarily 
+            this.SuspendLayout();
             try
             {
                 string[] recalledData = dataIn;
@@ -945,7 +963,7 @@ namespace Comet1
                 }
 
                 //if everything loaded correctly, display the descriptions
-                showCMD = !showCMD;
+                showCMD = false;
                 changeHistoryButtonDisplay(showCMD);
                 //move the scroll bar back to the bottom
                 panelHistory.ScrollControlIntoView(button1);
@@ -954,6 +972,7 @@ namespace Comet1
             {
                 Console.WriteLine("Error opening / parsing saved data");
             }
+            this.ResumeLayout(true);
         }
 
         private string[] openSavedSmartButtons()
@@ -1230,6 +1249,16 @@ namespace Comet1
                     if (arguments != null)
                     {
                         setDTRandParseInput((string)arguments[0]);
+                    }
+                    break;
+
+                case "unicode":
+                    if (arguments != null)
+                    {
+                        string hexString = (string)arguments[0];
+                        int code = Int32.Parse(hexString, System.Globalization.NumberStyles.HexNumber);
+                        string unicodeString = char.ConvertFromUtf32(code);
+                        sendDataToSerialConnectionBasic(unicodeString);
                     }
                     break;
 
@@ -3090,7 +3119,10 @@ namespace Comet1
             }
         }
 
+        private void toolTip1_Popup(object sender, PopupEventArgs e)
+        {
 
+        }
     }
 
 

@@ -1,0 +1,14 @@
+*idn?				Device ID
+outp ON				ON
+OUTP OFF				OFF
+:MEASURE:VOLTAGE:DC?				Meas Voltage
+:MEASURE:CURRent?				Meas Current
+**script				measure loop
+**log	500	:MEASURE:VOLTAGE:DC?
+**log	500	:MEASURE:CURRent?
+**script				measure loop
+*CLS				Clear
+*RST				Reset
+SYSTem:ERRor?				Errors?
+*OPC?				OPC
+volt 5				volt 5

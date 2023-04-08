@@ -11,12 +11,11 @@ C:\ttp\Xtra\COMET\COMET\obj\x86\Release\Comet1.Properties.Resources.resources
 C:\ttp\Xtra\COMET\COMET\obj\x86\Release\COMET.csproj.GenerateResource.Cache
 C:\ttp\Xtra\COMET\COMET\obj\x86\Release\Comet.exe
 C:\ttp\Xtra\COMET\COMET\obj\x86\Release\Comet.pdb
-C:\Users\jared\OneDrive\COMET\COMET\obj\x86\Release\COMET.csprojAssemblyReference.cache
-C:\Users\jared\OneDrive\COMET\COMET\obj\x86\Release\Comet.exe
-C:\Users\jared\OneDrive\COMET\COMET\obj\x86\Release\Comet.pdb
 C:\Users\jared\OneDrive\COMET\COMET\bin\Release\Comet.exe.config
 C:\Users\jared\OneDrive\COMET\COMET\bin\Release\Comet.exe
 C:\Users\jared\OneDrive\COMET\COMET\bin\Release\Comet.pdb
+C:\Users\jared\OneDrive\COMET\COMET\obj\x86\Release\COMET.csproj.AssemblyReference.cache
+C:\Users\jared\OneDrive\COMET\COMET\obj\x86\Release\COMET.csproj.SuggestedBindingRedirects.cache
 C:\Users\jared\OneDrive\COMET\COMET\obj\x86\Release\Comet1.About.resources
 C:\Users\jared\OneDrive\COMET\COMET\obj\x86\Release\Comet1.PromptScriptEdit.resources
 C:\Users\jared\OneDrive\COMET\COMET\obj\x86\Release\Comet1.ToolBox.resources
@@ -24,3 +23,5 @@ C:\Users\jared\OneDrive\COMET\COMET\obj\x86\Release\Comet1.SerialWindow.resource
 C:\Users\jared\OneDrive\COMET\COMET\obj\x86\Release\Comet1.Properties.Resources.resources
 C:\Users\jared\OneDrive\COMET\COMET\obj\x86\Release\COMET.csproj.GenerateResource.cache
 C:\Users\jared\OneDrive\COMET\COMET\obj\x86\Release\COMET.csproj.CoreCompileInputs.cache
+C:\Users\jared\OneDrive\COMET\COMET\obj\x86\Release\Comet.exe
+C:\Users\jared\OneDrive\COMET\COMET\obj\x86\Release\Comet.pdb

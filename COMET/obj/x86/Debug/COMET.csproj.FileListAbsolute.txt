@@ -11,3 +11,17 @@ C:\ttp\Xtra\COMET\COMET\obj\x86\Debug\COMET.csproj.CoreCompileInputs.cache
 C:\ttp\Xtra\COMET\COMET\obj\x86\Debug\Comet.exe
 C:\ttp\Xtra\COMET\COMET\obj\x86\Debug\Comet.pdb
 C:\ttp\Xtra\COMET\COMET\obj\x86\Debug\COMET.csprojAssemblyReference.cache
+C:\Users\jared\OneDrive\COMET\COMET\obj\x86\Debug\Comet.exe
+C:\Users\jared\OneDrive\COMET\COMET\obj\x86\Debug\Comet.pdb
+C:\Users\jared\OneDrive\COMET\COMET\bin\Debug\Comet.exe.config
+C:\Users\jared\OneDrive\COMET\COMET\bin\Debug\Comet.exe
+C:\Users\jared\OneDrive\COMET\COMET\bin\Debug\Comet.pdb
+C:\Users\jared\OneDrive\COMET\COMET\obj\x86\Debug\COMET.csproj.AssemblyReference.cache
+C:\Users\jared\OneDrive\COMET\COMET\obj\x86\Debug\COMET.csproj.SuggestedBindingRedirects.cache
+C:\Users\jared\OneDrive\COMET\COMET\obj\x86\Debug\Comet1.About.resources
+C:\Users\jared\OneDrive\COMET\COMET\obj\x86\Debug\Comet1.PromptScriptEdit.resources
+C:\Users\jared\OneDrive\COMET\COMET\obj\x86\Debug\Comet1.ToolBox.resources
+C:\Users\jared\OneDrive\COMET\COMET\obj\x86\Debug\Comet1.SerialWindow.resources
+C:\Users\jared\OneDrive\COMET\COMET\obj\x86\Debug\Comet1.Properties.Resources.resources
+C:\Users\jared\OneDrive\COMET\COMET\obj\x86\Debug\COMET.csproj.GenerateResource.cache
+C:\Users\jared\OneDrive\COMET\COMET\obj\x86\Debug\COMET.csproj.CoreCompileInputs.cache

@@ -18,7 +18,9 @@ namespace Comet1
         public string LogString { get; set; } = "";
         //a stored script is the smart button is being used for a script
         public ScriptRunner storedScript { get; set; }
-        
+
+        public string MouseOverText { get; set; } = "A button";
+
 
         public SmartButton()
         {
@@ -41,6 +43,7 @@ namespace Comet1
                 this.Text = CommandDescription;
             }
             this.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            
         }
         public void removeThisButton()
         {

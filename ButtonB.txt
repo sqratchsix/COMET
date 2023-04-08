@@ -1,12 +1,122 @@
-qdver			qdver
-sdboot			sdboot
-sbl				sbl
-sdyuld,1		sdyuld,1
+AT									AT
 
-qdscrc,1		qdscrc,1
+AT+CFUN=1,1							Restart	
+AT+QPOWD							Power Down
+AT&F0								Factory Reset Settings
+AT&V 								Display Current Configuration
 
-ulcmd			ulcmd
-sfupdate,1		sfupdate,1
+AT+CFUN=0							Min Functionality
+AT+CFUN=1							Full Functionality
+AT+COPS?							Current Carrier
+	
+AT+QNWINFO							Network Info
+AT+QSPN								Service Provider
+AT+QENG="servingcell"				Primary Cell
+AT+QENG="neighbourcell"				Neighbor Cells
+AT+QNWCFG="lte_cell_id"				Cell ID LTE
+AT+QNWCFG="nr5g_cell_id"			Cell ID 5G
+AT+QNWCFG="up/down"					Avg UL DL bytes
+AT+QNWPREFCFG="lte_band"			LTE Bands Config
+AT+QNWPREFCFG="nsa_nr5g_band"		5G bands Config
+AT+QNWPREFCFG="nr5g_band"			5G SA bands Config
+AT+QNETDEVSTATUS?					RmNet Status
 
-qdfcrc			qdfcrc
-rbt				rbt
+AT+QNWPREFCFG="mode_pref"			Technology?
+AT+QNWPREFCFG="mode_pref",AUTO		Technology Auto
+AT+QNWPREFCFG="mode_pref",WCDMA		WCDMA preferred
+AT+QNWPREFCFG="mode_pref",LTE		LTE preferred
+AT+QNWPREFCFG="mode_pref",NR5G		5G preferred
+at+qnwprefcfg=?						Show configs
+	
+AT+QGMR								FW
+at+qmbncfg="list"					List MBNs	
+AT+GMI								MFG ID
+AT+CGMI								MFG ID
+ATI									MT ID
+AT+GMM								Model
+AT+GSN								IMEI
+
+AT+CFUN=1,1							Reset device	
+AT+CFUN=4							Disable Tx Rx
+
+AT+QCFG="usbspeed"					USB Speed Query
+AT+QCFG="usbspeed","20"				USB Speed 2.0
+AT+QCFG="usbspeed","311"			USB Speed 3.1 5Gbps
+AT+QCFG="usbspeed","312"			USB Speed 3.1 10Gbps
+	
+AT+QCFG="usb/maxpower"				USB Power
+
+AT+CIMI								IMSI
+AT+ICCID							ICCID
+AT+QUIMSLOT?						Query SIM Slot
+AT+QUIMSLOT=1						use SIM1
+AT+QUIMSLOT=2						use SIM2
+at+crsm=176,28503,0,0,255			APN Control List EF-ACL
+	
+AT+CGDCONT?							PDP Context / APN List
+AT+CGPADDR							PDP Addresses
+AT$QCPRFMOD=PID:1,OVRRIDEHOPDP:"IPV4V6"	unlock IPV6 only restriction, reboot to take effect
+AT$QCPRFMOD=PID:1,OVRRIDEHOPDP:"IP"	unlock IPV6 only restriction, reboot to take effect
+
+AT+COPS=?							x List Carriers
+AT+COPS?							Current Carrier
+AT+CREG?							Network Status
+AT+CREG=0							Disable registration
+AT+CREG=1							Enable Registration
+AT+CREG=2							Enable Registration w/ location
+AT+C5GREG?							5G Network Status
+AT+C5GREG=0							5G Disable registration
+AT+C5GREG=1							5G Enable Registration
+AT+C5GREG=2							5G Enable Registration w/ location
+	
+AT+CSQ								CSQ Signal Quality
+AT+QRSRP							RSRP	-80+ ex / -90+ good / -100+ ok / <-100 no signal 
+AT+QRSRQ							RSRQ	-10+ ex / -15+ good / -20+ ok / <-20 no signal 
+AT+QSINR							SINR	20+ ex / -13+ good / -0+ ok / <0 bad 
+	
+AT+CPOL?							Preferred operators
+AT+COPN								Operator Names
+	
+AT+CNUM								UE Phone Number	
+AT+CMGF=1							Set SMS messages to Text Mode
+AT+CSCS="GSM"						Set character to GSM
+AT+CMGS="15756215760"				Send Text
+**script							CTRL+Z
+**unicode	001A
+**script							CTRL+Z
+**script							ESC
+**unicode	001B
+**script							ESC
+
+AT+CEER								Error Report
+AT+CPAS								Status
+AT+QCFG=?							Config Settings
+AT+QNWCFG=?							Config Params
+AT+QCFG="rrc"						RRC Version
+
+AT+CBC								Voltage
+AT+QADC=0							ADC 0
+AT+QADC=1							ADC 1
+
+at+qagpio=0,22,1					GPIO22 high
+at+qagpio=0,22,0					GPIO22 low
+at+qagpio=0,28,1					GPIO28 high
+at+qagpio=0,28,0					GPIO28 low
+at+qagpio=0,56,1					GPIO56 high
+at+qagpio=0,56,0					GPIO56 low
+at+qagpio=0,58,1					GPIO58 high
+at+qagpio=0,58,0					GPIO58 low
+
+AT+QLTS=2							Time-Local
+AT+QLTS=1							Time-GMT
+AT+QLTS								Time-Sync
+
+AT+QGPS?							GNSS State
+AT+QGPS=1							GNSS Standalone
+AT+QGPS=2							GNSS MSB
+AT+QGPS=3							GNSS MSA
+AT+QGPS=4							GNSS Quick
+AT+QGPSLOC=0						Acquire Lat Lon
+AT+QGPSEND							GNSS Off
+
+

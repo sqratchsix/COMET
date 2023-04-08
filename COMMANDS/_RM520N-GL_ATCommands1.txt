@@ -1,0 +1,65 @@
+AT+QLTS=2	Time-Local
+AT+QLTS=1	Time-GMT
+AT+QLTS	Time-Sync
+	
+AT+QNWINFO	Network Info
+AT+QSPN	Service Provider
+AT+QENG="servingcell"	Primary Cell
+AT+QENG="neighbourcell"	Neighbor Cells
+AT+QNWCFG=?	Config Params
+AT+QNWCFG="lte_cell_id"	Cell ID LTE
+AT+QNWCFG="nr5g_cell_id"	Cell ID 5G
+AT+QNWCFG="up/down"	Avg UL DL bytes
+AT+QNWPREFCFG="lte_band"	LTE Bands Config
+AT+QNWPREFCFG="nsa_nr5g_band"	5G bands Config
+AT+QNWPREFCFG="nr5g_band"	5G SA bands Config
+	
+	
+AT+GMI	MFG ID
+ATI	MT ID
+AT+GMR	FW
+AT+CGMI	MFG ID
+AT+GMM	Model
+AT+GSN	IMEI
+	
+AT+CFUN=0	Min Functionality
+AT+CFUN=1	Full Functionality
+AT+CFUN=4	Disable Tx Rx
+AT+QCFG="usbspeed"	USB Speed Query
+AT+QCFG="usbspeed",20	USB Speed 2.0
+AT+QCFG="usbspeed",311	USB Speed 3.1 5Gbps
+AT+QCFG="usbspeed",312	USB Speed 3.1 10Gbps
+	
+AT+CIMI	IMSI
+AT+QUIMSLOT?	Query SIM Slot
+AT+QUIMSLOT=1	use SIM1
+AT+QUIMSLOT=2	use SIM2
+	
+AT+COPS=?	List Carriers
+AT+COPS?	Current Carrier
+AT+CREG?	Network Status
+AT+CREG=0	Disable registration
+AT+CREG=1	Enable Registration
+AT+CREG=2	Enable Registration w/ location
+AT+C5GREG?	5G Network Status
+AT+C5GREG=0	5G Disable registration
+AT+C5GREG=1	5G Enable Registration
+AT+C5GREG=2	5G Enable Registration w/ location
+	
+AT+CSQ	CSQ Signal Quality
+AT+QRSRP	RSRP
+AT+QRSRQ	RSRQ
+AT+QSINR	SINR
+	
+AT+CPOL?	Preferred operators
+AT+COPN	Operator Names
+	
+AT+CMGF=1	Set SMS messages to Text moDe
+AT+CSCS="GSM"	Set character to GSM
+AT+CMGS="15756215760"	Send Text
+**script	CTRL+Z
+**unicode	001A
+**script	CTRL+Z
+**script	ESC
+**unicode	001B
+**script	ESC

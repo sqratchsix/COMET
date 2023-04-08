@@ -1,135 +1,55 @@
-qdver
+AT									AT
 
-**script		BootLoader
-sdboot
-sbl
-**script		BootLoader
+AT+COPS?							Current Carrier
+AT+QNWINFO							Network Info
+AT+QSPN								Service Provider
+AT+QENG="servingcell"				Primary Cell
+AT+QENG="neighbourcell"				Neighbor Cells
 
-**script		Inventory
-**delay			200
-qdver
-sdboot			sdboot
-sbl				sbl
-qdver			qdver
-ulcmd			ulcmd
-sinvmode		sinvmode
-rbt				rbt
-**script
+AT+CSQ								CSQ Signal Quality
+AT+QRSRP							RSRP	-80+ ex / -90+ good / -100+ ok / <-100 no signal 
+AT+QRSRQ							RSRQ	-10+ ex / -15+ good / -20+ ok / <-20 no signal 
+AT+QSINR							SINR	20+ ex / -13+ good / -0+ ok / <0 bad 
 
-**script		Radio ON Lockstep
-**delay			200
-SDOUT,4,1		Radio: RADIO_PWR charge super cap
-SDOUT,6,1		Radio: RADIO_ON
-**sleep			2000
-SDOUT,6,0		Radio: RADIO_ON off
-QDIN,9			Radio: Radio Ready Read
-SL1				Radio: Lockstep To Radio UART
-AT
-**script
+AT+QUIMSLOT?						Query SIM Slot
+AT+QUIMSLOT=1						use SIM1
+AT+QUIMSLOT=2						use SIM2
+AT+CIMI								IMSI
+AT+ICCID							ICCID
+AT+CNUM								UE Phone Number
 
-**script		Radio Info
-AT+CGMI
-AT+CGMM
-AT+CGMR
-AT+CGSN
-AT+CIMI
-**script		Radio Info			
+AT+QNWPREFCFG="mode_pref"			Technology?
+AT+QNWPREFCFG="mode_pref",AUTO		Technology Auto
+AT+QNWPREFCFG="mode_pref",LTE		LTE preferred
+AT+QNWPREFCFG="mode_pref",NR5G		5G preferred
+	
+AT+GSN								IMEI
+AT+QGMR								FW
+at+qmbncfg="list"					List MBNs	
 
-AT+CREG=2		Radio: Register
-AT+CSQ?			Radio: RSSI
+AT+QCFG="usbspeed"					USB Speed Query
+	
+AT+CGDCONT?							PDP Context / APN List
+AT+CGPADDR							PDP Addresses
 
-**script		Exit Lockstep
-**serialbreak
-**serialbreak
-qdver
-**script		Exit Lockstep
+AT+CBC								Voltage
+AT+QADC=0							ADC 0
+AT+QADC=1							ADC 1
 
-**script		GPS ON Lockstep
-SDOUT,19,1					GPS: Power on the GPS VBACK
-SDOUT,5,1					GPS: GPS_PWR ON
-SDOUT,4,1					GPS: RADIO_PWR ON
-SL6							GPS:Lockstep to GPS UART
-**script
+at+qagpio=0,22,1					GPIO22 high
+at+qagpio=0,22,0					GPIO22 low
+at+qagpio=0,28,1					GPIO28 high
+at+qagpio=0,28,0					GPIO28 low
+at+qagpio=0,56,1					GPIO56 high
+at+qagpio=0,56,0					GPIO56 low
+at+qagpio=0,58,1					GPIO58 high
+at+qagpio=0,58,0					GPIO58 low
 
-qdeeinfo					EEPROM Info
-qdinlist					Input List
-qdoutlist					Output List
+AT+CFUN=1,1							Restart		
+AT+QPOWD							Power Down
 
-rma							Main Mode
+AT+CFUN=0							Min Functionality
+AT+CFUN=1							Full Functionality
+AT+CFUN=4							Disable Tx Rx
 
-**script		VITALS MAIN
-**delay			100
-qdain,5						VSOL
-qdain,1						VBAT
-qdbggv						V GasGauge 
-qdbggc						C GasGauge
-q248						Bat percent
 
-**script
-qdain,5						VSOL
-qdainlist					Analog In List
-
-qdain,1						VBAT
-sdout,23,1					Load Battery
-sdout,23,0					Stop Load
-
-**script		LED Test
-**delay			20
-sdboot
-sbl
-SDOUT,18,1					LED1 ON
-SDOUT,18,0					LED1 OFF
-SDOUT,11,1					LED2 ON
-SDOUT,11,0					LED2 OFF
-SDOUT,10,1					LED3 ON
-SDOUT,10,0					LED3 OFF
-SDOUT,9,1					LED4 ON
-SDOUT,9,0					LED4 OFF
-
-SDOUT,9,1					LED4 ON
-SDOUT,9,0					LED4 OFF
-SDOUT,10,1					LED3 ON
-SDOUT,10,0					LED3 OFF
-SDOUT,11,1					LED2 ON
-SDOUT,11,0					LED2 OFF
-SDOUT,18,1					LED1 ON
-SDOUT,18,0					LED1 OFF
-
-SDOUT,18,1					LED1 ON
-SDOUT,18,0					LED1 OFF
-SDOUT,11,1					LED2 ON
-SDOUT,11,0					LED2 OFF
-SDOUT,10,1					LED3 ON
-SDOUT,10,0					LED3 OFF
-SDOUT,9,1					LED4 ON
-SDOUT,9,0					LED4 OFF
-
-SDOUT,9,1					LED4 ON
-SDOUT,9,0					LED4 OFF
-SDOUT,10,1					LED3 ON
-SDOUT,10,0					LED3 OFF
-SDOUT,11,1					LED2 ON
-SDOUT,11,0					LED2 OFF
-SDOUT,18,1					LED1 ON
-SDOUT,18,0					LED1 OFF
-
-**sleep			500
-**delay			20
-SDOUT,18,1					LED1 ON
-SDOUT,11,1					LED2 ON
-SDOUT,10,1					LED3 ON
-SDOUT,9,1					LED4 ON
-**sleep			500
-SDOUT,18,0					LED1 OFF
-SDOUT,11,0					LED2 OFF
-SDOUT,10,0					LED3 OFF
-SDOUT,9,0					LED4 OFF
-**script
-sdout,17,0					Disconnect Bat
-sdout,12,0					Charger ON
-**script					Magnet Test
-QDIN,0						
-**script
-qcfv						FW Ver
-QHDUMPALL					History
-QMTDUMPALL					TX Buffer

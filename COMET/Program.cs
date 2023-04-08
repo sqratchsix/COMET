@@ -27,6 +27,7 @@ namespace Comet1
         static void Main()
         {
             Application.EnableVisualStyles();
+            //SetCompatibleTextRending dictates if the text in Smartbuttons is word wrapped
             Application.SetCompatibleTextRenderingDefault(false);
             SerialWindow serialWin = new SerialWindow();
             try
