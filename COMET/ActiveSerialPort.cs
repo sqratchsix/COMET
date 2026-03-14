@@ -35,6 +35,12 @@ namespace Comet1
         string newData = "";
         string currentData = "";
         string lineEnd = System.Environment.NewLine;
+
+        public string LineEnding
+        {
+            get => lineEnd;
+            set => lineEnd = value;
+        }
         public bool addByteSpaces = true;
 
         public bool createBasicSerialPort(string portName_in, int baudRate_in, enumDataType dataType)

@@ -45,7 +45,8 @@
             this.textBoxPortReadTimeout = new System.Windows.Forms.TextBox();
             this.label2 = new System.Windows.Forms.Label();
             this.comboBoxParity = new System.Windows.Forms.ComboBox();
-            this.checkBox1 = new System.Windows.Forms.CheckBox();
+            this.checkBoxCR = new System.Windows.Forms.CheckBox();
+            this.checkBoxNL = new System.Windows.Forms.CheckBox();
             this.label3 = new System.Windows.Forms.Label();
             this.comboBoxDataBits = new System.Windows.Forms.ComboBox();
             this.label4 = new System.Windows.Forms.Label();
@@ -311,7 +312,8 @@
             this.panelPortOptions.Controls.Add(this.textBoxPortReadTimeout);
             this.panelPortOptions.Controls.Add(this.label2);
             this.panelPortOptions.Controls.Add(this.comboBoxParity);
-            this.panelPortOptions.Controls.Add(this.checkBox1);
+            this.panelPortOptions.Controls.Add(this.checkBoxCR);
+            this.panelPortOptions.Controls.Add(this.checkBoxNL);
             this.panelPortOptions.Controls.Add(this.label3);
             this.panelPortOptions.Controls.Add(this.comboBoxDataBits);
             this.panelPortOptions.Controls.Add(this.label4);
@@ -324,9 +326,10 @@
             this.panelPortOptions.Location = new System.Drawing.Point(0, 0);
             this.panelPortOptions.Margin = new System.Windows.Forms.Padding(6);
             this.panelPortOptions.Name = "panelPortOptions";
-            this.panelPortOptions.Size = new System.Drawing.Size(192, 585);
+            this.panelPortOptions.Size = new System.Drawing.Size(192, 620);
             this.panelPortOptions.TabIndex = 6;
             this.panelPortOptions.Visible = false;
+            this.panelPortOptions.Click += new System.EventHandler(this.panelPortOptions_Click);
             this.panelPortOptions.MouseEnter += new System.EventHandler(this.panelPortOptions_MouseEnter);
             this.panelPortOptions.MouseLeave += new System.EventHandler(this.panelPortOptions_MouseLeave);
             this.panelPortOptions.MouseHover += new System.EventHandler(this.panelPortOptions_MouseHover);
@@ -336,7 +339,7 @@
             this.checkBox2.AutoSize = true;
             this.checkBox2.Checked = true;
             this.checkBox2.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.checkBox2.Location = new System.Drawing.Point(6, 546);
+            this.checkBox2.Location = new System.Drawing.Point(6, 572);
             this.checkBox2.Margin = new System.Windows.Forms.Padding(6);
             this.checkBox2.Name = "checkBox2";
             this.checkBox2.Size = new System.Drawing.Size(154, 29);
@@ -392,20 +395,35 @@
             this.comboBoxParity.TabIndex = 5;
             this.comboBoxParity.SelectedIndexChanged += new System.EventHandler(this.comboBoxParity_SelectedIndexChanged);
             // 
-            // checkBox1
+            // checkBoxCR
             // 
-            this.checkBox1.AutoSize = true;
-            this.checkBox1.Checked = true;
-            this.checkBox1.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.checkBox1.Location = new System.Drawing.Point(6, 508);
-            this.checkBox1.Margin = new System.Windows.Forms.Padding(6);
-            this.checkBox1.Name = "checkBox1";
-            this.checkBox1.Size = new System.Drawing.Size(169, 29);
-            this.checkBox1.TabIndex = 16;
-            this.checkBox1.Text = "Write CR/NL ";
-            this.toolTip1.SetToolTip(this.checkBox1, "Add a new line to all sent data");
-            this.checkBox1.UseVisualStyleBackColor = true;
-            this.checkBox1.CheckedChanged += new System.EventHandler(this.checkBox1_CheckedChanged);
+            this.checkBoxCR.AutoSize = true;
+            this.checkBoxCR.Checked = true;
+            this.checkBoxCR.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.checkBoxCR.Location = new System.Drawing.Point(6, 502);
+            this.checkBoxCR.Margin = new System.Windows.Forms.Padding(6);
+            this.checkBoxCR.Name = "checkBoxCR";
+            this.checkBoxCR.Size = new System.Drawing.Size(100, 29);
+            this.checkBoxCR.TabIndex = 16;
+            this.checkBoxCR.Text = "Write CR";
+            this.toolTip1.SetToolTip(this.checkBoxCR, "Append carriage return (\\r) to sent data");
+            this.checkBoxCR.UseVisualStyleBackColor = true;
+            this.checkBoxCR.CheckedChanged += new System.EventHandler(this.checkBoxCR_CheckedChanged);
+            // 
+            // checkBoxNL
+            // 
+            this.checkBoxNL.AutoSize = true;
+            this.checkBoxNL.Checked = true;
+            this.checkBoxNL.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.checkBoxNL.Location = new System.Drawing.Point(6, 537);
+            this.checkBoxNL.Margin = new System.Windows.Forms.Padding(6);
+            this.checkBoxNL.Name = "checkBoxNL";
+            this.checkBoxNL.Size = new System.Drawing.Size(100, 29);
+            this.checkBoxNL.TabIndex = 50;
+            this.checkBoxNL.Text = "Write NL";
+            this.toolTip1.SetToolTip(this.checkBoxNL, "Append newline (\\n) to sent data");
+            this.checkBoxNL.UseVisualStyleBackColor = true;
+            this.checkBoxNL.CheckedChanged += new System.EventHandler(this.checkBoxNL_CheckedChanged);
             // 
             // label3
             // 
@@ -695,6 +713,7 @@
             this.panel2.Name = "panel2";
             this.panel2.Size = new System.Drawing.Size(184, 831);
             this.panel2.TabIndex = 15;
+            this.panel2.Click += new System.EventHandler(this.button5_Click);
             // 
             // button5
             // 
@@ -880,12 +899,14 @@
             // 
             // comboBoxPortName
             // 
+            this.comboBoxPortName.DrawMode = System.Windows.Forms.DrawMode.OwnerDrawFixed;
             this.comboBoxPortName.FormattingEnabled = true;
             this.comboBoxPortName.Location = new System.Drawing.Point(6, 40);
             this.comboBoxPortName.Margin = new System.Windows.Forms.Padding(6);
             this.comboBoxPortName.Name = "comboBoxPortName";
             this.comboBoxPortName.Size = new System.Drawing.Size(168, 33);
             this.comboBoxPortName.TabIndex = 1;
+            this.comboBoxPortName.DrawItem += new System.Windows.Forms.DrawItemEventHandler(this.comboBoxPortName_DrawItem);
             this.comboBoxPortName.SelectedIndexChanged += new System.EventHandler(this.comboBoxPortName_SelectedIndexChanged);
             this.comboBoxPortName.MouseDown += new System.Windows.Forms.MouseEventHandler(this.comboBoxPortName_MouseDown);
             // 
@@ -1649,7 +1670,8 @@
         private System.Windows.Forms.TextBox textBoxPortReadTimeout;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.ComboBox comboBoxParity;
-        private System.Windows.Forms.CheckBox checkBox1;
+        private System.Windows.Forms.CheckBox checkBoxCR;
+        private System.Windows.Forms.CheckBox checkBoxNL;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.ComboBox comboBoxDataBits;
         private System.Windows.Forms.Label label4;

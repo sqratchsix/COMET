@@ -19,6 +19,10 @@ namespace Comet1
 {
     public partial class SerialWindow : Form
     {
+        private SerialPortManager serialPortManager;
+        private SmartButtonManager smartButtonManager;
+        private DataFormatter dataFormatter;
+
         private ActiveSerialPort currentConnection;
         private String currentPortName = "";
         private int currentBaudRate = 9600;
@@ -44,7 +48,8 @@ namespace Comet1
         private bool writeSmartButtonEnabled = true;
         private bool DiscardDuplicateEntriesInList = true;
         private bool AddNewLineToTerminal = true; //Add a newline in between new input messages
-        private bool endline = true;
+        private bool writeCR = true;
+        private bool writeNL = true;
         private bool bytespaces = true;
         private String dataToSend = "";
         private Color textReceive = Color.FromName("Lime");
@@ -83,18 +88,24 @@ namespace Comet1
         //Smart Button currrently being edited - to fix a bug in getting the ContextMenu's parent
         private SmartButton SmartButtonVar;
 
-        private Regex r = new Regex("[\\S][\\S]");
-        private MatchEvaluator evaluator = new MatchEvaluator(AddSpaceAfter2);
-
         #region Basic setup & methods
 
         //Constructor
         public SerialWindow()
         {
             InitializeComponent();
+
+            // Initialize managers
+            serialPortManager = new SerialPortManager();
+            serialPortManager.DataReceived += (s, data) => updateTerminal(data, true);
+            dataFormatter = new DataFormatter();
+
             updateSerialPortList();
 
             initializeHistoryButtons();
+            smartButtonManager = new SmartButtonManager(panelHistory, button1, toolTip1, contextMenuSmartButton);
+            smartButtonManager.SetShowCommand(showCMD);
+
             selectDefaults();
             registerEvents();
 
@@ -107,33 +118,7 @@ namespace Comet1
 
         public void updateSerialPortList()
         {
-            string[] currentSerialPortList = SerialPort.GetPortNames();
-
-            //trying to get the device descriptions - only seems to work for actual serial ports, not FTDI USB serial ports
-            try
-            {
-                using (var searcher = new ManagementObjectSearcher
-                ("SELECT * FROM WIN32_SerialPort"))
-                //("root\\CIMV2",    "SELECT * FROM Win32_PnPEntity WHERE ClassGuid=\"{4d36e978-e325-11ce-bfc1-08002be10318}\""))
-                {
-
-                    var ports = searcher.Get().Cast<ManagementBaseObject>().ToList();
-                    var tList = (from n in currentSerialPortList
-                                 join p in ports on n equals p["DeviceID"].ToString()
-                                 select n + " - " + p["Caption"]).ToList();
-
-                    foreach (string s in tList)
-                    {
-                        Console.WriteLine(s);
-                    }
-                }
-            }
-            catch (Exception)
-            {
-
-            }
-            Array.Sort(currentSerialPortList, new NaturalComparer());
-            comboBoxPortName.DataSource = currentSerialPortList;
+            comboBoxPortName.DataSource = serialPortManager.GetAvailablePortNames();
         }
 
         public void setComboBoxStates(bool newstate)
@@ -258,48 +243,20 @@ namespace Comet1
 
         private bool openPortBasic()
         {
-            try
-            {
-                currentConnection = new ActiveSerialPort();
-                if (currentConnection.createBasicSerialPort(currentPortName, currentBaudRate, DataType))
-                {
-                    currentConnection.DataReadyToRead += serialPortDataReadyToRead;
-                    Console.Write("\n" + currentPortName + "\n");
-                    Console.Write(currentBaudRate + "\n");
-                    return portOpen = true;
-                }
-                else
-                {
-                    return portOpen = false;
-                }
-            }
-            catch (Exception)
-            {
-                return portOpen;
-            }
+            serialPortManager.SetPortConfiguration(currentPortName, currentBaudRate, currentParity, currentDataBits, currentStopBits);
+            portOpen = serialPortManager.OpenPortBasic();
+            currentConnection = serialPortManager.Connection;
+            return portOpen;
         }
 
         private bool openPort()
         {
-            try
-            {
-                currentConnection = new ActiveSerialPort();
-                if (currentConnection.openSerialPort(currentPortName, currentBaudRate, currentParity, currentDataBits, currentStopBits, timeoutMS, DataType, portReadTimeout))
-                {
-                    currentConnection.DataReadyToRead += serialPortDataReadyToRead;
-                    Console.Write("\n" + currentPortName + "\n");
-                    Console.Write(currentBaudRate + "\n");
-                    return portOpen = true;
-                }
-                else
-                {
-                    return portOpen = false;
-                }
-            }
-            catch (Exception)
-            {
-                return portOpen;
-            }
+            serialPortManager.SetPortConfiguration(currentPortName, currentBaudRate, currentParity, currentDataBits, currentStopBits);
+            serialPortManager.SetTimeouts(timeoutMS, portReadTimeout);
+            serialPortManager.DataType = DataType;
+            portOpen = serialPortManager.OpenPort();
+            currentConnection = serialPortManager.Connection;
+            return portOpen;
         }
 
         public bool openPortActionFirstTime()
@@ -330,6 +287,7 @@ namespace Comet1
                 buttonOpenSerial.Text = "Close Port";
                 setComboBoxStates(false);
                 setRTSDTR();
+                updateLineEnding();
                 //set the connection on the status bar
                 toolStripStatusLabel1.Text = currentConnection.getConnectionInfo(1);
                 this.Text = "COMET - " + currentConnection.getConnectionInfo(0);
@@ -364,22 +322,14 @@ namespace Comet1
 
         private bool closePort()
         {
-            try
-            {
-                currentConnection.closeSerialPort();
-                portOpen = false;
-                return true;
-            }
-            catch (Exception)
-            {
-                return false;
-            }
+            portOpen = false;
+            return serialPortManager.ClosePort();
         }
 
         private void sendDataToSerialConnection()
         {
             //Send Command - Interacts with the GUI
-            string dataSent = currentConnection.sendData(dataToSend, endline);
+            string dataSent = serialPortManager.SendData(dataToSend, writeCR || writeNL);
             updateTerminal(dataSent, false);
             AcceptButton = button1;
             if (!keepText)
@@ -397,9 +347,9 @@ namespace Comet1
         private void sendDataToSerialConnectionBasic(string data)
         {
             //Basic send command - doesn't affect the GUI
-            if (currentConnection != null)
+            string dataSent = serialPortManager.SendData(data, writeCR || writeNL);
+            if (!string.IsNullOrEmpty(dataSent))
             {
-                string dataSent = currentConnection.sendData(data, endline);
                 updateTerminal(dataSent, false);
             }
         }
@@ -513,16 +463,11 @@ namespace Comet1
             if (newText.Length == 0)
                 return;
 
-            //if it's hex and bytes spacing is desired, format the return values
-            if (bytespaces && (DataType == enumDataType.HEX)) newText = addByteSpacing(newText);
-
-            //add a timestamp, if selected
-            if (timestampserial)
-            {
-                String timeStamp = DateTime.Now.ToString(timestampformat);
-                newText =  timeStamp + " " + newText; 
-            }
-
+            //format data using DataFormatter (byte spacing and timestamps)
+            dataFormatter.ByteSpacesEnabled = bytespaces;
+            dataFormatter.TimestampEnabled = timestampserial;
+            dataFormatter.TimestampFormat = timestampformat;
+            newText = dataFormatter.FormatReceivedData(newText, DataType);
 
             //only log the output data!
             if (localBuffer && output)
@@ -593,127 +538,35 @@ namespace Comet1
             return true;
         }
 
-        public static string AddSpaceAfter2(Match m)
-        {
-            string newString = m + "";
-            return newString.Insert(2, " ");
-        }
-
         #endregion Serial Terminal
 
         #region History Button Methods
 
         private SmartButton createSmartButton(string buttonCommandText, string buttonDescriptionText, bool displayCMD, int buttonStyle, SmartButton.buttonTypes buttonType)
         {
-            var newbutton = new SmartButton(buttonType, buttonCommandText, buttonDescriptionText, displayCMD);
-
-            setButtonStyle(newbutton, buttonStyle);
-            setButtonLocation(newbutton);
-            setButtonEventHandlers(newbutton, true);
-
-            //Tooltip needs to be added after the button event handlers are created, as setButtonEventHandlers clears all events!
-            if (displayCMD)
-            {
-                this.toolTip1.SetToolTip(newbutton, newbutton.CommandDescription);
-            }
-            else
-            {
-                this.toolTip1.SetToolTip(newbutton, newbutton.CommandToSend);
-            }
-
-            
+            var newbutton = smartButtonManager.CreateSmartButton(buttonCommandText, buttonDescriptionText, displayCMD, buttonStyle, buttonType);
+            smartButtonManager.SetButtonEventHandlers(newbutton, 
+                new EventHandler(this.SmartButton_SendSerial),
+                new EventHandler(this.SmartButton_RunScript),
+                new EventHandler(this.SmartButton_LogTerminal),
+                new EventHandler(this.newbutton_MouseHover),
+                new KeyPressEventHandler(this.textBoxTerminal_KeyPress));
             return newbutton;
-        }
-        
-        private void setButtonLocation(SmartButton newbutton)
-        {
-            newbutton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-
-            //find the relative relative location
-            //Based on either the Send button (first time) or the last smart button that was added
-
-            Point basePoint = lastButtonForLocation.Location;
-            Point offsetPoint = new Point(0, -29);
-            basePoint.Offset(offsetPoint);
-            newbutton.Location = basePoint;
-            //set the size to match the last button
-            newbutton.Size = lastButtonForLocation.Size;
-            lastButtonForLocation = newbutton;
-
         }
 
         private void setButtonEventHandlers(SmartButton newbutton, bool IsNew)
         {
-            //clear any previous event handlers
-            newbutton.ClearAllEvents();
-
-            //add the event handlers
-
-            //clicking the button sends its history data to the terminal
-            if (newbutton.buttonType == SmartButton.buttonTypes.SerialCommand)
-            {
-                newbutton.Click += new System.EventHandler(this.SmartButton_SendSerial);
-            }
-            if (newbutton.buttonType == SmartButton.buttonTypes.ScriptRunner)
-            {
-                newbutton.Click += new System.EventHandler(this.SmartButton_RunScript);
-            }
-            if (newbutton.buttonType == SmartButton.buttonTypes.Log)
-            {
-                newbutton.Click += new System.EventHandler(this.SmartButton_LogTerminal);
-            }
-            newbutton.ContextMenuStrip = setupToolStripMenu(true);
-            newbutton.MouseHover += new System.EventHandler(this.newbutton_MouseHover);
-            newbutton.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.textBoxTerminal_KeyPress);
-
-            if (IsNew)
-            {
-                //add the context menu
-                newbutton.ContextMenuStrip = contextMenuSmartButton;
-                this.panelHistory.Controls.Add(newbutton);
-            }
-        }
-
-         private ContextMenuStrip setupToolStripMenu(bool isScript)
-        {//not used!
-            //get the generic Smart Button tool strip
-            ContextMenuStrip contextMenu = contextMenuSmartButton;
-            ToolStripItemCollection tsic = contextMenu.Items;
-
-            foreach (ToolStripItem tsi in tsic)
-            {
-                if (tsi.Text == "Stop")
-                {
-                    tsi.Visible = isScript;
-                }
-            }
-
-            return contextMenu;
+            smartButtonManager.SetButtonEventHandlers(newbutton,
+                new EventHandler(this.SmartButton_SendSerial),
+                new EventHandler(this.SmartButton_RunScript),
+                new EventHandler(this.SmartButton_LogTerminal),
+                new EventHandler(this.newbutton_MouseHover),
+                new KeyPressEventHandler(this.textBoxTerminal_KeyPress));
         }
 
         private void setButtonStyle(Button newbutton, int buttonStyle)
         {
-            //change the button style
-            switch (buttonStyle)
-            {
-                case 0:
-                    newbutton.BackColor = System.Drawing.SystemColors.Control;
-                    break;
-
-                case 1:
-                    newbutton.BackColor = System.Drawing.SystemColors.ControlDark;
-                    break;
-
-                case 2:
-                    //for script buttons
-                    newbutton.BackColor = System.Drawing.SystemColors.ControlLight;
-                    newbutton.Font = new Font(newbutton.Font.Name, newbutton.Font.Size, FontStyle.Bold);
-                    break;
-
-                default:
-                    newbutton.BackColor = System.Drawing.SystemColors.Control;
-                    break;
-            }
+            smartButtonManager.SetButtonStyle(newbutton, buttonStyle);
         }
 
         private void addLastCommandToHistoryButton(String lastCommandSent)
@@ -726,141 +579,22 @@ namespace Comet1
 
         private void ClearSmartButtons(int reference, bool direction)
         {
-            //direction: 1 = above, 0 = below
-            try
-            {
-                var historyButtons = panelHistory.Controls.OfType<SmartButton>().ToArray();
-                foreach (var control in historyButtons)
-                {
-                    if (direction)
-                    {
-                        if (((SmartButton)control).Location.Y > reference)
-                        {
-                            ((SmartButton)control).removeThisButton();
-                        }
-                    }
-                    else
-                    {
-                        if (((SmartButton)control).Location.Y < reference)
-                        {
-                            ((SmartButton)control).removeThisButton();
-                        }
-                    }
-                }
-            }
-            catch (Exception)
-            {
-                Console.WriteLine("Error Clearing History Buttons");
-            }
+            smartButtonManager.ClearSmartButtons(reference, direction);
         }
 
         private void ClearSmartButtons()
         {
-            //direction: 1 = above, 0 = below
-            try
-            {
-                var historyButtons = panelHistory.Controls.OfType<SmartButton>().ToArray();
-                foreach (var control in historyButtons)
-                {
-                    //((SmartButton)control).removeThisButton();
-                    ((SmartButton)control).Dispose();
-                }
-            }
-            catch (Exception)
-            {
-                Console.WriteLine("Error Clearing History Buttons");
-            }
+            smartButtonManager.ClearAllSmartButtons();
         }
-        
 
         private String[] collectAllSmartButtonData()
         {
-            String ButtonData;
-            var HistoryButtonData = new List<string>();
-
-            try
-            {
-                var historyButtons = panelHistory.Controls.OfType<SmartButton>().ToArray();
-                int i = 0;
-                foreach (var control in historyButtons)
-                {
-                    //format each line in the file
-                    //Command {TAB}{TAB}{TAB}{TAB} Description
-                    SmartButton CurrentB = (SmartButton)control;
-
-                    //if a history button, just write the command and description
-                    if (CurrentB.buttonType == SmartButton.buttonTypes.SerialCommand)
-                    {
-                        ButtonData = CurrentB.CommandToSend + "\t\t\t\t" + CurrentB.CommandDescription;
-                        //add the data to the array
-                        HistoryButtonData.Add(ButtonData);
-                    }
-
-                    //if a script button, surround the commands with **script; write each command in the script
-                    if (CurrentB.buttonType == SmartButton.buttonTypes.ScriptRunner)
-                    {
-                        object[] scriptItems = CurrentB.storedScript.currentScript.ToArray();
-                        HistoryButtonData.Add("**script" + "\t\t\t\t" + CurrentB.CommandToSend);
-                        for (int j = 0; j < scriptItems.Length; j++)
-                        {
-                            object[] currentItem = (object[])((ArrayList)scriptItems[j]).ToArray();
-                            //add the data to the array if it's a plain serial command
-                            if ((string)currentItem[0] == "SERIAL")
-                            {
-                                HistoryButtonData.Add((string)currentItem[1]);
-                            }
-                            if ((string)currentItem[0] == "FUNCTION")
-                            {
-                                string commandAndArgs = "**" + (string)currentItem[1];
-                                //find out how many arguments the function has
-                                int lengthItems = currentItem.Length;
-                                //add the arguments, tab delmited
-                                for (i = 2; i < lengthItems; i++)
-                                {
-                                    commandAndArgs = commandAndArgs + "\t" + currentItem[i];
-                                }
-                                //add the function
-                                HistoryButtonData.Add(commandAndArgs);
-                            }
-                        }
-                        HistoryButtonData.Add("**script" + "\t\t\t\t" + CurrentB.CommandDescription);
-                    }
-                }
-                return HistoryButtonData.ToArray();
-            }
-            catch (Exception)
-            {
-                Console.WriteLine("Error Collecting History Data");
-                return new string[] { "Error" };
-            }
+            return smartButtonManager.CollectAllSmartButtonData();
         }
 
         private void changeHistoryButtonDisplay(bool ShowCommand)
         {
-            //cycle through all the history buttons and change the Text to display either Command or Description
-            //Also change the tooltip to be the opposite of the text display
-            try
-            {
-                var historyButtons = panelHistory.Controls.OfType<SmartButton>().ToArray();
-                foreach (var control in historyButtons)
-                {
-                    SmartButton CurrentB = (SmartButton)control;
-                    if (ShowCommand)
-                    {
-                        CurrentB.Text = CurrentB.CommandToSend;
-                        this.toolTip1.SetToolTip(CurrentB, CurrentB.CommandDescription);
-                    }
-                    else
-                    {
-                        CurrentB.Text = CurrentB.CommandDescription;
-                        this.toolTip1.SetToolTip(CurrentB, CurrentB.CommandToSend);
-                    }
-                }
-            }
-            catch (Exception)
-            {
-                Console.WriteLine("Error Changing Button displays");
-            }
+            smartButtonManager.ChangeHistoryButtonDisplay(ShowCommand);
         }
 
         private void writeToTextFile(string path, string[] data)
@@ -1372,16 +1106,17 @@ namespace Comet1
 
 		private void setWriteNewLineParseInput(string argument)
 		{
-			bool WriteNL = false;
+			bool writeNewLine = false;
 
 			try
 			{
 				//usage: false or true as the argument
-				WriteNL = Convert.ToBoolean(argument);
+				writeNewLine = Convert.ToBoolean(argument);
 			}
 			catch { }
-			//check the box to write new line at end of each command
-			checkBox1.Checked = WriteNL;
+			//check the boxes to write CR and NL at end of each command
+			checkBoxCR.Checked = writeNewLine;
+			checkBoxNL.Checked = writeNewLine;
 		}
 
 		private void ScriptSetCometSettings(object[] arguments)
@@ -1650,6 +1385,13 @@ namespace Comet1
         private void comboBoxPortName_SelectedIndexChanged(object sender, EventArgs e)
         {
             this.currentPortName = (string)comboBoxPortName.SelectedItem;
+            
+            // Update title bar with port description even when port is not open
+            if (!string.IsNullOrEmpty(currentPortName))
+            {
+                string portDescription = serialPortManager.GetPortDescription(currentPortName);
+                this.Text = "COMET - " + portDescription;
+            }
         }
 
         private void comboBoxBaudRate_SelectedIndexChanged(object sender, EventArgs e)
@@ -2188,11 +1930,27 @@ namespace Comet1
             //Console.WriteLine(xferProgress);
         }
 
-        private void checkBox1_CheckedChanged(object sender, EventArgs e)
+        private void checkBoxCR_CheckedChanged(object sender, EventArgs e)
         {
-			endline = ((CheckBox)sender).Checked;
-			//endline = checkBox1.Checked;
-			focusInput();
+            writeCR = ((CheckBox)sender).Checked;
+            updateLineEnding();
+            focusInput();
+        }
+
+        private void checkBoxNL_CheckedChanged(object sender, EventArgs e)
+        {
+            writeNL = ((CheckBox)sender).Checked;
+            updateLineEnding();
+            focusInput();
+        }
+
+        private void updateLineEnding()
+        {
+            string lineEnding = (writeCR ? "\r" : "") + (writeNL ? "\n" : "");
+            if (currentConnection != null)
+            {
+                currentConnection.LineEnding = lineEnding;
+            }
         }
 
         private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
@@ -2321,14 +2079,36 @@ namespace Comet1
         private void button4_Click(object sender, EventArgs e)
         {
             toggleSBREAK();
-            safeSleep(toggleTime);
-            toggleSBREAK();
         }
 
         private void comboBoxPortName_MouseDown(object sender, MouseEventArgs e)
         {
             //update the available ports
             updateSerialPortList();
+        }
+
+        private void comboBoxPortName_DrawItem(object sender, DrawItemEventArgs e)
+        {
+            if (e.Index < 0) return;
+
+            ComboBox combo = (ComboBox)sender;
+            string portName = combo.Items[e.Index].ToString();
+
+            // Update title bar when hovering over an item
+            if ((e.State & DrawItemState.Selected) == DrawItemState.Selected || 
+                (e.State & DrawItemState.HotLight) == DrawItemState.HotLight)
+            {
+                string portDescription = serialPortManager.GetPortDescription(portName);
+                this.Text = "COMET - " + portDescription;
+            }
+
+            // Draw the item
+            e.DrawBackground();
+            using (Brush brush = new SolidBrush(e.ForeColor))
+            {
+                e.Graphics.DrawString(portName, e.Font, brush, e.Bounds);
+            }
+            e.DrawFocusRectangle();
         }
 
         private void textBoxToggleTime_TextChanged(object sender, EventArgs e)
@@ -2357,6 +2137,14 @@ namespace Comet1
         }
 
         private void button5_Click(object sender, EventArgs e)
+        {
+            panelPortOptions.Visible = !panelPortOptions.Visible;
+            if(panelPortOptions.Visible && portOpen)closePortAction();
+            if (!panelPortOptions.Visible && !portOpen) openPortAction();
+            focusInput();
+        }
+
+        private void panelPortOptions_Click(object sender, EventArgs e)
         {
             panelPortOptions.Visible = !panelPortOptions.Visible;
             if(panelPortOptions.Visible && portOpen)closePortAction();
@@ -2875,7 +2663,7 @@ namespace Comet1
 
                     //send the port name as a string and check the response
                     //TODO should wait for the event that data is received
-                    currentConnection.sendData(currentPortName, endline);
+                    currentConnection.sendData(currentPortName, writeCR || writeNL);
 
                     safeSleep(this.timeoutMS);
 
@@ -2916,7 +2704,7 @@ namespace Comet1
                     testport.createBasicSerialPort(currentPortName, currentBaudRate, DataType);
 
                     //send the port name as a string and check the response
-                    testport.sendData(currentPortName, endline);
+                    testport.sendData(currentPortName, writeCR || writeNL);
 
                     safeSleep(this.timeoutMS);
 
@@ -3087,36 +2875,6 @@ namespace Comet1
         {
             bytespaces = checkBox2.Checked;
             focusInput();
-        }
-
-        private string addByteSpacing(string unspacedByteString)
-        {
-            {
-                int msgsize = unspacedByteString.Length;
-                if (msgsize == 0)
-                {
-                    return "";
-                }
-
-                //makes sure it's even
-                if (msgsize % 2 != 0)
-                {
-                    unspacedByteString = unspacedByteString.PadLeft(unspacedByteString.Length + 1, '0');
-                }
-
-                StringBuilder addingSpacing = new StringBuilder();
-                int indexChar = 0;
-                while (true)
-                {
-                    addingSpacing.Append(unspacedByteString[indexChar]);
-                    addingSpacing.Append(unspacedByteString[indexChar + 1]);
-                    indexChar = indexChar + 2;
-                    if (indexChar >= msgsize)
-                        break;
-                    addingSpacing.Append(" ");
-                }
-                return addingSpacing.ToString().ToUpper();
-            }
         }
 
         private void toolTip1_Popup(object sender, PopupEventArgs e)
