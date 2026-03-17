@@ -95,6 +95,17 @@ namespace Comet1
         {
             InitializeComponent();
 
+            // If the control is being created inside the WinForms designer, skip
+            // runtime-only initialization. The designer instantiates the form
+            // and running code that touches serial ports, files, processes or
+            // other runtime resources will throw and prevent the designer from
+            // opening. LicenseManager.UsageMode is the most reliable check at
+            // constructor time.
+            if (LicenseManager.UsageMode == LicenseUsageMode.Designtime)
+            {
+                return;
+            }
+
             // Initialize managers
             serialPortManager = new SerialPortManager();
             serialPortManager.DataReceived += (s, data) => updateTerminal(data, true);
@@ -108,9 +119,6 @@ namespace Comet1
 
             selectDefaults();
             registerEvents();
-
-            //look for an .ini file and try to load the initial state
-            loadInitialState();
 
             //this.AutoScaleDimensions = new System.Drawing.SizeF(5F, 12F);
             //this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -285,6 +293,9 @@ namespace Comet1
             if (openPort())
             {
                 buttonOpenSerial.Text = "Close Port";
+                // send button highlight color: #196ebf
+                button1.BackColor = Color.FromArgb(0x19, 0x6E, 0xBF);
+                button1.ForeColor = Color.White;
                 setComboBoxStates(false);
                 setRTSDTR();
                 updateLineEnding();
@@ -307,6 +318,8 @@ namespace Comet1
             if (closePort())
             {
                 buttonOpenSerial.Text = "Open Port";
+                button1.BackColor = SystemColors.Control;
+                button1.ForeColor = SystemColors.ControlText;
                 setComboBoxStates(true);
                 toolStripStatusLabel1.Text = currentConnection.getConnectionInfo(1);
                 this.Text = "COMET - " + currentConnection.getConnectionInfo(0);
@@ -609,25 +622,29 @@ namespace Comet1
 
         private void loadSmartButtons(string[] dataIn)
         {
-            //suspend layout updates temporarily 
+            // Suspend layout updates on the panel where buttons are added (critical optimization)
+            panelHistory.SuspendLayout();
             this.SuspendLayout();
+
             try
             {
                 string[] recalledData = dataIn;
                 int max_data_length = 200;
-                //if this is a really large file, alert the user
+
                 if (recalledData.Length > max_data_length)
                 {
-                    var response = MessageBox.Show("File is greater than " + max_data_length.ToString() + " lines long. \nProceed ?", "Large File", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+                    var response = MessageBox.Show("File is greater than " + max_data_length.ToString() + 
+                        " lines long. \nProceed ?", "Large File", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
 
                     if (response == DialogResult.No)
                     {
                         recalledData = null;
                     }
                 }
+
+                // Cache the string separator instead of allocating per iteration
                 string[] stringSeparator = new string[] { "\t" };
                 int buttonStyle = 0;
-                //variable to set wheter a script button is being created
                 bool scriptbutton = false;
                 SmartButton tempButton = new SmartButton();
 
@@ -636,61 +653,59 @@ namespace Comet1
                     for (int i = 0; i < recalledData.Length; i++)
                     {
                         string[] parsed = recalledData[i].Split(stringSeparator, StringSplitOptions.RemoveEmptyEntries);
-                        //parse out the data
-                        //when encountering an empty line, change the button style
-                        //this allows for grouping button appeareance by function
+
                         if (parsed.Length == 0)
                         {
-                            buttonStyle++;
-                            buttonStyle = buttonStyle % 2;
+                            buttonStyle = (buttonStyle + 1) % 2;
+                            continue;
                         }
-                        //make sure there is data on the line
-                        if (parsed != null && parsed.Length != 0 && parsed[0].Length > 0)
-                        {
-                            string command = parsed[0];
-                            string description = parsed[0];
 
-                            //find out if there is a special command
-                            if (command.Trim().StartsWith("**"))
+                        // Removed redundant null check - Length check is sufficient
+                        if (parsed[0].Length == 0)
+                            continue;
+
+                        string command = parsed[0];
+                        string description = parsed[0];
+
+                        // Cache the trimmed and lowercased command for reuse
+                        string commandTrimmed = command.Trim();
+                        string commandLower = command.ToLower();
+
+                        if (commandTrimmed.StartsWith("**"))
+                        {
+                            // Use case-insensitive comparison (cheaper than .ToLower() twice)
+                            if (commandLower.Contains("**script"))
                             {
-                                if (command.ToLower().Contains("**script"))
-                                {
-                                    //toggle script creation on and off
-                                    scriptbutton = !scriptbutton;
-                                    //for the first time, create a script button
-                                    if (scriptbutton)
-                                    {
-                                        if ((parsed.Length > 1) && parsed[1].Length > 0)
-                                        {
-                                            description = parsed[1];
-                                        }
-                                        tempButton = createSmartButton(description, description, showCMD, 2, SmartButton.buttonTypes.ScriptRunner);
-                                        //create a new script
-                                        loadScript(false);
-                                    }
-                                    else
-                                    {
-                                        //when the script is done populating, add the script to the button
-                                        tempButton.addScript(serialScript);
-                                    }
-                                }
-                            }
-                            if (!command.ToLower().Contains("**script"))
-                            {
+                                scriptbutton = !scriptbutton;
+
                                 if (scriptbutton)
                                 {
-                                    //add to the script - but only if it is not a command
-                                    serialScript.addCommandIntoCurrentScript(recalledData[i]);
-                                }
-                                else
-                                {
-                                    //the usual case - not a scripted command or function
                                     if ((parsed.Length > 1) && parsed[1].Length > 0)
                                     {
                                         description = parsed[1];
                                     }
-                                    createSmartButton(command, description, showCMD, buttonStyle, SmartButton.buttonTypes.SerialCommand);
+                                    tempButton = createSmartButton(description, description, showCMD, 2, SmartButton.buttonTypes.ScriptRunner);
+                                    loadScript(false);
                                 }
+                                else
+                                {
+                                    tempButton.addScript(serialScript);
+                                }
+                            }
+                        }
+                        else if (!commandLower.Contains("**script"))
+                        {
+                            if (scriptbutton)
+                            {
+                                serialScript.addCommandIntoCurrentScript(recalledData[i]);
+                            }
+                            else
+                            {
+                                if ((parsed.Length > 1) && parsed[1].Length > 0)
+                                {
+                                    description = parsed[1];
+                                }
+                                createSmartButton(command, description, showCMD, buttonStyle, SmartButton.buttonTypes.SerialCommand);
                             }
                         }
                     }
@@ -699,14 +714,19 @@ namespace Comet1
                 //if everything loaded correctly, display the descriptions
                 showCMD = false;
                 changeHistoryButtonDisplay(showCMD);
-                //move the scroll bar back to the bottom
-                panelHistory.ScrollControlIntoView(button1);
+                //move the scroll bar back to the bottom - scroll the last SmartButton, not the Send button
+                var lastSmart = panelHistory.Controls.OfType<SmartButton>().LastOrDefault();
+                if (lastSmart != null) panelHistory.ScrollControlIntoView(lastSmart);
             }
             catch (Exception)
             {
                 Console.WriteLine("Error opening / parsing saved data");
             }
-            this.ResumeLayout(true);
+            finally
+            {
+                panelHistory.ResumeLayout(true);
+                this.ResumeLayout(true);
+            }
         }
 
         private string[] openSavedSmartButtons()
@@ -1996,7 +2016,7 @@ namespace Comet1
         {
             if (loadScript(true))
             {
-                //create a new script button of the script loads correctly
+                //create a new script button if the script loads correctly
                 SmartButton loaded = createSmartButton(serialScript.scriptName, serialScript.scriptPath, true, 2, SmartButton.buttonTypes.ScriptRunner);
                 //assign the current script to this new button
                 loaded.addScript(serialScript);
@@ -2372,7 +2392,11 @@ namespace Comet1
         {
             try
             {
-                splitContainer1.SplitterDistance = this.ClientSize.Width - button1.Width - WINDOWMARGINS1;
+                // Use the stored initial history width instead of the current button width.
+                // Using button1.Width here created a feedback loop during resizing that
+                // caused the Send button to grow uncontrollably. historyWidth is set once
+                // during initialization and provides a stable target for the splitter.
+                splitContainer1.SplitterDistance = this.ClientSize.Width - historyWidth - WINDOWMARGINS1;
             }
             catch (Exception) { }
         }
@@ -2626,6 +2650,10 @@ namespace Comet1
         private void SerialWindow_Shown(object sender, EventArgs e)
         {
             correctHistoryFrame();
+
+            //load the .ini file and initial state after the form is fully laid out
+            //so panelHistory.ClientSize is correct for button positioning
+            loadInitialState();
         }
         private void SerialWindow_Load(object sender, EventArgs e)
         {

@@ -29,6 +29,9 @@ namespace Comet1
             Application.EnableVisualStyles();
             //SetCompatibleTextRending dictates if the text in Smartbuttons is word wrapped
             Application.SetCompatibleTextRenderingDefault(false);
+            // Ensure runtime has access to build metadata properties
+            // These will be generated into Properties\BuildInfo.cs at build time
+            // and are safe to read at runtime.
             SerialWindow serialWin = new SerialWindow();
             try
             {
@@ -39,12 +42,13 @@ namespace Comet1
             {
                 //do nothing
             }
+            // Show the main window and run it as the application's main form.
+            // Using Application.Run(serialWin) ensures the form's layout and message
+            // loop are tied directly to the window (fixes certain release-mode
+            // rendering/layout differences seen when using a custom ApplicationContext).
             serialWin.Show();
             serialWin.updateLayoutHistoryPanel();
-            
-            //Application.Run(serialWin);
-            ProgramWithContext context = new ProgramWithContext();
-            Application.Run(context);
+            Application.Run(serialWin);
 
 
        }

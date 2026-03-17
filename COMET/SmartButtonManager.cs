@@ -25,10 +25,22 @@ namespace Comet1
         public SmartButtonManager(Panel historyPanel, Button referenceButton, ToolTip tooltip, ContextMenuStrip contextMenu)
         {
             panelHistory = historyPanel;
-            lastButtonForLocation = referenceButton;
-            historyWidth = referenceButton.Width;
             toolTip = tooltip;
             contextMenuSmartButton = contextMenu;
+            historyWidth = referenceButton.Width;
+            // lastButtonForLocation initialized lazily on first button creation
+            lastButtonForLocation = null;
+        }
+
+        private void ResetAnchor()
+        {
+            // Position anchor at the bottom of panelHistory so first smart button
+            // appears just above the Send button (which is in the parent container below)
+            lastButtonForLocation = new Button
+            {
+                Size = new Size(panelHistory.ClientSize.Width, 29),
+                Location = new Point(0, panelHistory.ClientSize.Height)
+            };
         }
 
         public void SetShowCommand(bool show)
@@ -39,6 +51,9 @@ namespace Comet1
         public SmartButton CreateSmartButton(string buttonCommandText, string buttonDescriptionText, 
             bool displayCMD, int buttonStyle, SmartButton.buttonTypes buttonType)
         {
+            if (lastButtonForLocation == null)
+                ResetAnchor();
+
             var newbutton = new SmartButton(buttonType, buttonCommandText, buttonDescriptionText, displayCMD);
 
             SetButtonStyle(newbutton, buttonStyle);
@@ -86,13 +101,14 @@ namespace Comet1
 
         public void SetButtonLocation(SmartButton newbutton)
         {
-            newbutton.Anchor = ((AnchorStyles)((AnchorStyles.Bottom | AnchorStyles.Right)));
+            newbutton.Anchor = ((AnchorStyles)(((AnchorStyles.Bottom | AnchorStyles.Left) 
+                | AnchorStyles.Right)));
 
             Point basePoint = lastButtonForLocation.Location;
             Point offsetPoint = new Point(0, -29);
             basePoint.Offset(offsetPoint);
             newbutton.Location = basePoint;
-            newbutton.Size = lastButtonForLocation.Size;
+            newbutton.Size = new Size(panelHistory.ClientSize.Width, 29);
             lastButtonForLocation = newbutton;
         }
 
@@ -149,11 +165,27 @@ namespace Comet1
         {
             try
             {
+                panelHistory.SuspendLayout();
+
+                // Get all SmartButtons before clearing
                 var historyButtons = panelHistory.Controls.OfType<SmartButton>().ToArray();
+
+                // Remove only SmartButton controls, not all controls (preserves button1, etc.)
+                foreach (var control in historyButtons)
+                {
+                    panelHistory.Controls.Remove(control);
+                }
+
+                // Dispose all SmartButtons
                 foreach (var control in historyButtons)
                 {
                     control.Dispose();
                 }
+
+                // Reset so next batch of buttons starts fresh from bottom
+                lastButtonForLocation = null;
+
+                panelHistory.ResumeLayout(true);
             }
             catch (Exception)
             {
