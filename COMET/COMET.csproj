@@ -38,6 +38,10 @@
   </PropertyGroup>
   <PropertyGroup>
     <ApplicationIcon>cometblueblur.ico</ApplicationIcon>
+    <!-- Versioning: Major.Minor.Patch.Build where Build increments each build -->
+    <VersionPrefix>0.5.0</VersionPrefix>
+    <Version>0.5.0</Version>
+    <NoWarn>$(NoWarn);MSB3822;MSB3823</NoWarn>
   </PropertyGroup>
   <PropertyGroup />
   <PropertyGroup>
@@ -46,6 +50,26 @@
   <PropertyGroup />
   <PropertyGroup>
     <ApplicationManifest>Properties\app.manifest</ApplicationManifest>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <NoWarn>;MSB3822;MSB3823</NoWarn>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <LangVersion>7.3</LangVersion>
+    <ErrorReport>prompt</ErrorReport>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <NoWarn>;MSB3822;MSB3823</NoWarn>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <LangVersion>7.3</LangVersion>
+    <ErrorReport>prompt</ErrorReport>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="stdole, Version=7.0.3300.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
@@ -101,6 +125,7 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Properties\BuildInfo.cs" />
     <Compile Include="Utilities.cs" />
     <Compile Include="SerialPortManager.cs" />
     <Compile Include="SmartButtonManager.cs" />
@@ -147,7 +172,7 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PreBuildEvent>taskkill /f /fi "pid gt 0" /im "Comet.exe</PreBuildEvent>
+    <PreBuildEvent>taskkill /f /fi "pid gt 0" /im "Comet.exe" 2&gt;NUL</PreBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
     <PostBuildEvent>copy /Y "$(TargetDir)$(TargetName).exe" "..\..\..\$(TargetName).exe"
