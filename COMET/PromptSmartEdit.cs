@@ -17,7 +17,6 @@ namespace Comet1
             InitializeComponent();
             this.SmartButtonToEdit = SmartIn;
             populateCurrentAttributes();
-            this.Show();
         }
 
         private void populateCurrentAttributes()
@@ -36,12 +35,14 @@ namespace Comet1
         private void buttonSave_Click(object sender, EventArgs e)
         {
             updateSmartButton();
-            this.Dispose();
+            this.DialogResult = DialogResult.OK;
+            this.Close();
         }
 
         private void buttonCancel_Click(object sender, EventArgs e)
         {
-            this.Dispose();
+            this.DialogResult = DialogResult.Cancel;
+            this.Close();
         }
     }
 }

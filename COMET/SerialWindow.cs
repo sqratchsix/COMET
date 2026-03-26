@@ -106,6 +106,11 @@ namespace Comet1
                 return;
             }
 
+            // Create ToolTip as a local variable so the designer never sees it as
+            // an IComponent field and tries to manage it (which caused designer load errors).
+            var runtimeToolTip = new System.Windows.Forms.ToolTip(this.components);
+            runtimeToolTip.ShowAlways = true;
+
             // Initialize managers
             serialPortManager = new SerialPortManager();
             serialPortManager.DataReceived += (s, data) => updateTerminal(data, true);
@@ -114,8 +119,43 @@ namespace Comet1
             updateSerialPortList();
 
             initializeHistoryButtons();
-            smartButtonManager = new SmartButtonManager(panelHistory, button1, toolTip1, contextMenuSmartButton);
+            smartButtonManager = new SmartButtonManager(panelHistory, button1, runtimeToolTip, contextMenuSmartButton);
             smartButtonManager.SetShowCommand(showCMD);
+
+            // Add "Smart Button" and "Script" options to the panelHistory context menu Add submenu
+            try
+            {
+                var smartMenu = new ToolStripMenuItem("Smart Button...");
+                smartMenu.Click += (s, e) =>
+                {
+                    // create a placeholder smart button then open the edit dialog that edits the button in-place
+                    var btn = createSmartButton("", "", showCMD, 0, SmartButton.buttonTypes.SerialCommand);
+                    setButtonEventHandlers(btn, true);
+                    // open the existing PromptSmartButtonEdit which edits a SmartButton instance
+                    PromptSmartButtonEdit editDlg = new PromptSmartButtonEdit(btn);
+                    editDlg.Location = centerNewWindow(editDlg.Width, editDlg.Height);
+                    editDlg.ShowDialog(this);
+                };
+
+                var scriptMenu = new ToolStripMenuItem("Script...");
+                scriptMenu.Click += (s, e) =>
+                {
+                    // create a new script smart button and open the script edit dialog
+                    var btn = createSmartButton("Script", "Script", true, 2, SmartButton.buttonTypes.ScriptRunner);
+                    // ensure a ScriptRunner exists
+                    loadScript(false);
+                    btn.addScript(serialScript);
+                    using (var dlg = new PromptScriptEdit(btn))
+                    {
+                        dlg.ShowDialog(this);
+                    }
+                };
+
+                // Insert at top of Add menu
+                addToolStripMenuItem.DropDownItems.Insert(0, scriptMenu);
+                addToolStripMenuItem.DropDownItems.Insert(0, smartMenu);
+            }
+            catch (Exception) { }
 
             selectDefaults();
             registerEvents();
@@ -126,6 +166,7 @@ namespace Comet1
 
         public void updateSerialPortList()
         {
+            if (serialPortManager == null) return;
             comboBoxPortName.DataSource = serialPortManager.GetAvailablePortNames();
         }
 
@@ -403,18 +444,21 @@ namespace Comet1
             catch { }
 
             this.AllWindowsClosed = true;
+
+            if (_historyScrollFilter != null)
+            {
+                Application.RemoveMessageFilter(_historyScrollFilter);
+                _historyScrollFilter = null;
+            }
         }
 
         private void updateTimeout()
         {
+            if (currentConnection == null) return;
             float timeoutVal = 0;
             if (float.TryParse(textBoxTimeout.Text, out timeoutVal))
             {
-                //if seconds
-                //timeoutMS = (int)(timeoutVal * 1000);
-                //if ms
                 timeoutMS = (int)(timeoutVal);
-                //System.Console.WriteLine(timeoutMS);
             }
             this.currentConnection.setPortTimeout(timeoutMS, timeoutMS);
         }
@@ -587,6 +631,9 @@ namespace Comet1
             if (!String.IsNullOrEmpty(lastCommandSent) && writeSmartButton && writeSmartButtonEnabled)
             {
                 createSmartButton(lastCommandSent, lastCommandSent, showCMD, 0, SmartButton.buttonTypes.SerialCommand);
+                smartButtonManager.RelayoutButtons();
+                panelHistory.AutoScrollPosition = new Point(0, 0);
+                panelHistory.PerformLayout();
             }
         }
 
@@ -714,9 +761,7 @@ namespace Comet1
                 //if everything loaded correctly, display the descriptions
                 showCMD = false;
                 changeHistoryButtonDisplay(showCMD);
-                //move the scroll bar back to the bottom - scroll the last SmartButton, not the Send button
-                var lastSmart = panelHistory.Controls.OfType<SmartButton>().LastOrDefault();
-                if (lastSmart != null) panelHistory.ScrollControlIntoView(lastSmart);
+                smartButtonManager.RelayoutButtons();
             }
             catch (Exception)
             {
@@ -727,6 +772,9 @@ namespace Comet1
                 panelHistory.ResumeLayout(true);
                 this.ResumeLayout(true);
             }
+            // Scroll AFTER ResumeLayout so the layout is settled and Maximum is correct
+            panelHistory.VerticalScroll.Value = panelHistory.VerticalScroll.Maximum;
+            panelHistory.PerformLayout();
         }
 
         private string[] openSavedSmartButtons()
@@ -1680,12 +1728,14 @@ namespace Comet1
                 PromptScriptEdit Edit = new PromptScriptEdit(SmartButtonVar);
                 //center the window
                 Edit.Location = centerNewWindow(Edit.Width, Edit.Height);
+                Edit.ShowDialog(this);
             }
             else if (SmartButtonVar.buttonType == SmartButton.buttonTypes.SerialCommand)
             {
                 PromptSmartButtonEdit Edit = new PromptSmartButtonEdit(SmartButtonVar);
                 //center the window
                 Edit.Location = centerNewWindow(Edit.Width, Edit.Height);
+                Edit.ShowDialog(this);
             }
         }
 
@@ -1694,8 +1744,36 @@ namespace Comet1
             //SmartButtonVar is populated in the _Opening event of the DropDownOpened event
             //via getSourceSmartButton
 
-            //pop up a dialog box to change the smart button
-            Clipboard.SetText(SmartButtonVar.CommandToSend);
+            if (SmartButtonVar.buttonType == SmartButton.buttonTypes.ScriptRunner
+                && SmartButtonVar.storedScript != null
+                && SmartButtonVar.storedScript.currentScript != null)
+            {
+                // Serialize the script lines to clipboard
+                var sb = new StringBuilder();
+                foreach (System.Collections.ArrayList item in SmartButtonVar.storedScript.currentScript)
+                {
+                    if (item.Count == 0) continue;
+                    string type = (string)item[0];
+                    if (type == "FUNCTION")
+                    {
+                        string line = "**" + (string)item[1];
+                        for (int i = 2; i < item.Count; i++)
+                            line += "\t" + (string)item[i];
+                        sb.AppendLine(line);
+                    }
+                    else // SERIAL
+                    {
+                        sb.AppendLine((string)item[1]);
+                    }
+                }
+                string scriptText = sb.ToString().TrimEnd();
+                if (!string.IsNullOrEmpty(scriptText))
+                    Clipboard.SetText(scriptText);
+            }
+            else
+            {
+                Clipboard.SetText(SmartButtonVar.CommandToSend);
+            }
         }
 
         private void clearAllButtonsToolStripMenuItem_Click(object sender, EventArgs e)
@@ -1749,8 +1827,6 @@ namespace Comet1
                 string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
                 string[] dataToLoad = File.ReadAllLines(files[0]);
                 loadSmartButtons(dataToLoad);
-
-                panelHistory.VerticalScroll.Value = panelHistory.VerticalScroll.Maximum;
                 updateLayoutHistoryPanel();
             }
             catch (Exception)
@@ -1761,6 +1837,7 @@ namespace Comet1
 
         public void updateLayoutHistoryPanel()
         {
+            smartButtonManager.RelayoutButtons();
             panelHistory.PerformLayout();
             resizeButtons(true);
             focusInput();
@@ -2383,10 +2460,7 @@ namespace Comet1
             {
                 correctHistoryFrame();
             }
-            //base.OnSizeChanged(e);
-
-            panelHistory.VerticalScroll.Value = panelHistory.VerticalScroll.Maximum;
-            panelHistory.PerformLayout();
+            smartButtonManager.RelayoutButtons();
         }
         private void correctHistoryFrame()
         {
@@ -2649,14 +2723,51 @@ namespace Comet1
         }
         private void SerialWindow_Shown(object sender, EventArgs e)
         {
+            if (smartButtonManager == null) return;
             correctHistoryFrame();
 
             //load the .ini file and initial state after the form is fully laid out
             //so panelHistory.ClientSize is correct for button positioning
             loadInitialState();
         }
+        // Redirects mouse-wheel events to panelHistory even when a SmartButton (or the panel
+        // background) has no keyboard focus, without stealing focus from the terminal input.
+        private sealed class PanelScrollFilter : IMessageFilter
+        {
+            private const int WM_MOUSEWHEEL = 0x020A;
+            private readonly Panel _panel;
+
+            public PanelScrollFilter(Panel panel) { _panel = panel; }
+
+            public bool PreFilterMessage(ref Message m)
+            {
+                if (m.Msg != WM_MOUSEWHEEL) return false;
+
+                // WM_MOUSEWHEEL is posted to the *focused* window, not the one under
+                // the cursor – so m.HWnd is useless here. Check the actual cursor
+                // position against the panel's screen rectangle instead.
+                Rectangle panelScreen = _panel.RectangleToScreen(_panel.ClientRectangle);
+                if (!panelScreen.Contains(Control.MousePosition)) return false;
+
+                // High word of WParam is a signed delta; one detent = ±120
+                int delta = (short)(((long)m.WParam >> 16) & 0xFFFF);
+                int lines  = SystemInformation.MouseWheelScrollLines;
+                int step   = lines * 31; // 29 px button + 2 px gap
+
+                int currentY = -_panel.AutoScrollPosition.Y;
+                int newY = Math.Max(0, currentY - (delta / 120) * step);
+                _panel.AutoScrollPosition = new Point(0, newY);
+
+                return true; // consumed – do not forward to the focused control
+            }
+        }
+
+        private IMessageFilter _historyScrollFilter;
+
         private void SerialWindow_Load(object sender, EventArgs e)
         {
+            _historyScrollFilter = new PanelScrollFilter(panelHistory);
+            Application.AddMessageFilter(_historyScrollFilter);
             //start a scroll timer
             /*
             Timer MyTimer = new Timer();
@@ -2786,10 +2897,16 @@ namespace Comet1
             //if the button is a serial button, turn it into a script button
             //SmartButtonVar is populated in the _Opening event of the DropDownOpened event
             //via getSourceSmartButton
+            if (SmartButtonVar == null) return;
 
             if (SmartButtonVar.buttonType == SmartButton.buttonTypes.ScriptRunner)
             {
-                //Do Nothing
+                // Ensure the button has a script loaded before opening the editor
+                if (SmartButtonVar.storedScript == null)
+                {
+                    loadScript(false);
+                    SmartButtonVar.addScript(serialScript);
+                }
             }
             else if (SmartButtonVar.buttonType == SmartButton.buttonTypes.SerialCommand)
             {
@@ -2812,13 +2929,26 @@ namespace Comet1
             PromptScriptEdit Edit = new PromptScriptEdit(SmartButtonVar);
             //center the window
             Edit.Location = centerNewWindow(Edit.Width, Edit.Height);
+            Edit.ShowDialog(this);
         }
 
         private void getSourceSmartButton(object sender, EventArgs e)
         {
             //get the Smart Button that opened the context menu
             ContextMenuStrip CMenu = (ContextMenuStrip)sender;
-            SmartButtonVar = (SmartButton)CMenu.SourceControl;
+            SmartButtonVar = CMenu.SourceControl as SmartButton;
+
+            // Update menu text based on button type
+            if (SmartButtonVar != null && SmartButtonVar.buttonType == SmartButton.buttonTypes.ScriptRunner)
+            {
+                copyCommandToolStripMenuItem.Text = "Copy Script";
+                toolStripMenuItem4.Text = "Edit Script";
+            }
+            else
+            {
+                copyCommandToolStripMenuItem.Text = "Copy Command";
+                toolStripMenuItem4.Text = "Edit Command";
+            }
         }
 
         private void hEXACSIIToolStripMenuItem_Click(object sender, EventArgs e)
@@ -2903,11 +3033,6 @@ namespace Comet1
         {
             bytespaces = checkBox2.Checked;
             focusInput();
-        }
-
-        private void toolTip1_Popup(object sender, PopupEventArgs e)
-        {
-
         }
     }
 

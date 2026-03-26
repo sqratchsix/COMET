@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
+using System.ComponentModel;
 
 namespace Comet1
 {
@@ -34,8 +35,7 @@ namespace Comet1
 
         private void ResetAnchor()
         {
-            // Position anchor at the bottom of panelHistory so first smart button
-            // appears just above the Send button (which is in the parent container below)
+            // Dummy anchor sits at the panel bottom. First button is placed 31px above it.
             lastButtonForLocation = new Button
             {
                 Size = new Size(panelHistory.ClientSize.Width, 29),
@@ -59,13 +59,16 @@ namespace Comet1
             SetButtonStyle(newbutton, buttonStyle);
             SetButtonLocation(newbutton);
 
-            if (displayCMD)
+            if (toolTip != null && LicenseManager.UsageMode != LicenseUsageMode.Designtime)
             {
-                toolTip.SetToolTip(newbutton, newbutton.CommandDescription);
-            }
-            else
-            {
-                toolTip.SetToolTip(newbutton, newbutton.CommandToSend);
+                if (displayCMD)
+                {
+                    toolTip.SetToolTip(newbutton, newbutton.CommandDescription);
+                }
+                else
+                {
+                    toolTip.SetToolTip(newbutton, newbutton.CommandToSend);
+                }
             }
 
             newbutton.ContextMenuStrip = contextMenuSmartButton;
@@ -101,15 +104,41 @@ namespace Comet1
 
         public void SetButtonLocation(SmartButton newbutton)
         {
-            newbutton.Anchor = ((AnchorStyles)(((AnchorStyles.Bottom | AnchorStyles.Left) 
-                | AnchorStyles.Right)));
+            // Top anchor is required for AutoScroll compatibility – Bottom-anchored
+            // controls shift with the scroll position, which cancels out scrolling.
+            // RelayoutButtons() called on every resize keeps the "stack from bottom" visual.
+            newbutton.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
 
             Point basePoint = lastButtonForLocation.Location;
-            Point offsetPoint = new Point(0, -29);
-            basePoint.Offset(offsetPoint);
+            basePoint.Offset(new Point(0, -31));  // stack upward
             newbutton.Location = basePoint;
             newbutton.Size = new Size(panelHistory.ClientSize.Width, 29);
             lastButtonForLocation = newbutton;
+        }
+
+        // Repositions all SmartButtons so their Y coordinates are always >= 0.
+        // Oldest button sits at the bottom, newest at the top of the used area.
+        // This keeps AutoScroll able to detect overflow and show a scrollbar.
+        public void RelayoutButtons()
+        {
+            var buttons = panelHistory.Controls.OfType<SmartButton>().ToArray();
+            if (buttons.Length == 0)
+            {
+                lastButtonForLocation = null;
+                return;
+            }
+            int N = buttons.Length;
+            int startY = Math.Max(0, panelHistory.ClientSize.Height - N * 31);
+            panelHistory.SuspendLayout();
+            for (int i = 0; i < N; i++)
+            {
+                // buttons[0] = oldest (first added) → highest Y (bottom of stack)
+                // buttons[N-1] = newest (last added) → startY (top of stack)
+                buttons[i].Location = new Point(0, startY + (N - 1 - i) * 31);
+            }
+            lastButtonForLocation = buttons[N - 1];
+            panelHistory.ResumeLayout(false);
+            panelHistory.PerformLayout();
         }
 
         public void SetButtonStyle(Button newbutton, int buttonStyle)
@@ -255,16 +284,18 @@ namespace Comet1
                 foreach (var control in historyButtons)
                 {
                     SmartButton currentB = control;
-                    if (showCommand)
-                    {
-                        currentB.Text = currentB.CommandToSend;
+                if (showCommand)
+                {
+                    currentB.Text = currentB.CommandToSend;
+                    if (toolTip != null && LicenseManager.UsageMode != LicenseUsageMode.Designtime)
                         toolTip.SetToolTip(currentB, currentB.CommandDescription);
-                    }
-                    else
-                    {
-                        currentB.Text = currentB.CommandDescription;
+                }
+                else
+                {
+                    currentB.Text = currentB.CommandDescription;
+                    if (toolTip != null && LicenseManager.UsageMode != LicenseUsageMode.Designtime)
                         toolTip.SetToolTip(currentB, currentB.CommandToSend);
-                    }
+                }
                 }
             }
             catch (Exception)
@@ -358,13 +389,16 @@ namespace Comet1
                     }
                 }
 
-                showCMD = false;
-                ChangeHistoryButtonDisplay(showCMD);
-                panelHistory.ScrollControlIntoView(scrollButton);
-            }
-            catch (Exception)
-            {
-                Console.WriteLine("Error opening / parsing saved data");
+                    showCMD = false;
+                    ChangeHistoryButtonDisplay(showCMD);
+                    RelayoutButtons();
+                    // Scroll to the bottom so the first (oldest) button is visible
+                    panelHistory.VerticalScroll.Value = panelHistory.VerticalScroll.Maximum;
+                    panelHistory.PerformLayout();
+                }
+                catch (Exception)
+                {
+                    Console.WriteLine("Error opening / parsing saved data");
             }
         }
 

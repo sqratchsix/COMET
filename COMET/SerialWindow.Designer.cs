@@ -111,7 +111,6 @@ namespace Comet1
             this.removeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.panelSend = new System.Windows.Forms.Panel();
             this.button1 = new System.Windows.Forms.Button();
-            this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             this.AButton_A = new System.Windows.Forms.Button();
             this.AButton_B = new System.Windows.Forms.Button();
             this.AButton_C = new System.Windows.Forms.Button();
@@ -285,7 +284,6 @@ namespace Comet1
             this.recordHistory.Name = "recordHistory";
             this.recordHistory.Size = new System.Drawing.Size(18, 17);
             this.recordHistory.TabIndex = 6;
-            this.toolTip1.SetToolTip(this.recordHistory, "history");
             this.recordHistory.UseVisualStyleBackColor = true;
             this.recordHistory.CheckedChanged += new System.EventHandler(this.keepText_CheckedChanged);
             // 
@@ -351,7 +349,6 @@ namespace Comet1
             this.checkBox2.Size = new System.Drawing.Size(99, 20);
             this.checkBox2.TabIndex = 17;
             this.checkBox2.Text = "Byte Space";
-            this.toolTip1.SetToolTip(this.checkBox2, "Add a new line to all sent data");
             this.checkBox2.UseVisualStyleBackColor = true;
             this.checkBox2.CheckedChanged += new System.EventHandler(this.checkBox2_CheckedChanged);
             // 
@@ -364,7 +361,6 @@ namespace Comet1
             this.checkBoxAddNewLine.Size = new System.Drawing.Size(106, 20);
             this.checkBoxAddNewLine.TabIndex = 14;
             this.checkBoxAddNewLine.Text = "Read CR/NL";
-            this.toolTip1.SetToolTip(this.checkBoxAddNewLine, "Add a new line after all received data");
             this.checkBoxAddNewLine.UseVisualStyleBackColor = true;
             this.checkBoxAddNewLine.CheckedChanged += new System.EventHandler(this.checkBoxAddNewLine_CheckedChanged);
             // 
@@ -375,8 +371,6 @@ namespace Comet1
             this.textBoxPortReadTimeout.Name = "textBoxPortReadTimeout";
             this.textBoxPortReadTimeout.Size = new System.Drawing.Size(63, 22);
             this.textBoxPortReadTimeout.TabIndex = 13;
-            this.toolTip1.SetToolTip(this.textBoxPortReadTimeout, "Time to wait for more data before writing\r\nbuffered received data to the terminal" +
-        "");
             this.textBoxPortReadTimeout.TextChanged += new System.EventHandler(this.textBoxPortReadTimeout_TextChanged);
             // 
             // label2
@@ -412,7 +406,6 @@ namespace Comet1
             this.checkBoxCR.Size = new System.Drawing.Size(82, 20);
             this.checkBoxCR.TabIndex = 16;
             this.checkBoxCR.Text = "Write CR";
-            this.toolTip1.SetToolTip(this.checkBoxCR, "Append carriage return (\\r) to sent data");
             this.checkBoxCR.UseVisualStyleBackColor = true;
             this.checkBoxCR.CheckedChanged += new System.EventHandler(this.checkBoxCR_CheckedChanged);
             // 
@@ -427,7 +420,6 @@ namespace Comet1
             this.checkBoxNL.Size = new System.Drawing.Size(80, 20);
             this.checkBoxNL.TabIndex = 50;
             this.checkBoxNL.Text = "Write NL";
-            this.toolTip1.SetToolTip(this.checkBoxNL, "Append newline (\\n) to sent data");
             this.checkBoxNL.UseVisualStyleBackColor = true;
             this.checkBoxNL.CheckedChanged += new System.EventHandler(this.checkBoxNL_CheckedChanged);
             // 
@@ -507,7 +499,6 @@ namespace Comet1
             this.textBoxTimeout.TabIndex = 11;
             this.textBoxTimeout.Text = "500";
             this.textBoxTimeout.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
-            this.toolTip1.SetToolTip(this.textBoxTimeout, "Max time spent sending \r\nor receiving a message");
             this.textBoxTimeout.TextChanged += new System.EventHandler(this.textBoxTimeout_TextChanged);
             // 
             // label9
@@ -754,7 +745,6 @@ namespace Comet1
             this.DTR_0.Size = new System.Drawing.Size(17, 16);
             this.DTR_0.TabIndex = 18;
             this.DTR_0.TabStop = true;
-            this.toolTip1.SetToolTip(this.DTR_0, "0");
             this.DTR_0.UseVisualStyleBackColor = true;
             this.DTR_0.CheckedChanged += new System.EventHandler(this.DTR_0_CheckedChanged);
             // 
@@ -778,7 +768,6 @@ namespace Comet1
             this.DTR_1.Size = new System.Drawing.Size(17, 16);
             this.DTR_1.TabIndex = 18;
             this.DTR_1.TabStop = true;
-            this.toolTip1.SetToolTip(this.DTR_1, "1");
             this.DTR_1.UseVisualStyleBackColor = true;
             this.DTR_1.CheckedChanged += new System.EventHandler(this.DTR_1_CheckedChanged);
             // 
@@ -803,7 +792,6 @@ namespace Comet1
             this.SBREAK_0.Size = new System.Drawing.Size(17, 16);
             this.SBREAK_0.TabIndex = 18;
             this.SBREAK_0.TabStop = true;
-            this.toolTip1.SetToolTip(this.SBREAK_0, "0");
             this.SBREAK_0.UseVisualStyleBackColor = true;
             this.SBREAK_0.CheckedChanged += new System.EventHandler(this.SBREAK_0_CheckedChanged);
             // 
@@ -850,7 +838,6 @@ namespace Comet1
             this.RTS_0.Size = new System.Drawing.Size(17, 16);
             this.RTS_0.TabIndex = 18;
             this.RTS_0.TabStop = true;
-            this.toolTip1.SetToolTip(this.RTS_0, "0");
             this.RTS_0.UseVisualStyleBackColor = true;
             this.RTS_0.CheckedChanged += new System.EventHandler(this.RTS_0_CheckedChanged);
             // 
@@ -874,7 +861,6 @@ namespace Comet1
             this.RTS_1.Size = new System.Drawing.Size(17, 16);
             this.RTS_1.TabIndex = 18;
             this.RTS_1.TabStop = true;
-            this.toolTip1.SetToolTip(this.RTS_1, "1");
             this.RTS_1.UseVisualStyleBackColor = true;
             this.RTS_1.CheckedChanged += new System.EventHandler(this.RTS_1_CheckedChanged);
             // 
@@ -899,7 +885,6 @@ namespace Comet1
             this.radioButtonHEX.TabIndex = 14;
             this.radioButtonHEX.TabStop = true;
             this.radioButtonHEX.Text = "HEX";
-            this.toolTip1.SetToolTip(this.radioButtonHEX, "Interpret incoming data as HEXADECIMAL");
             this.radioButtonHEX.UseVisualStyleBackColor = true;
             this.radioButtonHEX.CheckedChanged += new System.EventHandler(this.radioButtonHEX_CheckedChanged);
             // 
@@ -937,7 +922,6 @@ namespace Comet1
             this.radioButtonASCII.TabIndex = 13;
             this.radioButtonASCII.TabStop = true;
             this.radioButtonASCII.Text = "ASCII";
-            this.toolTip1.SetToolTip(this.radioButtonASCII, "Interpret incoming data as ASCII");
             this.radioButtonASCII.UseVisualStyleBackColor = true;
             this.radioButtonASCII.CheckedChanged += new System.EventHandler(this.radioButtonASCII_CheckedChanged);
             // 
@@ -979,7 +963,6 @@ namespace Comet1
             this.textBoxToggle.TabIndex = 11;
             this.textBoxToggle.Text = "500";
             this.textBoxToggle.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
-            this.toolTip1.SetToolTip(this.textBoxToggle, "Toggle Time for the above buttons");
             this.textBoxToggle.TextChanged += new System.EventHandler(this.textBoxToggleTime_TextChanged);
             // 
             // panelHistory
@@ -1058,14 +1041,8 @@ namespace Comet1
             this.button1.Size = new System.Drawing.Size(154, 29);
             this.button1.TabIndex = 2;
             this.button1.Text = "Send";
-            this.toolTip1.SetToolTip(this.button1, "Send Data");
             this.button1.UseVisualStyleBackColor = false;
             this.button1.Click += new System.EventHandler(this.button1_Click);
-            // 
-            // toolTip1
-            // 
-            this.toolTip1.ShowAlways = true;
-            this.toolTip1.Popup += new System.Windows.Forms.PopupEventHandler(this.toolTip1_Popup);
             // 
             // AButton_A
             // 
@@ -1632,7 +1609,6 @@ namespace Comet1
         private System.Windows.Forms.ToolStripMenuItem sendBreakToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem1;
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem2;
-        private System.Windows.Forms.ToolTip toolTip1;
         private System.Windows.Forms.ToolStripMenuItem fileToolStripMenuItem1;
         private System.Windows.Forms.ToolStripMenuItem newToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem openToolStripMenuItem;
